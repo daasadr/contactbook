@@ -9,7 +9,6 @@ import Layout from '@/components/Layout'
 import { listsApi } from '@/api/lists'
 import { contactsApi } from '@/api/contacts'
 import type { FieldDefinition, FieldType } from '@/types'
-import clsx from 'clsx'
 
 const fieldTypes: { value: FieldType; label: string }[] = [
   { value: 'text', label: 'Krátký text' },
@@ -43,7 +42,7 @@ type AddFieldForm = z.infer<typeof addFieldSchema>
 
 function AddFieldModal({ listId, onClose }: { listId: string; onClose: () => void }) {
   const queryClient = useQueryClient()
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<AddFieldForm>({
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AddFieldForm>({
     resolver: zodResolver(addFieldSchema),
     defaultValues: { field_type: 'text', section: 'general' },
   })
@@ -55,8 +54,6 @@ function AddFieldModal({ listId, onClose }: { listId: string; onClose: () => voi
       onClose()
     },
   })
-
-  const labelValue = watch('label')
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

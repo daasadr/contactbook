@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useParams, Link, useNavigate } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Plus, Search, Star, Settings2, ArrowLeft, User, X } from 'lucide-react'
 import { useForm } from 'react-hook-form'
@@ -25,7 +25,7 @@ function CreateContactModal({ listId, onClose }: { listId: string; onClose: () =
 
   const mutation = useMutation({
     mutationFn: (data: CreateContactForm) => contactsApi.create(listId, data),
-    onSuccess: (res) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contacts', listId] })
       queryClient.invalidateQueries({ queryKey: ['lists'] })
       onClose()
@@ -87,13 +87,13 @@ function ContactCard({ contact, listId }: { contact: Contact; listId: string }) 
           <div className="font-medium text-zinc-900 truncate">
             {contact.first_name} {contact.last_name}
           </div>
-          {contact.custom_data?.email && (
+          {!!contact.custom_data?.email && (
             <div className="text-sm text-zinc-500 truncate">{String(contact.custom_data.email)}</div>
           )}
-          {!contact.custom_data?.email && contact.custom_data?.phone && (
+          {!contact.custom_data?.email && !!contact.custom_data?.phone && (
             <div className="text-sm text-zinc-500 truncate">{String(contact.custom_data.phone)}</div>
           )}
-          {!contact.custom_data?.email && !contact.custom_data?.phone && contact.custom_data?.company && (
+          {!contact.custom_data?.email && !contact.custom_data?.phone && !!contact.custom_data?.company && (
             <div className="text-sm text-zinc-500 truncate">{String(contact.custom_data.company)}</div>
           )}
         </div>

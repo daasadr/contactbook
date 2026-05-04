@@ -12,7 +12,7 @@ import ListSettings from '@/pages/ListSettings'
 import ProtectedRoute from '@/components/ProtectedRoute'
 
 export default function App() {
-  const { setAuth, logout, setLoading, isLoading } = useAuthStore()
+  const { setAuth, logout, isLoading } = useAuthStore()
 
   useEffect(() => {
     authApi.refresh()
