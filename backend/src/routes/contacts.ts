@@ -108,7 +108,7 @@ export async function contactsRoutes(app: FastifyInstance) {
     }
 
     const [updated] = await sql`
-      UPDATE contacts SET ${sql(updates)} WHERE id = ${contactId} RETURNING *
+      UPDATE contacts SET ${sql(updates as any)} WHERE id = ${contactId} RETURNING *
     `
     return reply.send({ contact: updated })
   })

@@ -76,7 +76,7 @@ export async function listsRoutes(app: FastifyInstance) {
             is_built_in: true,
             sort_order: f.sort_order,
             section: f.section,
-          }))
+          })) as any
         )}
       `
     }
@@ -115,7 +115,7 @@ export async function listsRoutes(app: FastifyInstance) {
     }
 
     const [updated] = await sql`
-      UPDATE contact_lists SET ${sql(updates)} WHERE id = ${id} RETURNING *
+      UPDATE contact_lists SET ${sql(updates as any)} WHERE id = ${id} RETURNING *
     `
     return reply.send({ list: updated })
   })

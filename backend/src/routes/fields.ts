@@ -85,7 +85,7 @@ export async function fieldsRoutes(app: FastifyInstance) {
       updates.options = JSON.stringify(updates.options)
     }
 
-    const [updated] = await sql`UPDATE field_definitions SET ${sql(updates)} WHERE id = ${fieldId} RETURNING *`
+    const [updated] = await sql`UPDATE field_definitions SET ${sql(updates as any)} WHERE id = ${fieldId} RETURNING *`
     return reply.send({ field: updated })
   })
 
