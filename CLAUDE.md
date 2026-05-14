@@ -201,6 +201,29 @@ Projekt je vyvíjen na Windows (`D:\Projekty\contactbook\`). Git občas hlásí 
 4. Napiš majitelce přesný postup pro nasazení na server (příkazy)
 5. Pokud změna vyžaduje rozhodnutí (architektura, UX, název), zastav se a zeptej se
 
+### Dokumentování práce — POVINNÉ
+Na konci každé session (nebo po každém logickém celku práce) agent **musí** aktualizovat soubor `CHANGELOG.md` v kořenu projektu. Pokud soubor neexistuje, vytvoří ho.
+
+Formát záznamu:
+```markdown
+## [datum] — krátký název úkolu
+
+### Co bylo uděláno
+- konkrétní změna 1 (soubor:řádek nebo popis)
+- konkrétní změna 2
+
+### Proč (způsob řešení)
+Stručné vysvětlení přístupu — proč bylo zvoleno toto řešení, jaké alternativy byly zváženy a proč byly zamítnuty.
+
+### Soubory změněny
+- `cesta/k/souboru.ts`
+
+### Nasazení na server
+Příkazy které majitelka musí spustit (nebo "není potřeba" pokud šlo jen o frontend bez Docker rebuildu).
+```
+
+Tento záznamu slouží jako paměť projektu — budoucí agent i majitelka z něj okamžitě pochopí historii rozhodnutí.
+
 ### Priorita dalšího vývoje
 1. **Přejmenování UI** na Peopleworth (landing page, meta tagy, názvy v aplikaci)
 2. **Fáze 2:** Deník kontaktu (tabulka existuje, jen chybí backend routes + frontend stránky)
