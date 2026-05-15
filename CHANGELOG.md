@@ -2,6 +2,26 @@
 
 ---
 
+## [2026-05-15] — Přejmenování ContactBook → Peopleworth v UI
+
+### Co bylo uděláno
+- `frontend/index.html` — aktualizován `<title>` a `<meta description>` na Peopleworth
+- `frontend/src/components/Navbar.tsx` — brand name v navigaci
+- `frontend/src/pages/Landing.tsx` — 3 výskyty (header, hero text, footer)
+
+### Proč
+Vizuální dluh — aplikace je live na peopleworth.eu, ale UI stále zobrazovalo starý název ContactBook.
+
+### Nasazení na server
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
 ## [2026-05-01 → 2026-05-14] — Počáteční scaffold a nasazení na produkci
 
 ### Co bylo uděláno
