@@ -19,7 +19,7 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2 text-primary-600 font-bold text-lg">
             <BookUser className="w-6 h-6" />
-            <span>ContactBook</span>
+            <span>Peopleworth</span>
           </Link>
 
           {user ? (

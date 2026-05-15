@@ -55,7 +55,7 @@ export default function Landing() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
           <div className="flex items-center gap-2 text-primary-600 font-bold text-lg">
             <BookUser className="w-6 h-6" />
-            <span>ContactBook</span>
+            <span>Peopleworth</span>
           </div>
           <div className="flex items-center gap-3">
             {user ? (
@@ -86,7 +86,7 @@ export default function Landing() {
           </h1>
           <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-10">
             Networkeři, byznysmeni, lidé milující vztahy — každý vede kontakty jinak.
-            ContactBook se přizpůsobí přesně tobě s plně customizovatelými poli, deníkem a připomínkami.
+            Peopleworth se přizpůsobí přesně tobě s plně customizovatelými poli, deníkem a připomínkami.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link to="/register" className="btn-primary bg-white text-primary-700 hover:bg-zinc-100 px-8 py-3 text-base focus:ring-white">
@@ -166,7 +166,7 @@ export default function Landing() {
       </section>
 
       <footer className="py-8 border-t border-zinc-100 text-center text-sm text-zinc-400">
-        © {new Date().getFullYear()} ContactBook — Tvé kontakty, tvůj způsob
+        © {new Date().getFullYear()} Peopleworth — Tvé kontakty, tvůj způsob
       </footer>
     </div>
   )
