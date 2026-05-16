@@ -72,7 +72,7 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Hero + Šablony — sdílené pozadí s animovanou knihou */}
+      {/* Hero + Šablony + Funkce — sdílené pozadí s animovanou knihou */}
       <div className="relative overflow-hidden">
         {/* Animovaná kniha v plných barvách */}
         <img
@@ -80,15 +80,15 @@ export default function Landing() {
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-          style={{ opacity: 0.82 }}
+          style={{ opacity: 0.85 }}
         />
-        {/* Jemný tmavý závoj pouze pro čitelnost textu */}
-        <div className="absolute inset-0 bg-black/28" />
+        {/* Velmi jemný fialový tón — skoro nepatrný, jen pro atmosféru */}
+        <div className="absolute inset-0" style={{ background: 'rgba(55, 10, 90, 0.18)' }} />
 
         {/* Hero */}
         <section className="relative z-10 text-white min-h-[480px] flex items-center">
           <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-            <p className="text-white/80 text-lg sm:text-xl italic mb-5 max-w-2xl mx-auto drop-shadow">
+            <p className="text-white/85 text-lg sm:text-xl italic mb-5 max-w-2xl mx-auto drop-shadow">
               Vztahy jsou jediné bohatství, které roste tím, že ho dáváš.
             </p>
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 drop-shadow-lg">
@@ -103,17 +103,17 @@ export default function Landing() {
         </section>
 
         {/* Šablony — pokračování stejného pozadí */}
-        <section className="relative z-10 pb-24">
+        <section className="relative z-10 pb-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-white mb-4 drop-shadow">Začni se šablonou nebo si vytvoř vlastní</h2>
-              <p className="text-white/75 max-w-xl mx-auto">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-white mb-3 drop-shadow">Začni se šablonou nebo si vytvoř vlastní</h2>
+              <p className="text-white/80 max-w-xl mx-auto drop-shadow-sm">
                 Každá šablona přichází s předpřipravenými poli — přidej nebo odeber cokoliv podle libosti.
               </p>
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {templates.map((t) => (
-                <div key={t.label} className="bg-white/88 backdrop-blur-sm rounded-xl p-6 hover:bg-white/95 transition-all">
+                <div key={t.label} className="rounded-xl p-6 hover:scale-[1.02] transition-all" style={{ background: 'rgba(255,255,255,0.82)' }}>
                   <div className={`w-10 h-10 rounded-lg ${t.color} flex items-center justify-center mb-4`}>
                     {t.icon}
                   </div>
@@ -124,32 +124,32 @@ export default function Landing() {
             </div>
           </div>
         </section>
-      </div>
 
-      {/* Funkce */}
-      <section className="py-20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-zinc-900 mb-4">Vše co potřebuješ</h2>
-            <p className="text-zinc-500 max-w-xl mx-auto">
-              Od jednoduchého ukládání kontaktů až po sofistikovaný systém sledování vztahů.
-            </p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((f) => (
-              <div key={f.title} className="flex gap-4 p-6 rounded-xl hover:bg-zinc-50 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
-                  {f.icon}
+        {/* Funkce — stále na pozadí knihy */}
+        <section className="relative z-10 py-16 pb-24">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-10">
+              <h2 className="text-3xl font-bold text-white mb-3 drop-shadow">Vše co potřebuješ</h2>
+              <p className="text-white/80 max-w-xl mx-auto drop-shadow-sm">
+                Od jednoduchého ukládání kontaktů až po sofistikovaný systém sledování vztahů.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {features.map((f) => (
+                <div key={f.title} className="flex gap-4 p-6 rounded-xl hover:scale-[1.02] transition-all" style={{ background: 'rgba(255,255,255,0.82)' }}>
+                  <div className="w-10 h-10 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
+                    {f.icon}
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-zinc-900 mb-1">{f.title}</h3>
+                    <p className="text-sm text-zinc-600">{f.desc}</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-zinc-900 mb-1">{f.title}</h3>
-                  <p className="text-sm text-zinc-500">{f.desc}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* Transparentní model */}
       <section className="py-20 bg-zinc-50">
