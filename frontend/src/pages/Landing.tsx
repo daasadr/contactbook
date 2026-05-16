@@ -72,55 +72,59 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative overflow-hidden text-white min-h-[480px] flex items-center bg-primary-900">
-        {/* Animovaná kniha — celé pozadí */}
+      {/* Hero + Šablony — sdílené pozadí s animovanou knihou */}
+      <div className="relative overflow-hidden">
+        {/* Animovaná kniha v plných barvách */}
         <img
           src="/contactbook_animated.gif"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-          style={{ opacity: 0.45 }}
+          style={{ opacity: 0.82 }}
         />
-        {/* Tmavý gradient pro čitelnost textu */}
-        <div className="absolute inset-0 bg-gradient-to-b from-primary-900/75 via-primary-800/65 to-purple-900/75" />
-        <div className="relative z-10 w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-          <p className="text-white/70 text-lg sm:text-xl italic mb-5 max-w-2xl mx-auto">
-            Vztahy jsou jediné bohatství, které roste tím, že ho dáváš.
-          </p>
-          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
-            Tvé kontakty,<br />
-            <span className="text-yellow-300">tvé bohatství</span>
-          </h1>
-          <p className="text-lg sm:text-xl text-white/80 max-w-xl mx-auto">
-            Nestačí mít číslo v telefonu. Peopleworth ti pomáhá být tím,<br className="hidden sm:block" />
-            kdo se ozve. Kdo pamatuje. Kdo je tam.
-          </p>
-        </div>
-      </section>
+        {/* Jemný tmavý závoj pouze pro čitelnost textu */}
+        <div className="absolute inset-0 bg-black/28" />
 
-      {/* Šablony */}
-      <section className="py-20 bg-zinc-50">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-zinc-900 mb-4">Začni se šablonou nebo si vytvoř vlastní</h2>
-            <p className="text-zinc-500 max-w-xl mx-auto">
-              Každá šablona přichází s předpřipravenými poli — přidej nebo odeber cokoliv podle libosti.
+        {/* Hero */}
+        <section className="relative z-10 text-white min-h-[480px] flex items-center">
+          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+            <p className="text-white/80 text-lg sm:text-xl italic mb-5 max-w-2xl mx-auto drop-shadow">
+              Vztahy jsou jediné bohatství, které roste tím, že ho dáváš.
+            </p>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 drop-shadow-lg">
+              Tvé kontakty,<br />
+              <span className="text-yellow-300">tvé bohatství</span>
+            </h1>
+            <p className="text-lg sm:text-xl text-white/90 max-w-xl mx-auto drop-shadow">
+              Nestačí mít číslo v telefonu. Peopleworth ti pomáhá být tím,<br className="hidden sm:block" />
+              kdo se ozve. Kdo pamatuje. Kdo je tam.
             </p>
           </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {templates.map((t) => (
-              <div key={t.label} className="card p-6 hover:shadow-md transition-shadow">
-                <div className={`w-10 h-10 rounded-lg ${t.color} flex items-center justify-center mb-4`}>
-                  {t.icon}
+        </section>
+
+        {/* Šablony — pokračování stejného pozadí */}
+        <section className="relative z-10 pb-24">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-white mb-4 drop-shadow">Začni se šablonou nebo si vytvoř vlastní</h2>
+              <p className="text-white/75 max-w-xl mx-auto">
+                Každá šablona přichází s předpřipravenými poli — přidej nebo odeber cokoliv podle libosti.
+              </p>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {templates.map((t) => (
+                <div key={t.label} className="bg-white/88 backdrop-blur-sm rounded-xl p-6 hover:bg-white/95 transition-all">
+                  <div className={`w-10 h-10 rounded-lg ${t.color} flex items-center justify-center mb-4`}>
+                    {t.icon}
+                  </div>
+                  <h3 className="font-semibold text-zinc-900 mb-1">{t.label}</h3>
+                  <p className="text-sm text-zinc-600">{t.desc}</p>
                 </div>
-                <h3 className="font-semibold text-zinc-900 mb-1">{t.label}</h3>
-                <p className="text-sm text-zinc-500">{t.desc}</p>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
 
       {/* Funkce */}
       <section className="py-20">
