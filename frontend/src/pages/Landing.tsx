@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth'
 import {
   BookUser, Network, Briefcase, Heart, Users,
-  Star, CalendarClock, NotebookPen, Sliders, ArrowRight, CheckCircle2
+  Star, CalendarClock, NotebookPen, Sliders, ArrowRight, Sparkles, Gift, Lock
 } from 'lucide-react'
 
 const features = [
@@ -65,7 +65,7 @@ export default function Landing() {
             ) : (
               <>
                 <Link to="/login" className="btn-secondary hidden sm:inline-flex">Přihlásit se</Link>
-                <Link to="/register" className="btn-primary">Začít zdarma</Link>
+                <Link to="/register" className="btn-primary">Založ contactbook</Link>
               </>
             )}
           </div>
@@ -73,29 +73,29 @@ export default function Landing() {
       </header>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-purple-700 text-white">
+      <section className="relative overflow-hidden bg-gradient-to-br from-primary-600 via-primary-700 to-purple-700 text-white min-h-[480px] flex items-center">
+        {/* Jemný vzor na pozadí */}
         <div className="absolute inset-0 opacity-10" style={{backgroundImage: "url(\"data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.5'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")"}} />
-        <div className="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-medium mb-8">
-            <Star className="w-4 h-4 fill-yellow-300 text-yellow-300" />
-            Správa kontaktů přizpůsobená tobě
-          </div>
+        {/* Animovaná kniha v pozadí */}
+        <img
+          src="/contactbook_animated.gif"
+          alt=""
+          aria-hidden="true"
+          className="absolute right-0 bottom-0 h-4/5 w-auto object-contain pointer-events-none select-none"
+          style={{ opacity: 0.18 }}
+        />
+        <div className="relative w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
+          <p className="text-white/70 text-lg sm:text-xl italic mb-5 max-w-2xl mx-auto">
+            Vztahy jsou jediné bohatství, které roste tím, že ho dáváš.
+          </p>
           <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
             Tvé kontakty,<br />
-            <span className="text-yellow-300">tvůj způsob</span>
+            <span className="text-yellow-300">tvé bohatství</span>
           </h1>
-          <p className="text-lg sm:text-xl text-white/80 max-w-2xl mx-auto mb-10">
-            Networkeři, byznysmeni, lidé milující vztahy — každý vede kontakty jinak.
-            Peopleworth se přizpůsobí přesně tobě s plně customizovatelými poli, deníkem a připomínkami.
+          <p className="text-lg sm:text-xl text-white/80 max-w-xl mx-auto">
+            Nestačí mít číslo v telefonu. Peopleworth ti pomáhá být tím,<br className="hidden sm:block" />
+            kdo se ozve. Kdo pamatuje. Kdo je tam.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link to="/register" className="btn-primary bg-white text-primary-700 hover:bg-zinc-100 px-8 py-3 text-base focus:ring-white">
-              Začít zdarma <ArrowRight className="w-5 h-5" />
-            </Link>
-            <Link to="/login" className="btn text-white border border-white/40 hover:bg-white/10 px-8 py-3 text-base">
-              Přihlásit se
-            </Link>
-          </div>
         </div>
       </section>
 
@@ -147,26 +147,49 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 bg-primary-600 text-white">
-        <div className="max-w-3xl mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Začni organizovat svůj sociální život</h2>
-          <p className="text-primary-200 mb-8">Registrace je zdarma. Žádná platební karta. Ihned k použití.</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-primary-200 mb-8">
-            {['Bezplatné použití', 'Bezpečné šifrování', 'Bez limitů kontaktů'].map((t) => (
-              <span key={t} className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-green-300" /> {t}
-              </span>
-            ))}
+      {/* Transparentní model */}
+      <section className="py-20 bg-zinc-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-zinc-900 mb-4">Transparentní model. Žádné háčky.</h2>
+            <p className="text-zinc-500 max-w-xl mx-auto">
+              Peopleworth není monetizační stroj. Je to nástroj, který slouží tobě — ne naopak.
+            </p>
           </div>
-          <Link to="/register" className="btn bg-white text-primary-700 hover:bg-zinc-100 px-8 py-3 text-base font-semibold focus:ring-white">
-            Vytvořit účet zdarma <ArrowRight className="w-5 h-5" />
-          </Link>
+          <div className="grid sm:grid-cols-3 gap-6">
+            <div className="bg-white rounded-2xl p-8 border border-zinc-100 text-center">
+              <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-5">
+                <Lock className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-zinc-900 mb-2 text-lg">Aplikace zdarma</h3>
+              <p className="text-sm text-zinc-500 leading-relaxed">
+                Správa kontaktů, seznamy, deník, připomínky — bez poplatků. Bez limitu počtu kontaktů. Navždy.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-8 border border-zinc-100 text-center">
+              <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-5">
+                <Sparkles className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-zinc-900 mb-2 text-lg">AI funkce na kredity</h3>
+              <p className="text-sm text-zinc-500 leading-relaxed">
+                Chceš AI asistenci? Kredity odpovídají skutečným nákladům na Claude API. Nemarginujeme — jen pokrýváme provoz.
+              </p>
+            </div>
+            <div className="bg-white rounded-2xl p-8 border border-zinc-100 text-center">
+              <div className="w-12 h-12 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center mx-auto mb-5">
+                <Gift className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-zinc-900 mb-2 text-lg">Dobrovolný příspěvek</h3>
+              <p className="text-sm text-zinc-500 leading-relaxed">
+                Líbí se ti Peopleworth? Můžeš přispět vývojáři. Ale není to podmínka. Opravdu.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
       <footer className="py-8 border-t border-zinc-100 text-center text-sm text-zinc-400">
-        © {new Date().getFullYear()} Peopleworth — Tvé kontakty, tvůj způsob
+        © {new Date().getFullYear()} Peopleworth — Tvé kontakty, tvé bohatství
       </footer>
     </div>
   )
