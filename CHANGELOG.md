@@ -2,6 +2,33 @@
 
 ---
 
+## [2026-05-16] — Redesign Landing page
+
+### Co bylo uděláno
+- **Hero sekce**: nový filozofický claim "Vztahy jsou jediné bohatství, které roste tím, že ho dáváš."
+- **Hlavní nadpis**: "Tvé kontakty, tvé bohatství" (místo "tvůj způsob")
+- **Animovaná kniha**: `contactbook_animated.gif` jako jemné pozadí hero (opacity 0.18)
+- **Odstraněna duplicitní tlačítka** uprostřed stránky — zůstávají jen vpravo nahoře v navigaci
+- **Tlačítko "Začít zdarma"** → **"Založ contactbook"** (bez manipulativního "freemium" dojmu)
+- **Nahrazena spodní CTA sekce** třemi kartami transparentního modelu:
+  - Aplikace zdarma (navždy, bez limitu kontaktů)
+  - AI funkce na kredity (odpovídají skutečným nákladům Claude API)
+  - Dobrovolný příspěvek vývojáři
+- **Footer**: aktualizován tagline na "Tvé kontakty, tvé bohatství"
+
+### Proč
+Odlišit se od manipulativního "freemium" přístupu. Upřímná komunikace o modelu financování. Filosofičtější tone-of-voice odpovídající hodnotám projektu.
+
+### Nasazení na server
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
 ## [2026-05-15] — Přejmenování ContactBook → Peopleworth v UI
 
 ### Co bylo uděláno
