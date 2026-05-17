@@ -75,13 +75,13 @@ export default function Landing() {
       {/* Vnější rám — temně vínová, kovově zlaté lesky */}
       <div style={{
         background: `
-          radial-gradient(ellipse at 8% 12%, rgba(184,134,11,0.55) 0%, transparent 28%),
-          radial-gradient(ellipse at 92% 88%, rgba(184,134,11,0.55) 0%, transparent 28%),
-          radial-gradient(ellipse at 92% 12%, rgba(184,134,11,0.42) 0%, transparent 24%),
-          radial-gradient(ellipse at 8% 88%, rgba(184,134,11,0.42) 0%, transparent 24%),
-          radial-gradient(ellipse at 50% 3%, rgba(140,100,8,0.35) 0%, transparent 30%),
-          radial-gradient(ellipse at 50% 97%, rgba(140,100,8,0.35) 0%, transparent 30%),
-          linear-gradient(150deg, #1A0306 0%, #3D0810 18%, #250506 36%, #3D0810 52%, #250506 68%, #3D0810 84%, #1A0306 100%)
+          radial-gradient(ellipse at 8% 12%, rgba(184,134,11,0.45) 0%, transparent 28%),
+          radial-gradient(ellipse at 92% 88%, rgba(184,134,11,0.45) 0%, transparent 28%),
+          radial-gradient(ellipse at 92% 12%, rgba(184,134,11,0.32) 0%, transparent 24%),
+          radial-gradient(ellipse at 8% 88%, rgba(184,134,11,0.32) 0%, transparent 24%),
+          radial-gradient(ellipse at 50% 3%, rgba(120,85,6,0.28) 0%, transparent 30%),
+          radial-gradient(ellipse at 50% 97%, rgba(120,85,6,0.28) 0%, transparent 30%),
+          linear-gradient(150deg, #050101 0%, #180306 18%, #0A0202 36%, #180306 52%, #0A0202 68%, #180306 84%, #050101 100%)
         `,
         padding: '140px 160px'
       }}>
@@ -97,12 +97,12 @@ export default function Landing() {
         />
         {/* Jemný fialový tón */}
         <div className="absolute inset-0" style={{ background: 'rgba(45, 8, 18, 0.12)' }} />
-        {/* Přechody na okrajích GIFu — splývají s barvou rámu */}
-        <div className="absolute inset-0 z-20 pointer-events-none">
-          <div className="absolute top-0 left-0 right-0 h-28" style={{ background: 'linear-gradient(to bottom, rgba(37,5,6,0.96) 0%, transparent 100%)' }} />
-          <div className="absolute bottom-0 left-0 right-0 h-28" style={{ background: 'linear-gradient(to top, rgba(37,5,6,0.96) 0%, transparent 100%)' }} />
-          <div className="absolute top-0 left-0 bottom-0 w-20" style={{ background: 'linear-gradient(to right, rgba(37,5,6,0.96) 0%, transparent 100%)' }} />
-          <div className="absolute top-0 right-0 bottom-0 w-20" style={{ background: 'linear-gradient(to left, rgba(37,5,6,0.96) 0%, transparent 100%)' }} />
+        {/* Měkké přechody na okrajích GIFu — blur + vícestupňový gradient */}
+        <div className="absolute inset-0 z-20 pointer-events-none" style={{ overflow: 'hidden' }}>
+          <div className="absolute top-0 left-0 right-0" style={{ height: '180px', background: 'linear-gradient(to bottom, rgba(8,1,2,1) 0%, rgba(8,1,2,0.85) 20%, rgba(8,1,2,0.5) 50%, rgba(8,1,2,0.15) 75%, transparent 100%)', filter: 'blur(6px)' }} />
+          <div className="absolute bottom-0 left-0 right-0" style={{ height: '180px', background: 'linear-gradient(to top, rgba(8,1,2,1) 0%, rgba(8,1,2,0.85) 20%, rgba(8,1,2,0.5) 50%, rgba(8,1,2,0.15) 75%, transparent 100%)', filter: 'blur(6px)' }} />
+          <div className="absolute top-0 left-0 bottom-0" style={{ width: '120px', background: 'linear-gradient(to right, rgba(8,1,2,1) 0%, rgba(8,1,2,0.85) 20%, rgba(8,1,2,0.5) 50%, rgba(8,1,2,0.15) 75%, transparent 100%)', filter: 'blur(6px)' }} />
+          <div className="absolute top-0 right-0 bottom-0" style={{ width: '120px', background: 'linear-gradient(to left, rgba(8,1,2,1) 0%, rgba(8,1,2,0.85) 20%, rgba(8,1,2,0.5) 50%, rgba(8,1,2,0.15) 75%, transparent 100%)', filter: 'blur(6px)' }} />
         </div>
 
         {/* Hero */}
@@ -126,8 +126,8 @@ export default function Landing() {
         <section className="relative z-10 pb-16">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-white mb-3 drop-shadow">Začni se šablonou nebo si vytvoř vlastní</h2>
-              <p className="text-white/80 max-w-xl mx-auto drop-shadow-sm">
+              <h2 className="text-3xl font-bold text-white mb-3" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 0 25px rgba(0,0,0,0.8)' }}>Začni se šablonou nebo si vytvoř vlastní</h2>
+              <p className="text-white/90 max-w-xl mx-auto" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 15px rgba(0,0,0,0.7)' }}>
                 Každá šablona přichází s předpřipravenými poli — přidej nebo odeber cokoliv podle libosti.
               </p>
             </div>
@@ -149,8 +149,8 @@ export default function Landing() {
         <section className="relative z-10 py-16 pb-24">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-white mb-3 drop-shadow">Vše co potřebuješ</h2>
-              <p className="text-white/80 max-w-xl mx-auto drop-shadow-sm">
+              <h2 className="text-3xl font-bold text-white mb-3" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 0 25px rgba(0,0,0,0.8)' }}>Vše co potřebuješ</h2>
+              <p className="text-white/90 max-w-xl mx-auto" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 15px rgba(0,0,0,0.7)' }}>
                 Od jednoduchého ukládání kontaktů až po sofistikovaný systém sledování vztahů.
               </p>
             </div>
