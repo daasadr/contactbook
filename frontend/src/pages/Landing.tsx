@@ -72,33 +72,33 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Vnější rám — temně vínová, kovově zlaté lesky */}
+      {/* Vnější rám — nařasená vínová látka (foto nebo CSS fallback) */}
       <div style={{
-        background: `
-          radial-gradient(ellipse at 8% 12%, rgba(184,134,11,0.45) 0%, transparent 28%),
-          radial-gradient(ellipse at 92% 88%, rgba(184,134,11,0.45) 0%, transparent 28%),
-          radial-gradient(ellipse at 92% 12%, rgba(184,134,11,0.32) 0%, transparent 24%),
-          radial-gradient(ellipse at 8% 88%, rgba(184,134,11,0.32) 0%, transparent 24%),
-          radial-gradient(ellipse at 50% 3%, rgba(120,85,6,0.28) 0%, transparent 30%),
-          radial-gradient(ellipse at 50% 97%, rgba(120,85,6,0.28) 0%, transparent 30%),
-          linear-gradient(150deg, #050101 0%, #180306 18%, #0A0202 36%, #180306 52%, #0A0202 68%, #180306 84%, #050101 100%)
-        `,
-        padding: '140px 160px'
+        backgroundImage: 'url(/fabric_bg.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        /* CSS fallback pokud foto ještě není nahrané: */
+        backgroundColor: '#160405',
+        padding: '130px 150px',
+        position: 'relative'
       }}>
-        {/* GIF překrývá celou plochu včetně rámu — mask-image ho plynule vybleduje na okrajích */}
-        <img
-          src="/contactbook_animated.gif"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-          style={{
-            opacity: 0.9,
-            maskImage: 'radial-gradient(ellipse 72% 76% at 50% 45%, black 35%, rgba(0,0,0,0.75) 55%, rgba(0,0,0,0.25) 75%, transparent 100%)',
-            WebkitMaskImage: 'radial-gradient(ellipse 72% 76% at 50% 45%, black 35%, rgba(0,0,0,0.75) 55%, rgba(0,0,0,0.25) 75%, transparent 100%)',
-          }}
-        />
-        {/* Jemný tón přes obsah */}
-        <div className="absolute inset-0" style={{ background: 'rgba(45, 8, 18, 0.10)' }} />
+        {/* Vnitřní okno — GIF je menší, s měkkými přechody do látky */}
+        <div className="relative overflow-hidden">
+          {/* GIF uvnitř okna */}
+          <img
+            src="/contactbook_animated.gif"
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
+            style={{ opacity: 0.90 }}
+          />
+          {/* Vícestupňové přechody na okrajích — splývají s barvou látky */}
+          <div className="absolute inset-0 z-10 pointer-events-none">
+            <div className="absolute top-0 left-0 right-0" style={{ height: '160px', background: 'linear-gradient(to bottom, rgba(20,4,5,1) 0%, rgba(20,4,5,0.85) 15%, rgba(20,4,5,0.55) 35%, rgba(20,4,5,0.2) 60%, transparent 100%)' }} />
+            <div className="absolute bottom-0 left-0 right-0" style={{ height: '160px', background: 'linear-gradient(to top, rgba(20,4,5,1) 0%, rgba(20,4,5,0.85) 15%, rgba(20,4,5,0.55) 35%, rgba(20,4,5,0.2) 60%, transparent 100%)' }} />
+            <div className="absolute top-0 left-0 bottom-0" style={{ width: '130px', background: 'linear-gradient(to right, rgba(20,4,5,1) 0%, rgba(20,4,5,0.85) 15%, rgba(20,4,5,0.55) 35%, rgba(20,4,5,0.2) 60%, transparent 100%)' }} />
+            <div className="absolute top-0 right-0 bottom-0" style={{ width: '130px', background: 'linear-gradient(to left, rgba(20,4,5,1) 0%, rgba(20,4,5,0.85) 15%, rgba(20,4,5,0.55) 35%, rgba(20,4,5,0.2) 60%, transparent 100%)' }} />
+          </div>
 
         {/* Hero */}
         <section className="relative z-10 text-white min-h-[480px] flex items-center">
@@ -164,6 +164,7 @@ export default function Landing() {
             </div>
           </div>
         </section>
+        </div> {/* konec inner window */}
       </div> {/* konec vnějšího rámu */}
 
       {/* Transparentní model */}
