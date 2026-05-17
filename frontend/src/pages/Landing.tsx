@@ -72,31 +72,38 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Vnější rám — samet, vínová přecházející ve zlatou */}
+      {/* Vnější rám — temně vínová, kovově zlaté lesky */}
       <div style={{
         background: `
-          radial-gradient(ellipse at 8% 15%, rgba(190,140,10,0.65) 0%, transparent 28%),
-          radial-gradient(ellipse at 92% 85%, rgba(190,140,10,0.65) 0%, transparent 28%),
-          radial-gradient(ellipse at 92% 15%, rgba(190,140,10,0.5) 0%, transparent 22%),
-          radial-gradient(ellipse at 8% 85%, rgba(190,140,10,0.5) 0%, transparent 22%),
-          radial-gradient(ellipse at 50% 0%, rgba(160,100,8,0.4) 0%, transparent 35%),
-          radial-gradient(ellipse at 50% 100%, rgba(160,100,8,0.4) 0%, transparent 35%),
-          linear-gradient(150deg, #4A0810 0%, #7A1020 18%, #550C16 36%, #8B1422 52%, #550C16 68%, #7A1020 84%, #4A0810 100%)
+          radial-gradient(ellipse at 8% 12%, rgba(184,134,11,0.55) 0%, transparent 28%),
+          radial-gradient(ellipse at 92% 88%, rgba(184,134,11,0.55) 0%, transparent 28%),
+          radial-gradient(ellipse at 92% 12%, rgba(184,134,11,0.42) 0%, transparent 24%),
+          radial-gradient(ellipse at 8% 88%, rgba(184,134,11,0.42) 0%, transparent 24%),
+          radial-gradient(ellipse at 50% 3%, rgba(140,100,8,0.35) 0%, transparent 30%),
+          radial-gradient(ellipse at 50% 97%, rgba(140,100,8,0.35) 0%, transparent 30%),
+          linear-gradient(150deg, #1A0306 0%, #3D0810 18%, #250506 36%, #3D0810 52%, #250506 68%, #3D0810 84%, #1A0306 100%)
         `,
-        padding: '72px 80px'
+        padding: '140px 160px'
       }}>
-        {/* Vnitřní okno s GIFem — menší než plná šířka */}
-        <div className="relative overflow-hidden" style={{ borderRadius: '2px', boxShadow: '0 0 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.3)' }}>
+        {/* Vnitřní okno — bez stínu, plynulé přechody do rámu */}
+        <div className="relative overflow-hidden">
         {/* Animovaná kniha v plných barvách */}
         <img
           src="/contactbook_animated.gif"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-          style={{ opacity: 0.85 }}
+          style={{ opacity: 0.88 }}
         />
-        {/* Velmi jemný fialový tón */}
-        <div className="absolute inset-0" style={{ background: 'rgba(55, 10, 90, 0.18)' }} />
+        {/* Jemný fialový tón */}
+        <div className="absolute inset-0" style={{ background: 'rgba(45, 8, 18, 0.12)' }} />
+        {/* Přechody na okrajích GIFu — splývají s barvou rámu */}
+        <div className="absolute inset-0 z-20 pointer-events-none">
+          <div className="absolute top-0 left-0 right-0 h-28" style={{ background: 'linear-gradient(to bottom, rgba(37,5,6,0.96) 0%, transparent 100%)' }} />
+          <div className="absolute bottom-0 left-0 right-0 h-28" style={{ background: 'linear-gradient(to top, rgba(37,5,6,0.96) 0%, transparent 100%)' }} />
+          <div className="absolute top-0 left-0 bottom-0 w-20" style={{ background: 'linear-gradient(to right, rgba(37,5,6,0.96) 0%, transparent 100%)' }} />
+          <div className="absolute top-0 right-0 bottom-0 w-20" style={{ background: 'linear-gradient(to left, rgba(37,5,6,0.96) 0%, transparent 100%)' }} />
+        </div>
 
         {/* Hero */}
         <section className="relative z-10 text-white min-h-[480px] flex items-center">
