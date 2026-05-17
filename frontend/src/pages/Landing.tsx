@@ -85,25 +85,20 @@ export default function Landing() {
         `,
         padding: '140px 160px'
       }}>
-        {/* Vnitřní okno — bez stínu, plynulé přechody do rámu */}
-        <div className="relative overflow-hidden">
-        {/* Animovaná kniha v plných barvách */}
+        {/* GIF překrývá celou plochu včetně rámu — mask-image ho plynule vybleduje na okrajích */}
         <img
           src="/contactbook_animated.gif"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-          style={{ opacity: 0.88 }}
+          style={{
+            opacity: 0.9,
+            maskImage: 'radial-gradient(ellipse 72% 76% at 50% 45%, black 35%, rgba(0,0,0,0.75) 55%, rgba(0,0,0,0.25) 75%, transparent 100%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 72% 76% at 50% 45%, black 35%, rgba(0,0,0,0.75) 55%, rgba(0,0,0,0.25) 75%, transparent 100%)',
+          }}
         />
-        {/* Jemný fialový tón */}
-        <div className="absolute inset-0" style={{ background: 'rgba(45, 8, 18, 0.12)' }} />
-        {/* Měkké přechody na okrajích GIFu — blur + vícestupňový gradient */}
-        <div className="absolute inset-0 z-20 pointer-events-none" style={{ overflow: 'hidden' }}>
-          <div className="absolute top-0 left-0 right-0" style={{ height: '180px', background: 'linear-gradient(to bottom, rgba(8,1,2,1) 0%, rgba(8,1,2,0.85) 20%, rgba(8,1,2,0.5) 50%, rgba(8,1,2,0.15) 75%, transparent 100%)', filter: 'blur(6px)' }} />
-          <div className="absolute bottom-0 left-0 right-0" style={{ height: '180px', background: 'linear-gradient(to top, rgba(8,1,2,1) 0%, rgba(8,1,2,0.85) 20%, rgba(8,1,2,0.5) 50%, rgba(8,1,2,0.15) 75%, transparent 100%)', filter: 'blur(6px)' }} />
-          <div className="absolute top-0 left-0 bottom-0" style={{ width: '120px', background: 'linear-gradient(to right, rgba(8,1,2,1) 0%, rgba(8,1,2,0.85) 20%, rgba(8,1,2,0.5) 50%, rgba(8,1,2,0.15) 75%, transparent 100%)', filter: 'blur(6px)' }} />
-          <div className="absolute top-0 right-0 bottom-0" style={{ width: '120px', background: 'linear-gradient(to left, rgba(8,1,2,1) 0%, rgba(8,1,2,0.85) 20%, rgba(8,1,2,0.5) 50%, rgba(8,1,2,0.15) 75%, transparent 100%)', filter: 'blur(6px)' }} />
-        </div>
+        {/* Jemný tón přes obsah */}
+        <div className="absolute inset-0" style={{ background: 'rgba(45, 8, 18, 0.10)' }} />
 
         {/* Hero */}
         <section className="relative z-10 text-white min-h-[480px] flex items-center">
@@ -169,7 +164,6 @@ export default function Landing() {
             </div>
           </div>
         </section>
-        </div> {/* konec inner GIF window */}
       </div> {/* konec vnějšího rámu */}
 
       {/* Transparentní model */}
