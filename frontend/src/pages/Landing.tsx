@@ -84,18 +84,25 @@ export default function Landing() {
         />
         {/* Velmi jemný fialový tón — skoro nepatrný, jen pro atmosféru */}
         <div className="absolute inset-0" style={{ background: 'rgba(55, 10, 90, 0.18)' }} />
+        {/* Dekorativní rámeček — wine přechází ve zlatou, z každé strany */}
+        <div className="absolute inset-0 z-10 pointer-events-none">
+          <div className="absolute top-0 left-0 right-0 h-36" style={{ background: 'linear-gradient(to bottom, rgba(90,15,25,0.88) 0%, rgba(160,110,10,0.35) 55%, transparent 100%)' }} />
+          <div className="absolute bottom-0 left-0 right-0 h-36" style={{ background: 'linear-gradient(to top, rgba(90,15,25,0.88) 0%, rgba(160,110,10,0.35) 55%, transparent 100%)' }} />
+          <div className="absolute top-0 left-0 bottom-0 w-36" style={{ background: 'linear-gradient(to right, rgba(90,15,25,0.88) 0%, rgba(160,110,10,0.35) 55%, transparent 100%)' }} />
+          <div className="absolute top-0 right-0 bottom-0 w-36" style={{ background: 'linear-gradient(to left, rgba(90,15,25,0.88) 0%, rgba(160,110,10,0.35) 55%, transparent 100%)' }} />
+        </div>
 
         {/* Hero */}
         <section className="relative z-10 text-white min-h-[480px] flex items-center">
           <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-            <p className="text-white/85 text-lg sm:text-xl italic mb-5 max-w-2xl mx-auto drop-shadow">
+            <p className="text-white text-lg sm:text-xl italic mb-5 max-w-2xl mx-auto" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)' }}>
               Vztahy jsou jediné bohatství, které roste tím, že ho dáváš.
             </p>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6 drop-shadow-lg">
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6" style={{ textShadow: '0 3px 12px rgba(0,0,0,0.95), 0 0 30px rgba(0,0,0,0.8)' }}>
               Tvé kontakty,<br />
               <span className="text-yellow-300">tvé bohatství</span>
             </h1>
-            <p className="text-lg sm:text-xl text-white/90 max-w-xl mx-auto drop-shadow">
+            <p className="text-lg sm:text-xl text-white max-w-xl mx-auto" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)' }}>
               Nestačí mít číslo v telefonu. Peopleworth ti pomáhá být tím,<br className="hidden sm:block" />
               kdo se ozve. Kdo pamatuje. Kdo je tam.
             </p>
