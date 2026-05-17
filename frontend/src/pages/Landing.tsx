@@ -72,100 +72,89 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Vnější rám — nařasená vínová látka (foto nebo CSS fallback) */}
-      <div style={{
-        backgroundImage: 'url(/fabric_bg.jpg)',
+      {/* Hedvábná látka — celé pozadí tohoto bloku */}
+      <div className="relative" style={{
+        backgroundImage: 'url(/background.jpg)',
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        /* CSS fallback pokud foto ještě není nahrané: */
-        backgroundColor: '#160405',
-        padding: '130px 150px',
-        position: 'relative'
+        backgroundColor: '#1a0405'
       }}>
-        {/* Vnitřní okno — GIF je menší, s měkkými přechody do látky */}
-        <div className="relative overflow-hidden">
-          {/* GIF uvnitř okna */}
+        {/* Kniha — centrovaná, fixní velikost, plynule splývá s látkou */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" style={{ paddingBottom: '8%' }}>
           <img
             src="/contactbook_animated.gif"
             alt=""
             aria-hidden="true"
-            className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
-            style={{ opacity: 0.90 }}
+            style={{
+              width: 'clamp(260px, 52vw, 620px)',
+              height: 'auto',
+              opacity: 0.88,
+              maskImage: 'radial-gradient(ellipse 88% 88% at 50% 50%, black 38%, rgba(0,0,0,0.7) 58%, rgba(0,0,0,0.2) 78%, transparent 100%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 88% 88% at 50% 50%, black 38%, rgba(0,0,0,0.7) 58%, rgba(0,0,0,0.2) 78%, transparent 100%)',
+            }}
           />
-          {/* Vícestupňové přechody na okrajích — splývají s barvou látky */}
-          <div className="absolute inset-0 z-10 pointer-events-none">
-            <div className="absolute top-0 left-0 right-0" style={{ height: '160px', background: 'linear-gradient(to bottom, rgba(20,4,5,1) 0%, rgba(20,4,5,0.85) 15%, rgba(20,4,5,0.55) 35%, rgba(20,4,5,0.2) 60%, transparent 100%)' }} />
-            <div className="absolute bottom-0 left-0 right-0" style={{ height: '160px', background: 'linear-gradient(to top, rgba(20,4,5,1) 0%, rgba(20,4,5,0.85) 15%, rgba(20,4,5,0.55) 35%, rgba(20,4,5,0.2) 60%, transparent 100%)' }} />
-            <div className="absolute top-0 left-0 bottom-0" style={{ width: '130px', background: 'linear-gradient(to right, rgba(20,4,5,1) 0%, rgba(20,4,5,0.85) 15%, rgba(20,4,5,0.55) 35%, rgba(20,4,5,0.2) 60%, transparent 100%)' }} />
-            <div className="absolute top-0 right-0 bottom-0" style={{ width: '130px', background: 'linear-gradient(to left, rgba(20,4,5,1) 0%, rgba(20,4,5,0.85) 15%, rgba(20,4,5,0.55) 35%, rgba(20,4,5,0.2) 60%, transparent 100%)' }} />
-          </div>
+        </div>
 
         {/* Hero */}
-        <section className="relative z-10 text-white min-h-[480px] flex items-center">
-          <div className="w-full max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 text-center">
-            <p className="text-white text-lg sm:text-xl italic mb-5 max-w-2xl mx-auto" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)' }}>
+        <section className="relative z-10 text-white pt-20 pb-12 sm:pt-28 sm:pb-16">
+          <div className="max-w-2xl mx-auto px-6 text-center">
+            <p className="text-white text-base sm:text-lg italic mb-4" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.8)' }}>
               Vztahy jsou jediné bohatství, které roste tím, že ho dáváš.
             </p>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-6" style={{ textShadow: '0 3px 12px rgba(0,0,0,0.95), 0 0 30px rgba(0,0,0,0.8)' }}>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold leading-tight mb-5" style={{ textShadow: '0 3px 14px rgba(0,0,0,0.98), 0 0 35px rgba(0,0,0,0.9)' }}>
               Tvé kontakty,<br />
               <span className="text-yellow-300">tvé bohatství</span>
             </h1>
-            <p className="text-lg sm:text-xl text-white max-w-xl mx-auto" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.9), 0 0 20px rgba(0,0,0,0.7)' }}>
-              Nestačí mít číslo v telefonu. Peopleworth ti pomáhá být tím,<br className="hidden sm:block" />
-              kdo se ozve. Kdo pamatuje. Kdo je tam.
+            <p className="text-base sm:text-lg text-white max-w-md mx-auto" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.8)' }}>
+              Nestačí mít číslo v telefonu. Peopleworth ti pomáhá být tím, kdo se ozve. Kdo pamatuje. Kdo je tam.
             </p>
           </div>
         </section>
 
-        {/* Šablony — pokračování stejného pozadí */}
-        <section className="relative z-10 pb-16">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-white mb-3" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 0 25px rgba(0,0,0,0.8)' }}>Začni se šablonou nebo si vytvoř vlastní</h2>
-              <p className="text-white/90 max-w-xl mx-auto" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 15px rgba(0,0,0,0.7)' }}>
+        {/* Šablony */}
+        <section className="relative z-10 pb-12">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.98), 0 0 25px rgba(0,0,0,0.9)' }}>Začni se šablonou nebo si vytvoř vlastní</h2>
+              <p className="text-white/85 text-sm sm:text-base max-w-xl mx-auto" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.95)' }}>
                 Každá šablona přichází s předpřipravenými poli — přidej nebo odeber cokoliv podle libosti.
               </p>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
               {templates.map((t) => (
-                <div key={t.label} className="rounded-xl p-6 hover:scale-[1.02] transition-all" style={{ background: 'rgba(255,255,255,0.82)' }}>
-                  <div className={`w-10 h-10 rounded-lg ${t.color} flex items-center justify-center mb-4`}>
-                    {t.icon}
-                  </div>
-                  <h3 className="font-semibold text-zinc-900 mb-1">{t.label}</h3>
-                  <p className="text-sm text-zinc-600">{t.desc}</p>
+                <div key={t.label} className="rounded-xl p-4 sm:p-6 hover:scale-[1.02] transition-all" style={{ background: 'rgba(255,255,255,0.84)' }}>
+                  <div className={`w-9 h-9 rounded-lg ${t.color} flex items-center justify-center mb-3`}>{t.icon}</div>
+                  <h3 className="font-semibold text-zinc-900 text-sm sm:text-base mb-1">{t.label}</h3>
+                  <p className="text-xs sm:text-sm text-zinc-600">{t.desc}</p>
                 </div>
               ))}
             </div>
           </div>
         </section>
 
-        {/* Funkce — stále na pozadí knihy */}
-        <section className="relative z-10 py-16 pb-24">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl font-bold text-white mb-3" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.95), 0 0 25px rgba(0,0,0,0.8)' }}>Vše co potřebuješ</h2>
-              <p className="text-white/90 max-w-xl mx-auto" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.9), 0 0 15px rgba(0,0,0,0.7)' }}>
+        {/* Funkce */}
+        <section className="relative z-10 pb-20">
+          <div className="max-w-5xl mx-auto px-6">
+            <div className="text-center mb-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2" style={{ textShadow: '0 2px 10px rgba(0,0,0,0.98), 0 0 25px rgba(0,0,0,0.9)' }}>Vše co potřebuješ</h2>
+              <p className="text-white/85 text-sm sm:text-base max-w-xl mx-auto" style={{ textShadow: '0 1px 6px rgba(0,0,0,0.95)' }}>
                 Od jednoduchého ukládání kontaktů až po sofistikovaný systém sledování vztahů.
               </p>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
               {features.map((f) => (
-                <div key={f.title} className="flex gap-4 p-6 rounded-xl hover:scale-[1.02] transition-all" style={{ background: 'rgba(255,255,255,0.82)' }}>
-                  <div className="w-10 h-10 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">
-                    {f.icon}
-                  </div>
+                <div key={f.title} className="flex gap-3 p-4 sm:p-5 rounded-xl hover:scale-[1.02] transition-all" style={{ background: 'rgba(255,255,255,0.84)' }}>
+                  <div className="w-9 h-9 rounded-lg bg-primary-100 text-primary-600 flex items-center justify-center shrink-0">{f.icon}</div>
                   <div>
-                    <h3 className="font-semibold text-zinc-900 mb-1">{f.title}</h3>
-                    <p className="text-sm text-zinc-600">{f.desc}</p>
+                    <h3 className="font-semibold text-zinc-900 text-sm sm:text-base mb-1">{f.title}</h3>
+                    <p className="text-xs sm:text-sm text-zinc-600">{f.desc}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
         </section>
-        </div> {/* konec inner window */}
-      </div> {/* konec vnějšího rámu */}
+      </div>
 
       {/* Transparentní model */}
       <section className="py-20 bg-zinc-50">
