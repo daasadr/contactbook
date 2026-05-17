@@ -79,21 +79,37 @@ export default function Landing() {
         backgroundPosition: 'center',
         backgroundColor: '#1a0405'
       }}>
-        {/* Kniha — nahoře, velikost: mobile ~96vw (1cm okraj), desktop ~800px (8cm okraj) */}
+        {/* Kniha — výše, měkké rozmlžené okraje */}
         <div className="absolute inset-x-0 top-0 flex justify-center pointer-events-none select-none"
-          style={{ paddingTop: 'clamp(1rem, 15vw, 220px)' }}>
-          <img
-            src="/contactbook_animated.gif"
-            alt=""
-            aria-hidden="true"
-            style={{
-              width: 'clamp(340px, 80vw, 800px)',
-              height: 'auto',
-              opacity: 0.88,
-              maskImage: 'radial-gradient(ellipse 88% 88% at 50% 50%, black 38%, rgba(0,0,0,0.7) 58%, rgba(0,0,0,0.2) 78%, transparent 100%)',
-              WebkitMaskImage: 'radial-gradient(ellipse 88% 88% at 50% 50%, black 38%, rgba(0,0,0,0.7) 58%, rgba(0,0,0,0.2) 78%, transparent 100%)',
-            }}
-          />
+          style={{ paddingTop: 'clamp(0.25rem, 5vw, 70px)' }}>
+          <div style={{ position: 'relative', width: 'clamp(340px, 80vw, 800px)' }}>
+            {/* Rozmazaná vrstva viditelná jen na okrajích */}
+            <div style={{
+              position: 'absolute',
+              inset: '-15px',
+              backgroundImage: 'url(/contactbook_animated.gif)',
+              backgroundSize: 'calc(100% + 30px)',
+              backgroundPosition: 'center top',
+              filter: 'blur(22px)',
+              opacity: 0.65,
+              maskImage: 'radial-gradient(ellipse 95% 95% at 50% 50%, transparent 50%, rgba(0,0,0,0.5) 68%, black 85%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 95% 95% at 50% 50%, transparent 50%, rgba(0,0,0,0.5) 68%, black 85%)',
+            }} />
+            {/* Ostrý GIF — okraje průhledné, střed ostrý */}
+            <img
+              src="/contactbook_animated.gif"
+              alt=""
+              aria-hidden="true"
+              style={{
+                width: '100%',
+                height: 'auto',
+                display: 'block',
+                opacity: 0.90,
+                maskImage: 'radial-gradient(ellipse 84% 84% at 50% 50%, black 28%, rgba(0,0,0,0.92) 42%, rgba(0,0,0,0.65) 56%, rgba(0,0,0,0.28) 70%, rgba(0,0,0,0.07) 84%, transparent 96%)',
+                WebkitMaskImage: 'radial-gradient(ellipse 84% 84% at 50% 50%, black 28%, rgba(0,0,0,0.92) 42%, rgba(0,0,0,0.65) 56%, rgba(0,0,0,0.28) 70%, rgba(0,0,0,0.07) 84%, transparent 96%)',
+              }}
+            />
+          </div>
         </div>
 
         {/* Hero */}
