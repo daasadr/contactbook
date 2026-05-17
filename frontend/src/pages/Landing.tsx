@@ -79,14 +79,15 @@ export default function Landing() {
         backgroundPosition: 'center',
         backgroundColor: '#1a0405'
       }}>
-        {/* Kniha — centrovaná, fixní velikost, plynule splývá s látkou */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none" style={{ paddingBottom: '8%' }}>
+        {/* Kniha — nahoře, velikost: mobile ~96vw (1cm okraj), desktop ~800px (8cm okraj) */}
+        <div className="absolute inset-x-0 top-0 flex justify-center pointer-events-none select-none"
+          style={{ paddingTop: 'clamp(1rem, 15vw, 220px)' }}>
           <img
             src="/contactbook_animated.gif"
             alt=""
             aria-hidden="true"
             style={{
-              width: 'clamp(260px, 52vw, 620px)',
+              width: 'clamp(340px, 80vw, 800px)',
               height: 'auto',
               opacity: 0.88,
               maskImage: 'radial-gradient(ellipse 88% 88% at 50% 50%, black 38%, rgba(0,0,0,0.7) 58%, rgba(0,0,0,0.2) 78%, transparent 100%)',
