@@ -72,8 +72,21 @@ export default function Landing() {
         </div>
       </header>
 
-      {/* Hero + Šablony + Funkce — sdílené pozadí s animovanou knihou */}
-      <div className="relative overflow-hidden">
+      {/* Vnější rám — samet, vínová přecházející ve zlatou */}
+      <div style={{
+        background: `
+          radial-gradient(ellipse at 8% 15%, rgba(190,140,10,0.65) 0%, transparent 28%),
+          radial-gradient(ellipse at 92% 85%, rgba(190,140,10,0.65) 0%, transparent 28%),
+          radial-gradient(ellipse at 92% 15%, rgba(190,140,10,0.5) 0%, transparent 22%),
+          radial-gradient(ellipse at 8% 85%, rgba(190,140,10,0.5) 0%, transparent 22%),
+          radial-gradient(ellipse at 50% 0%, rgba(160,100,8,0.4) 0%, transparent 35%),
+          radial-gradient(ellipse at 50% 100%, rgba(160,100,8,0.4) 0%, transparent 35%),
+          linear-gradient(150deg, #4A0810 0%, #7A1020 18%, #550C16 36%, #8B1422 52%, #550C16 68%, #7A1020 84%, #4A0810 100%)
+        `,
+        padding: '72px 80px'
+      }}>
+        {/* Vnitřní okno s GIFem — menší než plná šířka */}
+        <div className="relative overflow-hidden" style={{ borderRadius: '2px', boxShadow: '0 0 40px rgba(0,0,0,0.6), inset 0 0 20px rgba(0,0,0,0.3)' }}>
         {/* Animovaná kniha v plných barvách */}
         <img
           src="/contactbook_animated.gif"
@@ -82,15 +95,8 @@ export default function Landing() {
           className="absolute inset-0 w-full h-full object-cover pointer-events-none select-none"
           style={{ opacity: 0.85 }}
         />
-        {/* Velmi jemný fialový tón — skoro nepatrný, jen pro atmosféru */}
+        {/* Velmi jemný fialový tón */}
         <div className="absolute inset-0" style={{ background: 'rgba(55, 10, 90, 0.18)' }} />
-        {/* Dekorativní rámeček — wine přechází ve zlatou, z každé strany */}
-        <div className="absolute inset-0 z-10 pointer-events-none">
-          <div className="absolute top-0 left-0 right-0 h-36" style={{ background: 'linear-gradient(to bottom, rgba(90,15,25,0.88) 0%, rgba(160,110,10,0.35) 55%, transparent 100%)' }} />
-          <div className="absolute bottom-0 left-0 right-0 h-36" style={{ background: 'linear-gradient(to top, rgba(90,15,25,0.88) 0%, rgba(160,110,10,0.35) 55%, transparent 100%)' }} />
-          <div className="absolute top-0 left-0 bottom-0 w-36" style={{ background: 'linear-gradient(to right, rgba(90,15,25,0.88) 0%, rgba(160,110,10,0.35) 55%, transparent 100%)' }} />
-          <div className="absolute top-0 right-0 bottom-0 w-36" style={{ background: 'linear-gradient(to left, rgba(90,15,25,0.88) 0%, rgba(160,110,10,0.35) 55%, transparent 100%)' }} />
-        </div>
 
         {/* Hero */}
         <section className="relative z-10 text-white min-h-[480px] flex items-center">
@@ -156,7 +162,8 @@ export default function Landing() {
             </div>
           </div>
         </section>
-      </div>
+        </div> {/* konec inner GIF window */}
+      </div> {/* konec vnějšího rámu */}
 
       {/* Transparentní model */}
       <section className="py-20 bg-zinc-50">
