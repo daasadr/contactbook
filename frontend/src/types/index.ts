@@ -1,6 +1,6 @@
 export type FieldType =
   | 'text' | 'textarea' | 'email' | 'phone' | 'url'
-  | 'date' | 'number' | 'select' | 'multiselect' | 'checkbox'
+  | 'date' | 'month_day' | 'number' | 'select' | 'multiselect' | 'checkbox'
 
 export type TemplateType = 'networking' | 'business' | 'personal' | 'general' | 'custom'
 

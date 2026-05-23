@@ -7,6 +7,118 @@ import { contactsApi } from '@/api/contacts'
 import type { FieldDefinition } from '@/types'
 import clsx from 'clsx'
 
+const MONTHS_CS = ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen', 'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec']
+
+function DateInput({ value, onChange }: { value: unknown; onChange: (v: unknown) => void }) {
+  const str = value ? String(value) : ''
+  const parts = str.match(/^(\d{4})-(\d{2})-(\d{2})$/)
+  const yearVal = parts ? parseInt(parts[1]) : 0
+  const monthVal = parts ? parseInt(parts[2]) : 0
+  const dayVal = parts ? parseInt(parts[3]) : 0
+
+  const currentYear = new Date().getFullYear()
+  const years = Array.from({ length: 120 }, (_, i) => currentYear - i)
+  const daysInMonth = (m: number, y: number) => m && y ? new Date(y, m, 0).getDate() : 31
+
+  const update = (y: number, m: number, d: number) => {
+    if (y && m && d) {
+      onChange(`${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`)
+    } else if (!y && !m && !d) {
+      onChange('')
+    }
+  }
+
+  return (
+    <div className="flex gap-2">
+      <select
+        value={dayVal || ''}
+        onChange={(e) => update(yearVal, monthVal, parseInt(e.target.value) || 0)}
+        className="input flex-1 min-w-0"
+      >
+        <option value="">Den</option>
+        {Array.from({ length: daysInMonth(monthVal, yearVal) }, (_, i) => i + 1).map(d => (
+          <option key={d} value={d}>{d}.</option>
+        ))}
+      </select>
+      <select
+        value={monthVal || ''}
+        onChange={(e) => {
+          const m = parseInt(e.target.value) || 0
+          const maxDay = daysInMonth(m, yearVal)
+          update(yearVal, m, dayVal > maxDay ? maxDay : dayVal)
+        }}
+        className="input flex-1 min-w-0"
+      >
+        <option value="">Měsíc</option>
+        {MONTHS_CS.map((m, i) => (
+          <option key={i + 1} value={i + 1}>{m}</option>
+        ))}
+      </select>
+      <select
+        value={yearVal || ''}
+        onChange={(e) => {
+          const y = parseInt(e.target.value) || 0
+          const maxDay = daysInMonth(monthVal, y)
+          update(y, monthVal, dayVal > maxDay ? maxDay : dayVal)
+        }}
+        className="input flex-1 min-w-0"
+      >
+        <option value="">Rok</option>
+        {years.map(y => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+function MonthDayInput({ value, onChange }: { value: unknown; onChange: (v: unknown) => void }) {
+  const str = value ? String(value) : ''
+  const mmdd = str.match(/^(\d{2})-(\d{2})$/)
+  const yyyymmdd = str.match(/^\d{4}-(\d{2})-(\d{2})$/)
+  const monthVal = mmdd ? parseInt(mmdd[1]) : yyyymmdd ? parseInt(yyyymmdd[1]) : 0
+  const dayVal = mmdd ? parseInt(mmdd[2]) : yyyymmdd ? parseInt(yyyymmdd[2]) : 0
+
+  const daysInMonth = monthVal ? new Date(2000, monthVal, 0).getDate() : 31
+
+  const update = (m: number, d: number) => {
+    if (m && d) {
+      onChange(`${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`)
+    } else {
+      onChange('')
+    }
+  }
+
+  return (
+    <div className="flex gap-2">
+      <select
+        value={dayVal || ''}
+        onChange={(e) => update(monthVal, parseInt(e.target.value) || 0)}
+        className="input flex-1 min-w-0"
+      >
+        <option value="">Den</option>
+        {Array.from({ length: daysInMonth }, (_, i) => i + 1).map(d => (
+          <option key={d} value={d}>{d}.</option>
+        ))}
+      </select>
+      <select
+        value={monthVal || ''}
+        onChange={(e) => {
+          const m = parseInt(e.target.value) || 0
+          const maxDay = m ? new Date(2000, m, 0).getDate() : 31
+          update(m, dayVal > maxDay ? maxDay : dayVal)
+        }}
+        className="input flex-1 min-w-0"
+      >
+        <option value="">Měsíc</option>
+        {MONTHS_CS.map((m, i) => (
+          <option key={i + 1} value={i + 1}>{m}</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
 function FieldInput({ field, value, onChange }: {
   field: FieldDefinition
   value: unknown
@@ -53,14 +165,9 @@ function FieldInput({ field, value, onChange }: {
         </select>
       )
     case 'date':
-      return (
-        <input
-          type="date"
-          value={strVal}
-          onChange={(e) => onChange(e.target.value)}
-          className={inputClass}
-        />
-      )
+      return <DateInput value={value} onChange={onChange} />
+    case 'month_day':
+      return <MonthDayInput value={value} onChange={onChange} />
     case 'number':
       return (
         <input

@@ -5,6 +5,7 @@ export type FieldType =
   | 'phone'
   | 'url'
   | 'date'
+  | 'month_day'
   | 'number'
   | 'select'
   | 'multiselect'
