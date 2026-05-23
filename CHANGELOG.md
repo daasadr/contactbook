@@ -2,6 +2,31 @@
 
 ---
 
+## [2026-05-23] — UX fix: vlastní date picker + month_day typ pro svátek
+
+### Co bylo uděláno
+- **Vlastní date picker** — nahrazen nativní `<input type="date">` třemi dropdown selecty (den / měsíc / rok); odstraněn problém, kdy uživatelé nevěděli jak zavřít year/month panel v prohlížeči
+- **Nový typ pole `month_day`** — ukládá pouze den + měsíc (bez roku), platí každý rok
+- **Šablona Personal**: pole `name_day` (Svátek) přeřazeno z `date` → `month_day`
+- **Migrace 002** — `UPDATE field_definitions` aktualizuje existující `name_day` záznamy v DB
+- **`initDb()`** aktualizován: nyní spouští všechny `.sql` soubory v `migrations/` ve vzestupném pořadí
+
+### Proč
+Svátek je každoroční událost — uchovávat rok nemá smysl. Nativní date picker v Chrome způsoboval zmatení (panel pro výběr roku/měsíce bez zřejmého tlačítka "zpět").
+
+### Commit
+`5d8d70d`
+
+### Nasazení na server
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
 ## [2026-05-16] — Redesign Landing page
 
 ### Co bylo uděláno
