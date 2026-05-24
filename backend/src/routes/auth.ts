@@ -114,7 +114,7 @@ export async function authRoutes(app: FastifyInstance) {
       const tokenHash = hashToken(token)
       await sql`DELETE FROM refresh_tokens WHERE token_hash = ${tokenHash}`
     }
-    reply.clearCookie('refresh_token', { path: '/auth' })
+    reply.clearCookie('refresh_token', { path: '/' })
     return reply.send({ ok: true })
   })
 
@@ -157,7 +157,7 @@ function setRefreshCookie(reply: any, token: string) {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'strict',
-    path: '/auth',
+    path: '/',
     maxAge: REFRESH_TOKEN_DAYS * 86400,
   })
 }
