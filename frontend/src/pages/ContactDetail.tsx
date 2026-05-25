@@ -191,6 +191,7 @@ export default function ContactDetail() {
     queryKey: ['contact', contactId],
     queryFn: () => contactsApi.getOne(listId!, contactId!).then(r => r.data.contact),
     enabled: !!listId && !!contactId,
+    gcTime: 0,
   })
 
   useEffect(() => {
