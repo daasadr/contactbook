@@ -353,7 +353,14 @@ export default function ContactDetail() {
 
         <div className="flex items-center justify-between pt-4 border-t border-zinc-100">
           {saveMutation.isError && (
-            <p className="text-sm text-red-600">Uložení se nezdařilo</p>
+            <p className="text-sm text-red-600">
+              Uložení se nezdařilo
+              {(saveMutation.error as any)?.response?.data?.error
+                ? `: ${(saveMutation.error as any).response.data.error}`
+                : (saveMutation.error as any)?.response?.status
+                  ? ` (HTTP ${(saveMutation.error as any).response.status})`
+                  : ''}
+            </p>
           )}
           {saved && <p className="text-sm text-green-600">✓ Uloženo</p>}
           {!saveMutation.isError && !saved && <div />}
