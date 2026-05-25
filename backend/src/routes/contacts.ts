@@ -104,7 +104,9 @@ export async function contactsRoutes(app: FastifyInstance) {
 
     const updates = { ...body.data }
     if (updates.custom_data !== undefined) {
-      (updates as any).custom_data = JSON.stringify(updates.custom_data)
+      const raw = updates.custom_data
+      const clean = (raw !== null && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {}
+      ;(updates as any).custom_data = JSON.stringify(clean)
     }
 
     const [updated] = await sql`

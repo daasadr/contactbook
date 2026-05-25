@@ -198,7 +198,10 @@ export default function ContactDetail() {
     if (contactData && !initialized) {
       setFirstName(contactData.first_name)
       setLastName(contactData.last_name ?? '')
-      setCustomData(contactData.custom_data ?? {})
+      const raw = contactData.custom_data
+    setCustomData(raw !== null && typeof raw === 'object' && !Array.isArray(raw)
+      ? raw as Record<string, unknown>
+      : {})
       setInitialized(true)
     }
   }, [contactData, initialized])
