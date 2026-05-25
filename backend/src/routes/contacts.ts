@@ -102,14 +102,34 @@ export async function contactsRoutes(app: FastifyInstance) {
     const [existing] = await sql`SELECT id FROM contacts WHERE id = ${contactId} AND list_id = ${listId}`
     if (!existing) return reply.status(404).send({ error: 'Kontakt nenalezen' })
 
-    const updates = { ...body.data }
-    if (updates.custom_data !== undefined) {
-      (updates as any).custom_data = JSON.stringify(updates.custom_data)
+    const { first_name, last_name, custom_data, is_starred } = body.data
+
+    // Explicit params to avoid text→jsonb implicit cast issue with sql(obj) helper
+    const setClauses: string[] = ['updated_at = NOW()']
+    const params: unknown[] = []
+
+    if (first_name !== undefined) {
+      params.push(first_name)
+      setClauses.push(`first_name = $${params.length}`)
+    }
+    if ('last_name' in body.data) {
+      params.push(last_name ?? null)
+      setClauses.push(`last_name = $${params.length}`)
+    }
+    if (custom_data !== undefined) {
+      params.push(JSON.stringify(custom_data))
+      setClauses.push(`custom_data = $${params.length}::jsonb`)
+    }
+    if (is_starred !== undefined) {
+      params.push(is_starred)
+      setClauses.push(`is_starred = $${params.length}`)
     }
 
-    const [updated] = await sql`
-      UPDATE contacts SET ${sql(updates as any)} WHERE id = ${contactId} RETURNING *
-    `
+    params.push(contactId)
+    const [updated] = await sql.unsafe(
+      `UPDATE contacts SET ${setClauses.join(', ')} WHERE id = $${params.length} RETURNING *`,
+      params
+    )
     return reply.send({ contact: updated })
   })
 
