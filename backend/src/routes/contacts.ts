@@ -128,7 +128,7 @@ export async function contactsRoutes(app: FastifyInstance) {
     params.push(contactId)
     const [updated] = await sql.unsafe(
       `UPDATE contacts SET ${setClauses.join(', ')} WHERE id = $${params.length} RETURNING *`,
-      params
+      params as any[]
     )
     return reply.send({ contact: updated })
   })
