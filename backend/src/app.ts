@@ -15,6 +15,7 @@ export async function buildApp() {
       level: config.NODE_ENV === 'production' ? 'warn' : 'info',
     },
     trustProxy: true,
+    bodyLimit: 10 * 1024 * 1024, // 10 MB
   })
 
   // CORS
