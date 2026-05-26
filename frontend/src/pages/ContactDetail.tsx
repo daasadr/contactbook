@@ -198,11 +198,6 @@ export default function ContactDetail() {
     return acc
   }, {})
 
-  // Počet vyplněných detailních polí pro rozhodnutí o tlačítku expand
-  const filledDetailFields = detailFields.filter(f => {
-    const v = customData[f.name]
-    return v !== undefined && v !== null && v !== ''
-  })
   const DETAIL_PREVIEW_LIMIT = 6
   const showExpandButton = detailFields.length > DETAIL_PREVIEW_LIMIT
 
@@ -235,7 +230,7 @@ export default function ContactDetail() {
   }
 
   return (
-    <Layout maxWidth="4xl">
+    <Layout maxWidth="xl">
       {/* Hlavička */}
       <div className="flex items-center gap-3 mb-6">
         <Link to={`/lists/${listId}`} className="btn-ghost p-2 text-zinc-500">
