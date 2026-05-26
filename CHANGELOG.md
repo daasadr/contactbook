@@ -2,6 +2,32 @@
 
 ---
 
+## [2026-05-26] — Oprava ukládání kontaktů + read-only režim polí
+
+### Co bylo uděláno
+- **Oprava ukládání custom_data** — přepsán PATCH handler v `backend/src/routes/contacts.ts`: místo kombinace `sql(scalarUpdates)` helperu s inline `::jsonb` castem (což bylo zdrojem tiché chyby) se nyní načte existující záznam a provede explicitní UPDATE s pojmenovanými sloupci (`first_name`, `last_name`, `is_starred`, `custom_data`). Žádný `sql()` helper v SET klauzuli.
+- **Read-only zobrazení polí** — pole kontaktu se nyní zobrazují jako prostý text (label + hodnota). Ikonka tužky se zobrazí při najetí myší na pole; kliknutím se pole přepne do editovatelného inputu. Totéž platí pro sekci Jméno / Příjmení v kartě Profil.
+- **Reset po uložení** — po úspěšném uložení se všechna editovaná pole vrátí zpět do read-only zobrazení.
+- **Kniha záznamů — obrázek** — soubor `frontend/public/kniha_zaznamu_green_animated.png` byl přidán do gitu (byl untracked, proto na serveru chyběl).
+
+### Proč
+`sql(updates as any)` helper generuje dynamický SET fragment; kombinace s inline `::jsonb` castem ve stejné šabloně způsobovala tichou chybu při ukládání JSONB dat. Explicitní pojmenované sloupce problém eliminují. Read-only zobrazení odděluje čtení od editace a zabraňuje nechtěnému přepsání dat při prohlížení.
+
+### Soubory změněny
+- `backend/src/routes/contacts.ts` — nový PATCH handler
+- `frontend/src/pages/ContactDetail.tsx` — read-only / edit mode, nová funkce `displayFieldValue`
+- `frontend/public/kniha_zaznamu_green_animated.png` — přidáno do gitu
+
+### Nasazení na server
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
 ## [2026-05-23] — UX fix: vlastní date picker + month_day typ pro svátek
 
 ### Co bylo uděláno
