@@ -102,16 +102,39 @@ export async function contactsRoutes(app: FastifyInstance) {
     const [existing] = await sql`SELECT id FROM contacts WHERE id = ${contactId} AND list_id = ${listId}`
     if (!existing) return reply.status(404).send({ error: 'Kontakt nenalezen' })
 
-    const updates = { ...body.data }
-    if (updates.custom_data !== undefined) {
-      const raw = updates.custom_data
-      const clean = (raw !== null && typeof raw === 'object' && !Array.isArray(raw)) ? raw : {}
-      ;(updates as any).custom_data = JSON.stringify(clean)
+    const { first_name, last_name, is_starred, custom_data } = body.data
+
+    const scalarUpdates: Record<string, unknown> = {}
+    if (first_name !== undefined) scalarUpdates.first_name = first_name
+    if (last_name !== undefined) scalarUpdates.last_name = last_name
+    if (is_starred !== undefined) scalarUpdates.is_starred = is_starred
+
+    const hasScalar = Object.keys(scalarUpdates).length > 0
+    const hasJson = custom_data !== undefined
+
+    if (!hasScalar && !hasJson) {
+      return reply.status(400).send({ error: 'Žádná data k aktualizaci' })
     }
 
-    const [updated] = await sql`
-      UPDATE contacts SET ${sql(updates as any)} WHERE id = ${contactId} RETURNING *
-    `
+    let updated
+    if (hasScalar && hasJson) {
+      const clean = (custom_data !== null && typeof custom_data === 'object' && !Array.isArray(custom_data)) ? custom_data : {}
+      ;[updated] = await sql`
+        UPDATE contacts SET ${sql(scalarUpdates as any)}, custom_data = ${JSON.stringify(clean)}::jsonb
+        WHERE id = ${contactId} RETURNING *
+      `
+    } else if (hasJson) {
+      const clean = (custom_data !== null && typeof custom_data === 'object' && !Array.isArray(custom_data)) ? custom_data : {}
+      ;[updated] = await sql`
+        UPDATE contacts SET custom_data = ${JSON.stringify(clean)}::jsonb
+        WHERE id = ${contactId} RETURNING *
+      `
+    } else {
+      ;[updated] = await sql`
+        UPDATE contacts SET ${sql(scalarUpdates as any)} WHERE id = ${contactId} RETURNING *
+      `
+    }
+
     return reply.send({ contact: updated })
   })
 

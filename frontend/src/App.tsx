@@ -8,6 +8,7 @@ import Register from '@/pages/Register'
 import Dashboard from '@/pages/Dashboard'
 import ListDetail from '@/pages/ListDetail'
 import ContactDetail from '@/pages/ContactDetail'
+import ContactEvents from '@/pages/ContactEvents'
 import ListSettings from '@/pages/ListSettings'
 import ProtectedRoute from '@/components/ProtectedRoute'
 
@@ -38,6 +39,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/lists/:listId" element={<ListDetail />} />
           <Route path="/lists/:listId/contacts/:contactId" element={<ContactDetail />} />
+          <Route path="/lists/:listId/contacts/:contactId/events" element={<ContactEvents />} />
           <Route path="/lists/:listId/settings" element={<ListSettings />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
