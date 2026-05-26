@@ -69,7 +69,7 @@ export async function contactsRoutes(app: FastifyInstance) {
     const { first_name, last_name, custom_data, is_starred } = body.data
     const [contact] = await sql`
       INSERT INTO contacts (list_id, first_name, last_name, custom_data, is_starred)
-      VALUES (${listId}, ${first_name}, ${last_name ?? null}, ${JSON.stringify(custom_data)}, ${is_starred})
+      VALUES (${listId}, ${first_name}, ${last_name ?? null}, ${sql.json(custom_data)}, ${is_starred})
       RETURNING *
     `
     return reply.status(201).send({ contact })
@@ -110,21 +110,15 @@ export async function contactsRoutes(app: FastifyInstance) {
     const rawJson = custom_data !== undefined ? custom_data : existing.custom_data
     const newCustomData = (rawJson !== null && typeof rawJson === 'object' && !Array.isArray(rawJson)) ? rawJson : {}
 
-    console.warn('[PATCH contact] body.data.custom_data:', JSON.stringify(custom_data))
-    console.warn('[PATCH contact] newCustomData:', JSON.stringify(newCustomData))
-
-    const jsonStr = JSON.stringify(newCustomData)
     const [updated] = await sql`
       UPDATE contacts
       SET first_name = ${newFirstName},
           last_name = ${newLastName},
           is_starred = ${newIsStarred},
-          custom_data = ${jsonStr}
+          custom_data = ${sql.json(newCustomData)}
       WHERE id = ${contactId}
       RETURNING *
     `
-
-    console.warn('[PATCH contact] updated.custom_data:', JSON.stringify(updated?.custom_data))
 
     return reply.send({ contact: updated })
   })
