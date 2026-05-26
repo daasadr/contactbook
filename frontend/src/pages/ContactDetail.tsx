@@ -162,7 +162,7 @@ function FieldRow({ field, value, onChange, isEditing, onToggleEdit }: {
           <div className={clsx('w-4 h-4 rounded border-2 flex items-center justify-center shrink-0',
             value ? 'bg-primary-500 border-primary-500 text-white' : 'border-zinc-300'
           )}>
-            {value && <span className="text-[10px] leading-none font-bold">✓</span>}
+            {!!value && <span className="text-[10px] leading-none font-bold">✓</span>}
           </div>
           <span className="text-sm text-zinc-700">{field.label}</span>
         </div>
