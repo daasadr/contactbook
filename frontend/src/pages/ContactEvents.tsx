@@ -30,7 +30,7 @@ export default function ContactEvents() {
 
       <div className="flex flex-col items-center justify-center py-20 text-center">
         <img
-          src="/kniha_zaznamu_green_animated.png"
+          src="/kniha_zaznamu_green_decent.gif"
           alt="Kniha záznamů"
           className="w-52 h-auto drop-shadow-xl mb-8 opacity-80"
         />

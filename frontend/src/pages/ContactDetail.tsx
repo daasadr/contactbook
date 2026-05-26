@@ -458,19 +458,19 @@ export default function ContactDetail() {
         </div>
 
         {/* Kniha záznamů (2/5) */}
-        <div className="lg:col-span-2 card p-6 flex flex-col items-center justify-center">
+        <div className="lg:col-span-2 card p-2 flex flex-col">
           <Link
             to={`/lists/${listId}/contacts/${contactId}/events`}
-            className="group flex flex-col items-center gap-3 hover:opacity-85 transition-opacity"
+            className="group flex flex-col flex-1 hover:opacity-90 transition-opacity"
           >
             <img
-              src="/kniha_zaznamu_green_animated.png"
+              src="/kniha_zaznamu_green_decent.gif"
               alt="Kniha záznamů"
-              className="w-44 h-auto drop-shadow-lg"
+              className="w-full h-auto rounded-md"
             />
-            <div className="text-center">
-              <p className="font-semibold text-zinc-800 group-hover:text-primary-700 transition-colors">Kniha záznamů</p>
-              <p className="text-xs text-zinc-400 mt-0.5">Záznamy ze setkání</p>
+            <div className="text-center py-2">
+              <p className="font-semibold text-zinc-800 group-hover:text-primary-700 transition-colors text-sm">Kniha záznamů</p>
+              <p className="text-xs text-zinc-400">Záznamy ze setkání</p>
             </div>
           </Link>
         </div>
