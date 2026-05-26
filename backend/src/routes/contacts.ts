@@ -110,15 +110,21 @@ export async function contactsRoutes(app: FastifyInstance) {
     const rawJson = custom_data !== undefined ? custom_data : existing.custom_data
     const newCustomData = (rawJson !== null && typeof rawJson === 'object' && !Array.isArray(rawJson)) ? rawJson : {}
 
+    console.warn('[PATCH contact] body.data.custom_data:', JSON.stringify(custom_data))
+    console.warn('[PATCH contact] newCustomData:', JSON.stringify(newCustomData))
+
+    const jsonStr = JSON.stringify(newCustomData)
     const [updated] = await sql`
       UPDATE contacts
       SET first_name = ${newFirstName},
           last_name = ${newLastName},
           is_starred = ${newIsStarred},
-          custom_data = ${JSON.stringify(newCustomData)}::jsonb
+          custom_data = ${jsonStr}
       WHERE id = ${contactId}
       RETURNING *
     `
+
+    console.warn('[PATCH contact] updated.custom_data:', JSON.stringify(updated?.custom_data))
 
     return reply.send({ contact: updated })
   })
