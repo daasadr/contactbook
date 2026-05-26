@@ -69,7 +69,7 @@ export async function contactsRoutes(app: FastifyInstance) {
     const { first_name, last_name, custom_data, is_starred } = body.data
     const [contact] = await sql`
       INSERT INTO contacts (list_id, first_name, last_name, custom_data, is_starred)
-      VALUES (${listId}, ${first_name}, ${last_name ?? null}, ${sql.json(custom_data)}, ${is_starred})
+      VALUES (${listId}, ${first_name}, ${last_name ?? null}, ${sql.json(custom_data as any)}, ${is_starred})
       RETURNING *
     `
     return reply.status(201).send({ contact })
@@ -115,7 +115,7 @@ export async function contactsRoutes(app: FastifyInstance) {
       SET first_name = ${newFirstName},
           last_name = ${newLastName},
           is_starred = ${newIsStarred},
-          custom_data = ${sql.json(newCustomData)}
+          custom_data = ${sql.json(newCustomData as any)}
       WHERE id = ${contactId}
       RETURNING *
     `
