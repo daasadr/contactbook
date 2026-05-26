@@ -1,13 +1,31 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Trash2, Save, User, Bell, ChevronDown, ChevronUp } from 'lucide-react'
+import { ArrowLeft, Star, Trash2, Save, User, Bell, ChevronDown, ChevronUp, PenLine } from 'lucide-react'
 import Layout from '@/components/Layout'
 import { contactsApi } from '@/api/contacts'
 import type { FieldDefinition } from '@/types'
 import clsx from 'clsx'
 
 const MONTHS_CS = ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen', 'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec']
+
+function displayFieldValue(field: FieldDefinition, value: unknown): string {
+  if (value === undefined || value === null || value === '') return ''
+  if (field.field_type === 'checkbox') return value ? 'Ano' : ''
+  if (field.field_type === 'select') {
+    const opt = (field.options ?? []).find(o => o.value === String(value))
+    return opt?.label ?? String(value)
+  }
+  if (field.field_type === 'month_day') {
+    const m = String(value).match(/^(\d{2})-(\d{2})$/)
+    if (m) return `${parseInt(m[2])}. ${MONTHS_CS[parseInt(m[1]) - 1] ?? m[1]}`
+    return String(value)
+  }
+  if (field.field_type === 'date') {
+    try { return new Date(String(value)).toLocaleDateString('cs-CZ') } catch { return String(value) }
+  }
+  return String(value)
+}
 
 function MonthDayInput({ value, onChange }: { value: unknown; onChange: (v: unknown) => void }) {
   const str = value ? String(value) : ''
@@ -86,31 +104,91 @@ function FieldInput({ field, value, onChange }: {
     case 'number':
       return <input type="number" value={strVal} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder ?? ''} className={cls} />
     case 'email':
-      return <input type="email" value={strVal} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder ?? ''} className={cls} />
+      return <input type="email" value={strVal} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder ?? ''} className={cls} autoFocus />
     case 'phone':
-      return <input type="tel" value={strVal} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder ?? '+420 000 000 000'} className={cls} />
+      return <input type="tel" value={strVal} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder ?? '+420 000 000 000'} className={cls} autoFocus />
     case 'url':
-      return <input type="url" value={strVal} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder ?? 'https://'} className={cls} />
+      return <input type="url" value={strVal} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder ?? 'https://'} className={cls} autoFocus />
     default:
-      return <input type="text" value={strVal} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder ?? ''} className={cls} />
+      return <input type="text" value={strVal} onChange={(e) => onChange(e.target.value)} placeholder={field.placeholder ?? ''} className={cls} autoFocus />
   }
 }
 
-function FieldRow({ field, value, onChange }: { field: FieldDefinition; value: unknown; onChange: (v: unknown) => void }) {
-  if (field.field_type === 'checkbox') {
+function FieldRow({ field, value, onChange, isEditing, onToggleEdit }: {
+  field: FieldDefinition
+  value: unknown
+  onChange: (v: unknown) => void
+  isEditing: boolean
+  onToggleEdit: () => void
+}) {
+  const isTextarea = field.field_type === 'textarea'
+  const isCheckbox = field.field_type === 'checkbox'
+  const colSpan = isTextarea ? 'sm:col-span-2' : ''
+
+  if (isEditing) {
+    if (isCheckbox) {
+      return (
+        <div className="flex items-center justify-between">
+          <FieldInput field={field} value={value} onChange={onChange} />
+          <button onClick={onToggleEdit} title="Zavřít" className="ml-2 p-1 rounded text-primary-500 hover:text-primary-700">
+            <PenLine className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )
+    }
     return (
-      <div className="flex items-center">
+      <div className={colSpan}>
+        <div className="flex items-center justify-between mb-1">
+          <label className="label">
+            {field.label}
+            {field.is_required && <span className="text-red-500 ml-1">*</span>}
+          </label>
+          <button onClick={onToggleEdit} title="Zavřít editaci" className="p-0.5 rounded text-primary-400 hover:text-primary-600">
+            <PenLine className="w-3.5 h-3.5" />
+          </button>
+        </div>
         <FieldInput field={field} value={value} onChange={onChange} />
       </div>
     )
   }
+
+  // View mode
+  const display = displayFieldValue(field, value)
+
+  if (isCheckbox) {
+    return (
+      <div className="flex items-center justify-between group">
+        <div className="flex items-center gap-2">
+          <div className={clsx('w-4 h-4 rounded border-2 flex items-center justify-center shrink-0',
+            value ? 'bg-primary-500 border-primary-500 text-white' : 'border-zinc-300'
+          )}>
+            {value && <span className="text-[10px] leading-none font-bold">✓</span>}
+          </div>
+          <span className="text-sm text-zinc-700">{field.label}</span>
+        </div>
+        <button onClick={onToggleEdit} title="Upravit" className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded text-zinc-300 hover:text-zinc-500">
+          <PenLine className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    )
+  }
+
   return (
-    <div className={field.field_type === 'textarea' ? 'sm:col-span-2' : ''}>
-      <label className="label">
-        {field.label}
-        {field.is_required && <span className="text-red-500 ml-1">*</span>}
-      </label>
-      <FieldInput field={field} value={value} onChange={onChange} />
+    <div className={clsx('group', colSpan)}>
+      <div className="flex items-start justify-between gap-1 mb-0.5">
+        <span className="text-xs font-medium text-zinc-400">
+          {field.label}
+          {field.is_required && <span className="text-red-400 ml-1">*</span>}
+        </span>
+        <button onClick={onToggleEdit} title="Upravit" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 p-0.5 rounded text-zinc-300 hover:text-zinc-500 -mt-0.5">
+          <PenLine className="w-3.5 h-3.5" />
+        </button>
+      </div>
+      {display ? (
+        <p className={clsx('text-sm text-zinc-800 break-words', isTextarea && 'whitespace-pre-wrap')}>{display}</p>
+      ) : (
+        <p className="text-sm text-zinc-300">—</p>
+      )}
     </div>
   )
 }
@@ -134,6 +212,8 @@ export default function ContactDetail() {
   const [initialized, setInitialized] = useState(false)
   const [saved, setSaved] = useState(false)
   const [detailsExpanded, setDetailsExpanded] = useState(false)
+  const [editingFields, setEditingFields] = useState<Set<string>>(new Set())
+  const [nameEditing, setNameEditing] = useState(false)
 
   const { data: contactData, isLoading: contactLoading } = useQuery({
     queryKey: ['contact', contactId],
@@ -161,6 +241,15 @@ export default function ContactDetail() {
   const updateField = (name: string, val: unknown) =>
     setCustomData((prev) => ({ ...prev, [name]: val }))
 
+  const toggleFieldEdit = (name: string) => {
+    setEditingFields(prev => {
+      const next = new Set(prev)
+      if (next.has(name)) next.delete(name)
+      else next.add(name)
+      return next
+    })
+  }
+
   const saveMutation = useMutation({
     mutationFn: () => contactsApi.update(listId!, contactId!, {
       first_name: firstName,
@@ -170,6 +259,8 @@ export default function ContactDetail() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact', contactId] })
       queryClient.invalidateQueries({ queryKey: ['contacts', listId] })
+      setEditingFields(new Set())
+      setNameEditing(false)
       setSaved(true)
       setTimeout(() => setSaved(false), 2500)
     },
@@ -201,7 +292,6 @@ export default function ContactDetail() {
   const DETAIL_PREVIEW_LIMIT = 6
   const showExpandButton = detailFields.length > DETAIL_PREVIEW_LIMIT
 
-  // Pole zobrazená v preview (prvních N nebo všechna pokud expanded)
   const visibleDetailSections = detailsExpanded
     ? detailSections
     : (() => {
@@ -217,6 +307,7 @@ export default function ContactDetail() {
       })()
 
   const contact = contactData
+  const fullName = [firstName, lastName].filter(Boolean).join(' ')
   const initials = [firstName, lastName].filter(Boolean).map((n) => n[0].toUpperCase()).join('')
 
   if (contactLoading) {
@@ -263,23 +354,48 @@ export default function ContactDetail() {
             <div className="w-20 h-20 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-bold text-2xl shrink-0 select-none">
               {initials || <User className="w-10 h-10" />}
             </div>
-            <div className="flex-1 grid grid-cols-2 gap-3">
-              <div>
-                <label className="label">Jméno *</label>
-                <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="input" placeholder="Jméno" />
+
+            {nameEditing ? (
+              <div className="flex-1 grid grid-cols-2 gap-3">
+                <div>
+                  <label className="label">Jméno *</label>
+                  <input value={firstName} onChange={(e) => setFirstName(e.target.value)} className="input" placeholder="Jméno" autoFocus />
+                </div>
+                <div>
+                  <label className="label">Příjmení</label>
+                  <input value={lastName} onChange={(e) => setLastName(e.target.value)} className="input" placeholder="Příjmení" />
+                </div>
               </div>
-              <div>
-                <label className="label">Příjmení</label>
-                <input value={lastName} onChange={(e) => setLastName(e.target.value)} className="input" placeholder="Příjmení" />
+            ) : (
+              <div className="flex-1 min-w-0">
+                <div className="group flex items-center gap-2">
+                  <h3 className="text-xl font-semibold text-zinc-900 truncate">
+                    {fullName || <span className="text-zinc-400 font-normal">Jméno kontaktu</span>}
+                  </h3>
+                  <button
+                    onClick={() => setNameEditing(true)}
+                    title="Upravit jméno"
+                    className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 p-1 rounded text-zinc-300 hover:text-zinc-500"
+                  >
+                    <PenLine className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Kontaktní pole (sekce 'contact') */}
           {profileFields.length > 0 && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {profileFields.map(field => (
-                <FieldRow key={field.id} field={field} value={customData[field.name]} onChange={(v) => updateField(field.name, v)} />
+                <FieldRow
+                  key={field.id}
+                  field={field}
+                  value={customData[field.name]}
+                  onChange={(v) => updateField(field.name, v)}
+                  isEditing={editingFields.has(field.name)}
+                  onToggleEdit={() => toggleFieldEdit(field.name)}
+                />
               ))}
             </div>
           )}
@@ -312,7 +428,14 @@ export default function ContactDetail() {
                   <div className="section-title">{SECTION_LABELS[sectionKey] ?? sectionKey}</div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {sFields.map(field => (
-                      <FieldRow key={field.id} field={field} value={customData[field.name]} onChange={(v) => updateField(field.name, v)} />
+                      <FieldRow
+                        key={field.id}
+                        field={field}
+                        value={customData[field.name]}
+                        onChange={(v) => updateField(field.name, v)}
+                        isEditing={editingFields.has(field.name)}
+                        onToggleEdit={() => toggleFieldEdit(field.name)}
+                      />
                     ))}
                   </div>
                 </div>

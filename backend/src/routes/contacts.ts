@@ -99,41 +99,26 @@ export async function contactsRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: 'Neplatná data', details: body.error.flatten().fieldErrors })
     }
 
-    const [existing] = await sql`SELECT id FROM contacts WHERE id = ${contactId} AND list_id = ${listId}`
+    const [existing] = await sql`SELECT * FROM contacts WHERE id = ${contactId} AND list_id = ${listId}`
     if (!existing) return reply.status(404).send({ error: 'Kontakt nenalezen' })
 
     const { first_name, last_name, is_starred, custom_data } = body.data
 
-    const scalarUpdates: Record<string, unknown> = {}
-    if (first_name !== undefined) scalarUpdates.first_name = first_name
-    if (last_name !== undefined) scalarUpdates.last_name = last_name
-    if (is_starred !== undefined) scalarUpdates.is_starred = is_starred
+    const newFirstName = first_name !== undefined ? first_name : existing.first_name
+    const newLastName = last_name !== undefined ? (last_name || null) : existing.last_name
+    const newIsStarred = is_starred !== undefined ? is_starred : existing.is_starred
+    const rawJson = custom_data !== undefined ? custom_data : existing.custom_data
+    const newCustomData = (rawJson !== null && typeof rawJson === 'object' && !Array.isArray(rawJson)) ? rawJson : {}
 
-    const hasScalar = Object.keys(scalarUpdates).length > 0
-    const hasJson = custom_data !== undefined
-
-    if (!hasScalar && !hasJson) {
-      return reply.status(400).send({ error: 'Žádná data k aktualizaci' })
-    }
-
-    let updated
-    if (hasScalar && hasJson) {
-      const clean = (custom_data !== null && typeof custom_data === 'object' && !Array.isArray(custom_data)) ? custom_data : {}
-      ;[updated] = await sql`
-        UPDATE contacts SET ${sql(scalarUpdates as any)}, custom_data = ${JSON.stringify(clean)}::jsonb
-        WHERE id = ${contactId} RETURNING *
-      `
-    } else if (hasJson) {
-      const clean = (custom_data !== null && typeof custom_data === 'object' && !Array.isArray(custom_data)) ? custom_data : {}
-      ;[updated] = await sql`
-        UPDATE contacts SET custom_data = ${JSON.stringify(clean)}::jsonb
-        WHERE id = ${contactId} RETURNING *
-      `
-    } else {
-      ;[updated] = await sql`
-        UPDATE contacts SET ${sql(scalarUpdates as any)} WHERE id = ${contactId} RETURNING *
-      `
-    }
+    const [updated] = await sql`
+      UPDATE contacts
+      SET first_name = ${newFirstName},
+          last_name = ${newLastName},
+          is_starred = ${newIsStarred},
+          custom_data = ${JSON.stringify(newCustomData)}::jsonb
+      WHERE id = ${contactId}
+      RETURNING *
+    `
 
     return reply.send({ contact: updated })
   })
