@@ -9,7 +9,6 @@ import Layout from '@/components/Layout'
 import { listsApi } from '@/api/lists'
 import { useAuthStore } from '@/stores/auth'
 import BackgroundPicker, { isBgDark } from '@/components/BackgroundPicker'
-import { getSwatchStyle } from '@/lib/backgrounds'
 import type { ContactList, TemplateMeta } from '@/types'
 
 const iconMap: Record<string, React.ReactNode> = {
