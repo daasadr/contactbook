@@ -11,6 +11,7 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   FROM_EMAIL: z.string().default('Peopleworth <noreply@peopleworth.eu>'),
   APP_URL: z.string().default('https://peopleworth.eu'),
+  ANTHROPIC_API_KEY: z.string().optional(),
 })
 
 const parsed = envSchema.safeParse(process.env)

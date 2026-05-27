@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Trash2, Save, User, Bell, ChevronDown, ChevronUp, PenLine, Palette } from 'lucide-react'
+import { ArrowLeft, Star, Trash2, Save, User, ChevronDown, ChevronUp, PenLine, Palette } from 'lucide-react'
 import Layout from '@/components/Layout'
 import { contactsApi } from '@/api/contacts'
 import { listsApi } from '@/api/lists'
 import BackgroundPicker from '@/components/BackgroundPicker'
+import ContactAIChat from '@/components/ContactAIChat'
 import type { FieldDefinition } from '@/types'
 import clsx from 'clsx'
 
@@ -452,11 +453,9 @@ export default function ContactDetail() {
           )}
         </div>
 
-        {/* Aktuality — placeholder */}
-        <div className="card p-6 flex flex-col items-center justify-center min-h-[220px] border-dashed border-zinc-200 bg-white/80 backdrop-blur-sm">
-          <Bell className="w-10 h-10 text-zinc-200 mb-3" />
-          <p className="text-sm font-medium text-zinc-400">Připomínky a aktuality</p>
-          <p className="text-xs text-zinc-300 mt-1">Narozeniny, výročí, AI tipy… Připravujeme</p>
+        {/* AI asistent */}
+        <div className="card p-5 flex flex-col bg-white/90 backdrop-blur-sm" style={{ minHeight: '280px', maxHeight: '480px' }}>
+          <ContactAIChat contactId={contactId!} contactName={fullName || 'kontakt'} />
         </div>
       </div>
 
