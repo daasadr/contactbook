@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Users, Network, Briefcase, Heart, Settings2, Trash2, BookUser, X } from 'lucide-react'
+import { Plus, Users, Network, Briefcase, Heart, Settings2, Trash2, BookUser, X, Check } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -18,6 +18,47 @@ const iconMap: Record<string, React.ReactNode> = {
   settings: <Settings2 className="w-5 h-5" />,
 }
 
+const BACKGROUNDS: Array<{ id: string; label: string; value: string | null; dark: boolean }> = [
+  { id: 'none', label: 'Výchozí', value: null, dark: false },
+  { id: 'white', label: 'Bílá', value: '#ffffff', dark: false },
+  { id: 'cream', label: 'Krémová', value: '#faf7f0', dark: false },
+  { id: 'mint', label: 'Mátová', value: '#ecfdf5', dark: false },
+  { id: 'sky', label: 'Nebeská', value: '#eff6ff', dark: false },
+  { id: 'lavender', label: 'Levandule', value: '#f5f3ff', dark: false },
+  { id: 'rose', label: 'Růžová', value: '#fff1f2', dark: false },
+  { id: 'amber', label: 'Jantarová', value: '#fffbeb', dark: false },
+  { id: 'slate', label: 'Břidlice', value: '#1e293b', dark: true },
+  { id: 'black', label: 'Černá', value: '#18181b', dark: true },
+  { id: 'sunrise', label: 'Západ slunce', value: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', dark: false },
+  { id: 'morning', label: 'Ranní obloha', value: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)', dark: false },
+  { id: 'forest', label: 'Les', value: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', dark: false },
+  { id: 'lilac', label: 'Šeřík', value: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', dark: false },
+  { id: 'night', label: 'Noční obloha', value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', dark: true },
+  { id: 'rosegold', label: 'Růžové zlato', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', dark: true },
+  { id: 'ocean', label: 'Oceán', value: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', dark: false },
+  { id: 'abyss', label: 'Hlubina', value: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)', dark: true },
+  { id: 'space', label: 'Vesmír', value: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', dark: true },
+  { id: 'peach', label: 'Broskev', value: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', dark: false },
+]
+
+function getSwatchStyle(value: string | null): React.CSSProperties {
+  if (!value) return { background: 'repeating-linear-gradient(-45deg, #e4e4e7 0px, #e4e4e7 4px, #f9f9f9 4px, #f9f9f9 8px)' }
+  if (value.startsWith('linear-gradient')) return { backgroundImage: value }
+  return { backgroundColor: value }
+}
+
+function getHeaderBgStyle(list: ContactList): React.CSSProperties {
+  const bg = list.background
+  if (!bg) return { backgroundColor: list.color + '28' }
+  if (bg.startsWith('linear-gradient')) return { backgroundImage: bg }
+  return { backgroundColor: bg }
+}
+
+function isListBgDark(list: ContactList): boolean {
+  if (!list.background) return false
+  return BACKGROUNDS.find(b => b.value === list.background)?.dark ?? false
+}
+
 const createSchema = z.object({
   name: z.string().min(1, 'Název je povinný').max(255),
   description: z.string().max(1000).optional(),
@@ -29,6 +70,7 @@ function CreateListModal({ onClose }: { onClose: () => void }) {
   const queryClient = useQueryClient()
   const [step, setStep] = useState<'template' | 'name'>('template')
   const [selectedTemplate, setSelectedTemplate] = useState<TemplateMeta | null>(null)
+  const [selectedBg, setSelectedBg] = useState<string | null>(null)
 
   const { data: templatesData } = useQuery({
     queryKey: ['templates'],
@@ -41,7 +83,7 @@ function CreateListModal({ onClose }: { onClose: () => void }) {
   })
 
   const createMutation = useMutation({
-    mutationFn: (data: CreateForm) => listsApi.create(data),
+    mutationFn: (data: CreateForm) => listsApi.create({ ...data, background: selectedBg }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['lists'] })
       onClose()
@@ -57,7 +99,7 @@ function CreateListModal({ onClose }: { onClose: () => void }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="card w-full max-w-lg">
+      <div className="card w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-6 border-b border-zinc-100">
           <h2 className="text-lg font-semibold text-zinc-900">
             {step === 'template' ? 'Vyber šablonu seznamu' : 'Pojmenuj svůj seznam'}
@@ -110,6 +152,50 @@ function CreateListModal({ onClose }: { onClose: () => void }) {
               <input {...register('description')} className="input" placeholder="Krátký popis tohoto seznamu..." />
             </div>
 
+            {/* Background picker */}
+            <div>
+              <label className="label">Pozadí karty</label>
+              <div className="grid grid-cols-10 gap-1.5">
+                {BACKGROUNDS.map((bg) => (
+                  <button
+                    key={bg.id}
+                    type="button"
+                    title={bg.label}
+                    onClick={() => setSelectedBg(bg.value)}
+                    className={`relative w-8 h-8 rounded-lg border-2 transition-all ${selectedBg === bg.value ? 'border-primary-500 scale-110 shadow-md' : 'border-zinc-200 hover:border-zinc-400'}`}
+                    style={getSwatchStyle(bg.value)}
+                  >
+                    {selectedBg === bg.value && (
+                      <span className="absolute inset-0 flex items-center justify-center">
+                        <Check className={`w-3.5 h-3.5 ${bg.dark ? 'text-white' : 'text-zinc-700'}`} />
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+              {/* Preview */}
+              <div
+                className="mt-3 h-12 rounded-xl border border-zinc-200 flex items-center px-4 gap-3 transition-all"
+                style={getSwatchStyle(selectedBg)}
+              >
+                <div
+                  className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
+                  style={{
+                    backgroundColor: selectedBg ? 'rgba(255,255,255,0.35)' : selectedTemplate.color + '20',
+                    color: selectedBg ? (BACKGROUNDS.find(b => b.value === selectedBg)?.dark ? '#fff' : selectedTemplate.color) : selectedTemplate.color,
+                  }}
+                >
+                  {iconMap[selectedTemplate.icon] ?? <Users className="w-4 h-4" />}
+                </div>
+                <span
+                  className="text-sm font-medium"
+                  style={{ color: selectedBg && BACKGROUNDS.find(b => b.value === selectedBg)?.dark ? '#fff' : '#18181b' }}
+                >
+                  {BACKGROUNDS.find(b => b.value === selectedBg)?.label ?? 'Výchozí'}
+                </span>
+              </div>
+            </div>
+
             {createMutation.isError && (
               <p className="error-text">{(createMutation.error as any)?.response?.data?.error ?? 'Chyba při vytváření'}</p>
             )}
@@ -149,11 +235,11 @@ export default function Dashboard() {
   }
 
   return (
-    <Layout>
+    <Layout bgImage="/peopleworth2.jpg">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900">Moje seznamy</h1>
-          <p className="text-zinc-500 text-sm mt-1">Vítej zpět, {user?.name} 👋</p>
+          <h1 className="text-2xl font-bold text-zinc-900 drop-shadow-sm">Moje seznamy</h1>
+          <p className="text-zinc-600 text-sm mt-1">Vítej zpět, {user?.name} 👋</p>
         </div>
         <button onClick={() => setShowCreate(true)} className="btn-primary">
           <Plus className="w-4 h-4" /> Nový seznam
@@ -177,37 +263,65 @@ export default function Dashboard() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {data.map((list) => (
-            <div key={list.id} className="card hover:shadow-md transition-all group relative">
-              <Link to={`/lists/${list.id}`} className="block p-6">
-                <div className="flex items-start justify-between mb-4">
-                  <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: list.color + '20', color: list.color }}>
-                    {iconMap[list.icon] ?? <Users className="w-5 h-5" />}
+          {data.map((list) => {
+            const dark = isListBgDark(list)
+            const hasBg = !!list.background
+            return (
+              <div key={list.id} className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group relative bg-white">
+                <Link to={`/lists/${list.id}`} className="block">
+                  {/* Colored header band */}
+                  <div
+                    className="h-20 flex items-start justify-between p-4"
+                    style={getHeaderBgStyle(list)}
+                  >
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center"
+                      style={{
+                        backgroundColor: hasBg ? 'rgba(255,255,255,0.3)' : list.color + '20',
+                        color: hasBg ? (dark ? '#ffffff' : list.color) : list.color,
+                      }}
+                    >
+                      {iconMap[list.icon] ?? <Users className="w-5 h-5" />}
+                    </div>
+                    <span
+                      className="text-xs rounded-full px-2.5 py-1 font-medium"
+                      style={{
+                        backgroundColor: hasBg ? 'rgba(255,255,255,0.3)' : '#f4f4f5',
+                        color: hasBg ? (dark ? '#ffffff' : '#3f3f46') : '#71717a',
+                      }}
+                    >
+                      {list.contact_count} {list.contact_count === 1 ? 'kontakt' : list.contact_count < 5 ? 'kontakty' : 'kontaktů'}
+                    </span>
                   </div>
-                  <span className="text-xs text-zinc-400 bg-zinc-100 rounded-full px-2.5 py-1">
-                    {list.contact_count} {list.contact_count === 1 ? 'kontakt' : list.contact_count < 5 ? 'kontakty' : 'kontaktů'}
-                  </span>
-                </div>
-                <h3 className="font-semibold text-zinc-900 mb-1">{list.name}</h3>
-                {list.description && <p className="text-sm text-zinc-500 line-clamp-2">{list.description}</p>}
-              </Link>
-              <div className="absolute top-3 right-3 hidden group-hover:flex items-center gap-1">
-                <Link to={`/lists/${list.id}/settings`} className="btn-ghost p-1.5 text-zinc-400 hover:text-zinc-700">
-                  <Settings2 className="w-4 h-4" />
+                  {/* Content area */}
+                  <div className="px-4 py-3">
+                    <h3 className="font-semibold text-zinc-900 mb-0.5">{list.name}</h3>
+                    {list.description && <p className="text-sm text-zinc-500 line-clamp-2">{list.description}</p>}
+                  </div>
                 </Link>
-                <button
-                  onClick={() => handleDelete(list)}
-                  className="btn-ghost p-1.5 text-zinc-400 hover:text-red-600"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="absolute top-3 right-3 hidden group-hover:flex items-center gap-1">
+                  <Link
+                    to={`/lists/${list.id}/settings`}
+                    className="p-1.5 rounded-lg transition-colors"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.8)', color: '#71717a' }}
+                  >
+                    <Settings2 className="w-4 h-4" />
+                  </Link>
+                  <button
+                    onClick={() => handleDelete(list)}
+                    className="p-1.5 rounded-lg transition-colors hover:text-red-600"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.8)', color: '#71717a' }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            )
+          })}
 
           <button
             onClick={() => setShowCreate(true)}
-            className="card border-dashed border-2 border-zinc-300 hover:border-primary-400 hover:bg-primary-50 transition-all flex items-center justify-center gap-2 p-6 text-zinc-400 hover:text-primary-600 min-h-[140px]"
+            className="rounded-2xl border-dashed border-2 border-zinc-300 hover:border-primary-400 hover:bg-primary-50/70 bg-white/60 transition-all flex items-center justify-center gap-2 p-6 text-zinc-400 hover:text-primary-600 min-h-[140px]"
           >
             <Plus className="w-5 h-5" />
             <span className="font-medium">Nový seznam</span>

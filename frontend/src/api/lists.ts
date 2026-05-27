@@ -14,9 +14,10 @@ export const listsApi = {
     template_type: string
     icon?: string
     color?: string
+    background?: string | null
   }) => apiClient.post<{ list: ContactList }>('/lists', data),
 
-  update: (id: string, data: Partial<{ name: string; description: string; icon: string; color: string }>) =>
+  update: (id: string, data: Partial<{ name: string; description: string; icon: string; color: string; background: string | null }>) =>
     apiClient.patch<{ list: ContactList }>(`/lists/${id}`, data),
 
   delete: (id: string) => apiClient.delete(`/lists/${id}`),

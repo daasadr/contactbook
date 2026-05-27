@@ -32,6 +32,7 @@ export interface ContactList {
   template_type: TemplateType
   icon: string
   color: string
+  background: string | null
   created_at: string
   updated_at: string
   contact_count: number

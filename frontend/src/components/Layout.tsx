@@ -4,6 +4,7 @@ import Navbar from './Navbar'
 interface Props {
   children: ReactNode
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
+  bgImage?: string
 }
 
 const maxWidthMap = {
@@ -15,9 +16,17 @@ const maxWidthMap = {
   full: 'max-w-full',
 }
 
-export default function Layout({ children, maxWidth = 'xl' }: Props) {
+export default function Layout({ children, maxWidth = 'xl', bgImage }: Props) {
   return (
-    <div className="min-h-screen bg-zinc-50">
+    <div
+      className="min-h-screen bg-zinc-50"
+      style={bgImage ? {
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+      } : undefined}
+    >
       <Navbar />
       <main className={`${maxWidthMap[maxWidth]} mx-auto px-4 sm:px-6 lg:px-8 py-8`}>
         {children}

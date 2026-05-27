@@ -2,6 +2,42 @@
 
 ---
 
+## [2026-05-27] — Pozadí dashboardu + výběr pozadí pro seznam
+
+### Co bylo uděláno
+- **Migrace `003_list_background.sql`** — přidán sloupec `background TEXT DEFAULT NULL` do `contact_lists`
+- **Backend `lists.ts`** — přidáno pole `background` do Zod schématu a INSERT handleru (PATCH ho přebírá automaticky přes `sql(updates as any)`)
+- **`types/index.ts`** — `ContactList` rozšířen o `background: string | null`
+- **`api/lists.ts`** — create/update funkce rozšířeny o `background`
+- **`Layout.tsx`** — nový prop `bgImage?: string` aplikuje CSS background na celý wrapper
+- **`Dashboard.tsx`** — přidáno:
+  - pozadí stránky `peopleworth2.jpg` (přes `bgImage` prop)
+  - 20 variant pozadí karet (9 plných barev + 11 gradientů)
+  - vizuální picker v modalu (čtvercové vzorky, checkmark, live preview)
+  - karty seznamů redesignovány: barevný header band (h-20) + bílý content panel
+  - ikona/badge se přizpůsobí světlým/tmavým pozadím (`rgba(255,255,255,0.3)` overlay)
+
+### Proč
+Jedna TEXT hodnota na řádek (≤150 bajtů), idempotentní migrace. Pro 100k uživatelů s 10 seznamy max ~150 MB — zanedbatelné. CSS hodnota se ukládá přímo, žádné extra tabulky ani jointy.
+
+### Soubory změněny
+- `backend/src/db/migrations/003_list_background.sql` — nová migrace
+- `backend/src/routes/lists.ts` — background v schématu + INSERT
+- `frontend/src/types/index.ts` — background v ContactList
+- `frontend/src/api/lists.ts` — background v create/update
+- `frontend/src/components/Layout.tsx` — bgImage prop
+- `frontend/src/pages/Dashboard.tsx` — pozadí stránky, picker, redesign karet
+
+### Nasazení na server
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
 ## [2026-05-27] — Redesign přihlašovací a registrační stránky
 
 ### Co bylo uděláno

@@ -11,6 +11,7 @@ const createListSchema = z.object({
   template_type: z.enum(['networking', 'business', 'personal', 'general', 'custom']),
   icon: z.string().max(50).optional(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  background: z.string().max(500).nullable().optional(),
 })
 
 const updateListSchema = createListSchema.partial()
@@ -44,18 +45,19 @@ export async function listsRoutes(app: FastifyInstance) {
       return reply.status(400).send({ error: 'Neplatná data', details: body.error.flatten().fieldErrors })
     }
 
-    const { name, description, template_type, icon, color } = body.data
+    const { name, description, template_type, icon, color, background } = body.data
     const meta = templateMeta[template_type as TemplateType]
 
     const [list] = await sql`
-      INSERT INTO contact_lists (user_id, name, description, template_type, icon, color)
+      INSERT INTO contact_lists (user_id, name, description, template_type, icon, color, background)
       VALUES (
         ${request.userId},
         ${name},
         ${description ?? null},
         ${template_type},
         ${icon ?? meta.icon},
-        ${color ?? meta.color}
+        ${color ?? meta.color},
+        ${background ?? null}
       )
       RETURNING *
     `
