@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Trash2, Save, User, Bell, ChevronDown, ChevronUp, PenLine, Palette, Check } from 'lucide-react'
+import { ArrowLeft, Star, Trash2, Save, User, Bell, ChevronDown, ChevronUp, PenLine, Palette } from 'lucide-react'
 import Layout from '@/components/Layout'
 import { contactsApi } from '@/api/contacts'
 import { listsApi } from '@/api/lists'
-import { BACKGROUNDS, getSwatchStyle } from '@/lib/backgrounds'
+import BackgroundPicker from '@/components/BackgroundPicker'
 import type { FieldDefinition } from '@/types'
 import clsx from 'clsx'
 
@@ -366,28 +366,9 @@ export default function ContactDetail() {
       {showBgPicker && (
         <div className="card p-4 mb-4 bg-white/95">
           <p className="text-xs text-zinc-500 mb-3">
-            Pozadí stránky kontaktu — výchozí je pozadí skupiny
-            {listData?.background ? ` (${BACKGROUNDS.find(b => b.value === listData.background)?.label ?? 'vlastní'})` : ' (žádné)'}
+            Výchozí je pozadí skupiny{listData?.background ? '' : ' (žádné)'}. Změna se uloží tlačítkem níže.
           </p>
-          <div className="grid grid-cols-10 gap-1.5">
-            {BACKGROUNDS.map((bg) => (
-              <button
-                key={bg.id}
-                type="button"
-                title={bg.label}
-                onClick={() => setContactBg(bg.value)}
-                className={`relative w-8 h-8 rounded-lg border-2 transition-all ${(contactBg ?? null) === bg.value ? 'border-primary-500 scale-110 shadow-md' : 'border-zinc-200 hover:border-zinc-400'}`}
-                style={getSwatchStyle(bg.value)}
-              >
-                {(contactBg ?? null) === bg.value && (
-                  <span className="absolute inset-0 flex items-center justify-center">
-                    <Check className={`w-3.5 h-3.5 ${bg.dark ? 'text-white' : 'text-zinc-700'}`} />
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-          <p className="text-xs text-zinc-400 mt-2">Změna se uloží tlačítkem "Uložit změny" níže.</p>
+          <BackgroundPicker value={contactBg ?? null} onChange={setContactBg} />
         </div>
       )}
 

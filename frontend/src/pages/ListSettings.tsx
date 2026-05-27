@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Plus, Trash2, GripVertical, X, Check } from 'lucide-react'
-import { BACKGROUNDS, getSwatchStyle, isBgDark } from '@/lib/backgrounds'
+import { ArrowLeft, Plus, Trash2, GripVertical, X } from 'lucide-react'
+import BackgroundPicker, { isBgDark } from '@/components/BackgroundPicker'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -265,60 +265,12 @@ export default function ListSettings() {
           {bgSaved && <span className="text-sm text-green-600 font-medium">✓ Uloženo</span>}
         </div>
 
-        <div className="grid grid-cols-10 gap-2 mb-4">
-          {BACKGROUNDS.map((bg) => (
-            <button
-              key={bg.id}
-              type="button"
-              title={bg.label}
-              onClick={() => setSelectedBg(bg.value)}
-              className={`relative w-9 h-9 rounded-lg border-2 transition-all ${selectedBg === bg.value ? 'border-primary-500 scale-110 shadow-md' : 'border-zinc-200 hover:border-zinc-400'}`}
-              style={getSwatchStyle(bg.value)}
-            >
-              {selectedBg === bg.value && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <Check className={`w-3.5 h-3.5 ${bg.dark ? 'text-white' : 'text-zinc-700'}`} />
-                </span>
-              )}
-            </button>
-          ))}
-        </div>
-
-        {/* Preview */}
-        <div
-          className="h-14 rounded-xl border border-zinc-200 flex items-center px-4 gap-3 mb-4 transition-all"
-          style={getSwatchStyle(selectedBg ?? null)}
-        >
-          <div
-            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 font-semibold text-sm"
-            style={{
-              backgroundColor: selectedBg ? 'rgba(255,255,255,0.3)' : (listData?.color ?? '#888') + '20',
-              color: selectedBg ? (isBgDark(selectedBg) ? '#fff' : (listData?.color ?? '#888')) : (listData?.color ?? '#888'),
-            }}
-          >
-            {listData?.name?.[0]?.toUpperCase() ?? '?'}
-          </div>
-          <span
-            className="font-medium text-sm"
-            style={{ color: isBgDark(selectedBg ?? null) ? '#fff' : '#18181b' }}
-          >
-            {listData?.name ?? 'Název seznamu'}
-          </span>
-          <span
-            className="ml-auto text-xs rounded-full px-2.5 py-1"
-            style={{
-              backgroundColor: selectedBg ? 'rgba(255,255,255,0.3)' : '#f4f4f5',
-              color: isBgDark(selectedBg ?? null) ? '#fff' : '#71717a',
-            }}
-          >
-            {BACKGROUNDS.find(b => b.value === (selectedBg ?? null))?.label ?? 'Výchozí'}
-          </span>
-        </div>
+        <BackgroundPicker value={selectedBg ?? null} onChange={setSelectedBg} />
 
         <button
           onClick={() => updateBgMutation.mutate(selectedBg ?? null)}
           disabled={updateBgMutation.isPending || selectedBg === (listData?.background ?? null)}
-          className="btn-primary"
+          className="btn-primary mt-1"
         >
           {updateBgMutation.isPending ? 'Ukládání…' : 'Uložit pozadí'}
         </button>

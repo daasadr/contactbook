@@ -1,14 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Users, Network, Briefcase, Heart, Settings2, Trash2, BookUser, X, Check } from 'lucide-react'
+import { Plus, Users, Network, Briefcase, Heart, Settings2, Trash2, BookUser, X } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import Layout from '@/components/Layout'
 import { listsApi } from '@/api/lists'
 import { useAuthStore } from '@/stores/auth'
-import { BACKGROUNDS, getSwatchStyle, isBgDark } from '@/lib/backgrounds'
+import BackgroundPicker, { isBgDark } from '@/components/BackgroundPicker'
+import { getSwatchStyle } from '@/lib/backgrounds'
 import type { ContactList, TemplateMeta } from '@/types'
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -122,45 +123,7 @@ function CreateListModal({ onClose }: { onClose: () => void }) {
             {/* Background picker */}
             <div>
               <label className="label">Pozadí karty</label>
-              <div className="grid grid-cols-10 gap-1.5">
-                {BACKGROUNDS.map((bg) => (
-                  <button
-                    key={bg.id}
-                    type="button"
-                    title={bg.label}
-                    onClick={() => setSelectedBg(bg.value)}
-                    className={`relative w-8 h-8 rounded-lg border-2 transition-all ${selectedBg === bg.value ? 'border-primary-500 scale-110 shadow-md' : 'border-zinc-200 hover:border-zinc-400'}`}
-                    style={getSwatchStyle(bg.value)}
-                  >
-                    {selectedBg === bg.value && (
-                      <span className="absolute inset-0 flex items-center justify-center">
-                        <Check className={`w-3.5 h-3.5 ${bg.dark ? 'text-white' : 'text-zinc-700'}`} />
-                      </span>
-                    )}
-                  </button>
-                ))}
-              </div>
-              {/* Live preview */}
-              <div
-                className="mt-3 h-12 rounded-xl border border-zinc-200 flex items-center px-4 gap-3 transition-all"
-                style={getSwatchStyle(selectedBg)}
-              >
-                <div
-                  className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
-                  style={{
-                    backgroundColor: selectedBg ? 'rgba(255,255,255,0.35)' : selectedTemplate.color + '20',
-                    color: selectedBg ? (isBgDark(selectedBg) ? '#fff' : selectedTemplate.color) : selectedTemplate.color,
-                  }}
-                >
-                  {iconMap[selectedTemplate.icon] ?? <Users className="w-4 h-4" />}
-                </div>
-                <span
-                  className="text-sm font-medium"
-                  style={{ color: isBgDark(selectedBg) ? '#fff' : '#18181b' }}
-                >
-                  {BACKGROUNDS.find(b => b.value === selectedBg)?.label ?? 'Výchozí'}
-                </span>
-              </div>
+              <BackgroundPicker value={selectedBg} onChange={setSelectedBg} />
             </div>
 
             {createMutation.isError && (
