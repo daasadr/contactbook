@@ -2,6 +2,43 @@
 
 ---
 
+## [2026-05-27] — Pozadí pro stránku skupiny, kontaktu + oprava obrázků
+
+### Co bylo uděláno
+- **Obrázky commitnuty** — `peopleworth.jpg`, `peopleworth2.jpg`, `peopleworth3.jpg`, `peopleworth4.jpg` přidány do gitu (byly untracked, proto se nezobrazovaly na serveru)
+- **Migrace `004_contact_background.sql`** — přidán sloupec `background TEXT DEFAULT NULL` do `contacts`
+- **Backend `contacts.ts`** — `background` přidáno do Zod schématu a PATCH SET klauzule
+- **`types/index.ts`** — `Contact` rozšířen o `background: string | null`
+- **`lib/backgrounds.ts`** — nový sdílený soubor s konstantou `BACKGROUNDS` (20 variant), `getSwatchStyle()`, `isBgDark()`
+- **Dashboard** — karty seznamů průhledné (`bg-white/85 backdrop-blur-sm`) aby bylo vidět pozadí `peopleworth2.jpg`
+- **ListDetail** — `<Layout bgImage={list?.background}>` — celá stránka skupiny používá pozadí skupiny; kontaktní karty průhledné
+- **ListSettings** — nová sekce "Pozadí" s pickrem (20 variant), živým náhledem a tlačítkem Uložit
+- **ContactDetail** — ikonka Palette v headereu otevírá picker; pozadí kontaktu fallback na pozadí skupiny; karty průhledné (`bg-white/90`)
+
+### Proč
+Picker byl přítomný při zakládání skupiny, ale chyběl v nastavení. Stránka skupiny teď vizuálně sdílí vybrané pozadí s kartou na dashboardu.
+
+### Soubory změněny
+- `backend/src/db/migrations/004_contact_background.sql`
+- `backend/src/routes/contacts.ts`
+- `frontend/src/types/index.ts`
+- `frontend/src/lib/backgrounds.ts` (nový)
+- `frontend/src/pages/Dashboard.tsx`
+- `frontend/src/pages/ListDetail.tsx`
+- `frontend/src/pages/ListSettings.tsx`
+- `frontend/src/pages/ContactDetail.tsx`
+- `frontend/public/peopleworth*.jpg` (4 soubory)
+
+### Nasazení na server
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
 ## [2026-05-27] — Pozadí dashboardu + výběr pozadí pro seznam
 
 ### Co bylo uděláno
