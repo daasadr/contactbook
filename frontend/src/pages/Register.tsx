@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { BookUser, Eye, EyeOff } from 'lucide-react'
+import { Eye, EyeOff } from 'lucide-react'
 import { authApi } from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
 
@@ -40,24 +40,65 @@ export default function Register() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="flex justify-center">
-          <div className="w-12 h-12 rounded-xl bg-primary-600 flex items-center justify-center">
-            <BookUser className="w-7 h-7 text-white" />
-          </div>
+    <div
+      className="min-h-screen relative flex flex-col items-center justify-center py-12 px-4"
+      style={{
+        backgroundImage: 'url(/background.jpg)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundColor: '#1a0405',
+      }}
+    >
+      {/* Book background effect */}
+      <div className="absolute inset-0 flex justify-center items-center pointer-events-none select-none overflow-hidden">
+        <div style={{ position: 'relative', width: 'clamp(300px, 72vw, 680px)' }}>
+          <div style={{
+            position: 'absolute', inset: '-15px',
+            backgroundImage: 'url(/contactbook_animated.gif)',
+            backgroundSize: 'calc(100% + 30px)', backgroundPosition: 'center top',
+            filter: 'blur(22px)', opacity: 0.65,
+            maskImage: 'radial-gradient(ellipse 95% 95% at 50% 50%, transparent 50%, rgba(0,0,0,0.5) 68%, black 85%)',
+            WebkitMaskImage: 'radial-gradient(ellipse 95% 95% at 50% 50%, transparent 50%, rgba(0,0,0,0.5) 68%, black 85%)',
+          }} />
+          <img
+            src="/contactbook_animated.gif"
+            alt=""
+            aria-hidden="true"
+            style={{
+              width: '100%', height: 'auto', display: 'block', opacity: 0.90,
+              maskImage: 'radial-gradient(ellipse 84% 84% at 50% 50%, black 28%, rgba(0,0,0,0.92) 42%, rgba(0,0,0,0.65) 56%, rgba(0,0,0,0.28) 70%, rgba(0,0,0,0.07) 84%, transparent 96%)',
+              WebkitMaskImage: 'radial-gradient(ellipse 84% 84% at 50% 50%, black 28%, rgba(0,0,0,0.92) 42%, rgba(0,0,0,0.65) 56%, rgba(0,0,0,0.28) 70%, rgba(0,0,0,0.07) 84%, transparent 96%)',
+            }}
+          />
         </div>
-        <h2 className="mt-4 text-center text-2xl font-bold text-zinc-900">Vytvořit účet</h2>
-        <p className="mt-1 text-center text-sm text-zinc-500">
-          Máš už účet?{' '}
-          <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
-            Přihlásit se
-          </Link>
-        </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="card p-8">
+      {/* Content */}
+      <div className="relative z-10 w-full max-w-md">
+        <div className="text-center mb-8">
+          <p
+            className="text-white/75 text-sm italic mb-4"
+            style={{ textShadow: '0 2px 8px rgba(0,0,0,0.95), 0 0 20px rgba(0,0,0,0.8)' }}
+          >
+            Vztahy jsou jediné bohatství, které roste tím, že ho dáváš.
+          </p>
+          <h1
+            className="text-3xl font-bold text-white"
+            style={{ textShadow: '0 3px 14px rgba(0,0,0,0.98), 0 0 35px rgba(0,0,0,0.9)' }}
+          >
+            Tvé kontakty,{' '}<span className="text-yellow-300">tvé bohatství</span>
+          </h1>
+        </div>
+
+        <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-8 shadow-2xl">
+          <h2 className="text-xl font-bold text-zinc-900 mb-1">Vytvořit účet</h2>
+          <p className="text-sm text-zinc-500 mb-6">
+            Máš už účet?{' '}
+            <Link to="/login" className="text-primary-600 hover:text-primary-700 font-medium">
+              Přihlásit se
+            </Link>
+          </p>
+
           {serverError && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
               {serverError}

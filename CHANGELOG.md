@@ -2,6 +2,31 @@
 
 ---
 
+## [2026-05-27] — Redesign přihlašovací a registrační stránky
+
+### Co bylo uděláno
+- **Login.tsx a Register.tsx** — kompletně přepsány s pozadím Landing page: `background.jpg` + animovaný `contactbook_animated.gif` s blur/mask efektem na okrajích (stejný jako na Landing)
+- **Nadpis** "Tvé kontakty, tvé bohatství" (žlutá "tvé bohatství") a citát "Vztahy jsou jediné bohatství, které roste tím, že ho dáváš." zobrazeny nad formulářem
+- **Formulářová karta** — semi-transparentní bílá (`bg-white/95 backdrop-blur-sm`) se zaoblenými rohy a stínem, překrývá pozadí
+- Odstraněna ikona `BookUser` — nahrazena čistším nadpisem přímo v kartě
+
+### Proč
+Uživatelka chtěla, aby přihlašovací a registrační stránky sdílely vizuální identitu Landing page — krásné tmavé pozadí s knihou — místo generického světlého layoutu.
+
+### Soubory změněny
+- `frontend/src/pages/Login.tsx`
+- `frontend/src/pages/Register.tsx`
+
+### Nasazení na server
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
 ## [2026-05-26] — Oprava ukládání kontaktů + read-only režim polí
 
 ### Co bylo uděláno
