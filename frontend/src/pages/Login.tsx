@@ -137,6 +137,12 @@ export default function Login() {
             <button type="submit" disabled={isSubmitting} className="btn-primary w-full py-2.5">
               {isSubmitting ? 'Přihlašování…' : 'Přihlásit se'}
             </button>
+
+            <div className="text-center">
+              <Link to="/forgot-password" className="text-sm text-zinc-400 hover:text-primary-600 transition-colors">
+                Zapomenuté heslo?
+              </Link>
+            </div>
           </form>
         </div>
       </div>

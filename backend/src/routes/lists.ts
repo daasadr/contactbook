@@ -11,7 +11,10 @@ const createListSchema = z.object({
   template_type: z.enum(['networking', 'business', 'personal', 'general', 'custom']),
   icon: z.string().max(50).optional(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
-  background: z.string().max(500).nullable().optional(),
+  background: z.string().max(500).nullable().optional().refine(
+    v => v === null || v === undefined || /^(#[0-9a-fA-F]{3,8}|linear-gradient\(.{1,500}\)|\/[a-zA-Z0-9_.-]{1,100})$/.test(v),
+    'Neplatná hodnota pozadí'
+  ),
 })
 
 const updateListSchema = createListSchema.partial()

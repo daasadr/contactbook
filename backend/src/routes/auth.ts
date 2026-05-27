@@ -3,15 +3,27 @@ import bcrypt from 'bcrypt'
 import crypto from 'crypto'
 import { z } from 'zod'
 import { sql } from '../db'
+import { config } from '../config'
+import { sendEmail, passwordResetEmailHtml } from '../lib/email'
 
 const BCRYPT_ROUNDS = 12
 const ACCESS_TOKEN_TTL = '15m'
 const REFRESH_TOKEN_DAYS = 30
+const PASSWORD_RESET_MINUTES = 60
+
+const strongPasswordSchema = z
+  .string()
+  .min(8, 'Heslo musí mít alespoň 8 znaků')
+  .max(128, 'Heslo je příliš dlouhé')
+  .regex(/[A-Z]/, 'Heslo musí obsahovat alespoň jedno velké písmeno')
+  .regex(/[a-z]/, 'Heslo musí obsahovat alespoň jedno malé písmeno')
+  .regex(/[0-9]/, 'Heslo musí obsahovat alespoň jednu číslici')
+  .regex(/[^A-Za-z0-9]/, 'Heslo musí obsahovat alespoň jeden speciální znak (!, @, #, $ …)')
 
 const registerSchema = z.object({
   name: z.string().min(2).max(100),
   email: z.string().email(),
-  password: z.string().min(8).max(128),
+  password: strongPasswordSchema,
 })
 
 const loginSchema = z.object({
@@ -19,9 +31,20 @@ const loginSchema = z.object({
   password: z.string().min(1),
 })
 
+const forgotPasswordSchema = z.object({
+  email: z.string().email(),
+})
+
+const resetPasswordSchema = z.object({
+  token: z.string().min(1),
+  password: strongPasswordSchema,
+})
+
+const authRateLimit = { config: { rateLimit: { max: 10, timeWindow: '15 minutes' } } }
+
 export async function authRoutes(app: FastifyInstance) {
   // POST /auth/register
-  app.post('/register', async (request, reply) => {
+  app.post('/register', authRateLimit, async (request, reply) => {
     const body = registerSchema.safeParse(request.body)
     if (!body.success) {
       return reply.status(400).send({ error: 'Neplatná data', details: body.error.flatten().fieldErrors })
@@ -48,7 +71,7 @@ export async function authRoutes(app: FastifyInstance) {
   })
 
   // POST /auth/login
-  app.post('/login', async (request, reply) => {
+  app.post('/login', authRateLimit, async (request, reply) => {
     const body = loginSchema.safeParse(request.body)
     if (!body.success) {
       return reply.status(400).send({ error: 'Neplatná data' })
@@ -77,6 +100,67 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.send({ user: safeUser, accessToken })
   })
 
+  // POST /auth/forgot-password
+  app.post('/forgot-password', authRateLimit, async (request, reply) => {
+    const body = forgotPasswordSchema.safeParse(request.body)
+    if (!body.success) {
+      return reply.status(400).send({ error: 'Neplatný e-mail' })
+    }
+
+    const [user] = await sql`SELECT id, name FROM users WHERE email = ${body.data.email}`
+
+    // Always respond ok — don't leak whether the email is registered
+    if (!user) return reply.send({ ok: true })
+
+    // Delete any existing reset tokens for this user
+    await sql`DELETE FROM password_reset_tokens WHERE user_id = ${user.id}`
+
+    const token = crypto.randomBytes(48).toString('hex')
+    const tokenHash = hashToken(token)
+    const expiresAt = new Date(Date.now() + PASSWORD_RESET_MINUTES * 60 * 1000)
+
+    await sql`
+      INSERT INTO password_reset_tokens (user_id, token_hash, expires_at)
+      VALUES (${user.id}, ${tokenHash}, ${expiresAt})
+    `
+
+    const resetUrl = `${config.APP_URL}/reset-password?token=${token}`
+    await sendEmail({
+      to: body.data.email,
+      subject: 'Resetování hesla — Peopleworth',
+      html: passwordResetEmailHtml(user.name, resetUrl),
+    })
+
+    return reply.send({ ok: true })
+  })
+
+  // POST /auth/reset-password
+  app.post('/reset-password', authRateLimit, async (request, reply) => {
+    const body = resetPasswordSchema.safeParse(request.body)
+    if (!body.success) {
+      return reply.status(400).send({ error: 'Neplatná data', details: body.error.flatten().fieldErrors })
+    }
+
+    const tokenHash = hashToken(body.data.token)
+    const [resetToken] = await sql`
+      SELECT id, user_id FROM password_reset_tokens
+      WHERE token_hash = ${tokenHash}
+        AND expires_at > NOW()
+        AND used_at IS NULL
+    `
+    if (!resetToken) {
+      return reply.status(400).send({ error: 'Odkaz pro reset hesla je neplatný nebo vypršel.' })
+    }
+
+    const password_hash = await bcrypt.hash(body.data.password, BCRYPT_ROUNDS)
+    await sql`UPDATE users SET password_hash = ${password_hash} WHERE id = ${resetToken.user_id}`
+    await sql`UPDATE password_reset_tokens SET used_at = NOW() WHERE id = ${resetToken.id}`
+    // Invalidate all sessions
+    await sql`DELETE FROM refresh_tokens WHERE user_id = ${resetToken.user_id}`
+
+    return reply.send({ ok: true })
+  })
+
   // POST /auth/refresh
   app.post('/refresh', async (request, reply) => {
     const token = (request.cookies as Record<string, string>)['refresh_token']
@@ -95,7 +179,6 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(401).send({ error: 'Neplatný nebo expirovaný refresh token' })
     }
 
-    // Rotace refresh tokenu
     await sql`DELETE FROM refresh_tokens WHERE token_hash = ${tokenHash}`
     const newRefreshToken = await issueRefreshToken(stored.user_id)
     const accessToken = app.jwt.sign({ id: stored.user_id }, { expiresIn: ACCESS_TOKEN_TTL })
@@ -118,7 +201,7 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.send({ ok: true })
   })
 
-  // GET /auth/me — ověření stavu přihlášení
+  // GET /auth/me
   app.get('/me', async (request, reply) => {
     try {
       await request.jwtVerify()
@@ -142,7 +225,6 @@ async function issueRefreshToken(userId: string): Promise<string> {
     INSERT INTO refresh_tokens (user_id, token_hash, expires_at)
     VALUES (${userId}, ${tokenHash}, ${expiresAt})
   `
-  // Smazat staré expirované tokeny uživatele
   await sql`DELETE FROM refresh_tokens WHERE user_id = ${userId} AND expires_at < NOW()`
   return token
 }

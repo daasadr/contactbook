@@ -11,6 +11,16 @@ import clsx from 'clsx'
 
 const MONTHS_CS = ['Leden', 'Únor', 'Březen', 'Duben', 'Květen', 'Červen', 'Červenec', 'Srpen', 'Září', 'Říjen', 'Listopad', 'Prosinec']
 
+function safeLinkUrl(url: unknown): string | null {
+  if (typeof url !== 'string' || !url) return null
+  try {
+    const parsed = new URL(url)
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:' ? url : null
+  } catch {
+    return null
+  }
+}
+
 function displayFieldValue(field: FieldDefinition, value: unknown): string {
   if (value === undefined || value === null || value === '') return ''
   if (field.field_type === 'checkbox') return value ? 'Ano' : ''
@@ -187,7 +197,18 @@ function FieldRow({ field, value, onChange, isEditing, onToggleEdit }: {
         </button>
       </div>
       {display ? (
-        <p className={clsx('text-sm text-zinc-800 break-words', isTextarea && 'whitespace-pre-wrap')}>{display}</p>
+        field.field_type === 'url' && safeLinkUrl(value) ? (
+          <a
+            href={safeLinkUrl(value)!}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-primary-600 hover:underline break-words"
+          >
+            {display}
+          </a>
+        ) : (
+          <p className={clsx('text-sm text-zinc-800 break-words', isTextarea && 'whitespace-pre-wrap')}>{display}</p>
+        )
       ) : (
         <p className="text-sm text-zinc-300">—</p>
       )}

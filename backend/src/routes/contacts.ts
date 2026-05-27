@@ -8,7 +8,10 @@ const createContactSchema = z.object({
   last_name: z.string().max(255).optional(),
   custom_data: z.record(z.unknown()).optional().default({}),
   is_starred: z.boolean().optional().default(false),
-  background: z.string().max(500).nullable().optional(),
+  background: z.string().max(500).nullable().optional().refine(
+    v => v === null || v === undefined || /^(#[0-9a-fA-F]{3,8}|linear-gradient\(.{1,500}\)|\/[a-zA-Z0-9_.-]{1,100})$/.test(v),
+    'Neplatná hodnota pozadí'
+  ),
 })
 
 const updateContactSchema = createContactSchema.partial()

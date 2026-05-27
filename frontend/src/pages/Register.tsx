@@ -6,11 +6,12 @@ import { z } from 'zod'
 import { Eye, EyeOff } from 'lucide-react'
 import { authApi } from '@/api/auth'
 import { useAuthStore } from '@/stores/auth'
+import { strongPasswordSchema, PASSWORD_CHECKS } from '@/lib/password'
 
 const schema = z.object({
   name: z.string().min(2, 'Jméno musí mít alespoň 2 znaky').max(100),
   email: z.string().email('Neplatný e-mail'),
-  password: z.string().min(8, 'Heslo musí mít alespoň 8 znaků').max(128),
+  password: strongPasswordSchema,
   passwordConfirm: z.string(),
 }).refine((d) => d.password === d.passwordConfirm, {
   message: 'Hesla se neshodují',
@@ -18,15 +19,34 @@ const schema = z.object({
 })
 type FormData = z.infer<typeof schema>
 
+function PasswordStrengthIndicator({ password }: { password: string }) {
+  if (!password) return null
+  return (
+    <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-0.5">
+      {PASSWORD_CHECKS.map(({ label, test }) => {
+        const ok = test(password)
+        return (
+          <div key={label} className={`flex items-center gap-1 text-xs ${ok ? 'text-green-600' : 'text-zinc-400'}`}>
+            <span className="font-bold">{ok ? '✓' : '○'}</span>
+            <span>{label}</span>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 export default function Register() {
   const [showPwd, setShowPwd] = useState(false)
   const [serverError, setServerError] = useState('')
   const { setAuth } = useAuthStore()
   const navigate = useNavigate()
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
   })
+
+  const watchedPassword = watch('password', '')
 
   const onSubmit = async (data: FormData) => {
     setServerError('')
@@ -138,7 +158,7 @@ export default function Register() {
                   type={showPwd ? 'text' : 'password'}
                   autoComplete="new-password"
                   className={`input pr-10 ${errors.password ? 'input-error' : ''}`}
-                  placeholder="Alespoň 8 znaků"
+                  placeholder="Min. 8 znaků, velká, malá, číslice, znak"
                 />
                 <button
                   type="button"
@@ -148,7 +168,8 @@ export default function Register() {
                   {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
-              {errors.password && <p className="error-text">{errors.password.message}</p>}
+              <PasswordStrengthIndicator password={watchedPassword} />
+              {errors.password && <p className="error-text mt-1">{errors.password.message}</p>}
             </div>
 
             <div>

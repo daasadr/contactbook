@@ -3,6 +3,7 @@ import fastifyJwt from '@fastify/jwt'
 import fastifyCookie from '@fastify/cookie'
 import fastifyCors from '@fastify/cors'
 import fastifyRateLimit from '@fastify/rate-limit'
+import fastifyHelmet from '@fastify/helmet'
 import { config } from './config'
 import { authRoutes } from './routes/auth'
 import { listsRoutes } from './routes/lists'
@@ -16,6 +17,12 @@ export async function buildApp() {
     },
     trustProxy: true,
     bodyLimit: 10 * 1024 * 1024, // 10 MB
+  })
+
+  // Security headers
+  await app.register(fastifyHelmet, {
+    contentSecurityPolicy: false, // CSP is handled by nginx for the SPA
+    crossOriginResourcePolicy: { policy: 'same-site' },
   })
 
   // CORS
@@ -34,7 +41,7 @@ export async function buildApp() {
     sign: { algorithm: 'HS256' },
   })
 
-  // Rate limiting — globálně + přísnější na auth endpointech
+  // Rate limiting — 200 req/min globally; auth routes use stricter per-route limits
   await app.register(fastifyRateLimit, {
     max: 200,
     timeWindow: '1 minute',

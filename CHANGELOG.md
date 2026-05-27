@@ -2,6 +2,68 @@
 
 ---
 
+## [2026-05-27] — Reset hesla, silné heslo, XSS ochrana
+
+### Co bylo uděláno
+
+**Reset hesla e-mailem:**
+- **Migrace `005_password_reset_tokens.sql`** — nová tabulka `password_reset_tokens` (user_id, token_hash, expires_at, used_at)
+- **`backend/src/lib/email.ts`** — emailová služba přes Resend SDK; bez `RESEND_API_KEY` vypisuje odkaz do konzole (dev mode)
+- **`backend/src/routes/auth.ts`** — nové endpointy `POST /auth/forgot-password` a `POST /auth/reset-password`; reset token platí 1 hodinu; po resetu se zneplatní všechny session tokeny
+- **`frontend/src/api/auth.ts`** — přidány metody `forgotPassword()` a `resetPassword()`
+- **`frontend/src/pages/ForgotPassword.tsx`** — formulář pro zadání e-mailu; vždy zobrazí "odkaz odeslán" (neleakuje zda email existuje)
+- **`frontend/src/pages/ResetPassword.tsx`** — formulář pro zadání nového hesla; čte token z URL query parametru
+- **`frontend/src/App.tsx`** — nové routes `/forgot-password` a `/reset-password`
+- **`frontend/src/pages/Login.tsx`** — přidán odkaz "Zapomenuté heslo?"
+
+**Silné heslo:**
+- **`frontend/src/lib/password.ts`** — sdílené Zod schéma (`strongPasswordSchema`) a konstanty pro vizuální indikátor
+- **`backend/src/routes/auth.ts`** — `strongPasswordSchema` (min 8, velká, malá, číslice, speciální znak) aplikovaný na `/register` a `/reset-password`
+- **`frontend/src/pages/Register.tsx`** — živý indikátor síly hesla (5 podmínek, zelenají se při splnění)
+
+**XSS ochrana:**
+- **`@fastify/helmet`** — přidáno do `app.ts`; zajišťuje `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` a další security headers na všech API odpovědích
+- **Rate limit na auth endpointech** — `/register`, `/login`, `/forgot-password`, `/reset-password` omezeny na 10 požadavků / 15 minut per IP (původní globální limit 200/min zůstává)
+- **Validace hodnoty pozadí** — `lists.ts` a `contacts.ts` ověřují, že `background` je null nebo odpovídá povoleným vzorům (hex, gradient, `/cesta.jpg`); brání CSS injection přes API
+- **URL pole klikatelná a bezpečná** — `ContactDetail.tsx` renderuje URL pole jako `<a target="_blank" rel="noopener noreferrer">` pouze pro `http://` a `https://` schémata (blokuje `javascript:` a jiné)
+
+### Proč
+Chyběl základní recovery flow — uživatel uvízlý bez hesla musel kontaktovat správce. Požadavek na silné heslo byl jen na frontendu (min. 8 znaků), ne na backendu. XSS vektory byly nízká rizika díky React JSX escapování, ale CSS injection přes API a chybějící security headers byly zbytečná slabá místa.
+
+### Soubory změněny
+- `backend/src/db/migrations/005_password_reset_tokens.sql` (nový)
+- `backend/src/lib/email.ts` (nový)
+- `backend/src/config.ts`
+- `backend/src/app.ts`
+- `backend/src/routes/auth.ts`
+- `backend/src/routes/lists.ts`
+- `backend/src/routes/contacts.ts`
+- `frontend/src/lib/password.ts` (nový)
+- `frontend/src/pages/ForgotPassword.tsx` (nový)
+- `frontend/src/pages/ResetPassword.tsx` (nový)
+- `frontend/src/pages/Register.tsx`
+- `frontend/src/pages/Login.tsx`
+- `frontend/src/pages/ContactDetail.tsx`
+- `frontend/src/api/auth.ts`
+- `frontend/src/App.tsx`
+
+### Nasazení na server
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+**Env proměnné k přidání** do `.env` na serveru (volitelné pro e-mail):
+```
+RESEND_API_KEY=re_xxxx          # z resend.com — bez toho se odkaz jen loguje
+FROM_EMAIL=Peopleworth <noreply@peopleworth.eu>
+APP_URL=https://peopleworth.eu
+```
+
+---
+
 ## [2026-05-27] — Pozadí pro stránku skupiny, kontaktu + oprava obrázků
 
 ### Co bylo uděláno

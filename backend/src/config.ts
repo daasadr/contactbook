@@ -8,6 +8,9 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(32),
   JWT_REFRESH_SECRET: z.string().min(32),
   CORS_ORIGIN: z.string().default('http://localhost:5173'),
+  RESEND_API_KEY: z.string().optional(),
+  FROM_EMAIL: z.string().default('Peopleworth <noreply@peopleworth.eu>'),
+  APP_URL: z.string().default('https://peopleworth.eu'),
 })
 
 const parsed = envSchema.safeParse(process.env)
