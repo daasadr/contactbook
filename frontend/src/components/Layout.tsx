@@ -1,4 +1,4 @@
-import { ReactNode } from 'react'
+import { ReactNode, CSSProperties } from 'react'
 import Navbar from './Navbar'
 
 interface Props {
@@ -16,16 +16,21 @@ const maxWidthMap = {
   full: 'max-w-full',
 }
 
+function getBgStyle(bg: string): CSSProperties {
+  if (bg.startsWith('linear-gradient')) {
+    return { backgroundImage: bg, backgroundSize: 'cover', backgroundAttachment: 'fixed' }
+  }
+  if (bg.startsWith('#') || bg.startsWith('rgb')) {
+    return { backgroundColor: bg }
+  }
+  return { backgroundImage: `url(${bg})`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundAttachment: 'fixed' }
+}
+
 export default function Layout({ children, maxWidth = 'xl', bgImage }: Props) {
   return (
     <div
       className="min-h-screen bg-zinc-50"
-      style={bgImage ? {
-        backgroundImage: `url(${bgImage})`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundAttachment: 'fixed',
-      } : undefined}
+      style={bgImage ? getBgStyle(bgImage) : undefined}
     >
       <Navbar />
       <main className={`${maxWidthMap[maxWidth]} mx-auto px-4 sm:px-6 lg:px-8 py-8`}>

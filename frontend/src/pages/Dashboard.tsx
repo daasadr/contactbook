@@ -205,8 +205,18 @@ export default function Dashboard() {
     <Layout bgImage="/peopleworth2.jpg">
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-900 drop-shadow-sm">Moje seznamy</h1>
-          <p className="text-zinc-700 text-sm mt-1">Vítej zpět, {user?.name} 👋</p>
+          <h1
+            className="text-2xl font-bold text-white"
+            style={{ textShadow: '0 2px 10px rgba(0,0,0,0.7)' }}
+          >
+            Moje seznamy
+          </h1>
+          <p
+            className="text-sm text-white/75 font-light tracking-wide mt-1"
+            style={{ textShadow: '0 1px 6px rgba(0,0,0,0.8)' }}
+          >
+            Vítej zpět, {user?.name} 👋
+          </p>
         </div>
         <button onClick={() => setShowCreate(true)} className="btn-primary">
           <Plus className="w-4 h-4" /> Nový seznam
