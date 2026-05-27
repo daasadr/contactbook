@@ -5,7 +5,7 @@ import { ArrowLeft, Star, Trash2, Save, User, Bell, ChevronDown, ChevronUp, PenL
 import Layout from '@/components/Layout'
 import { contactsApi } from '@/api/contacts'
 import { listsApi } from '@/api/lists'
-import { BACKGROUNDS, getSwatchStyle, isBgDark } from '@/lib/backgrounds'
+import { BACKGROUNDS, getSwatchStyle } from '@/lib/backgrounds'
 import type { FieldDefinition } from '@/types'
 import clsx from 'clsx'
 
