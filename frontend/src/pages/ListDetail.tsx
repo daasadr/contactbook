@@ -78,7 +78,7 @@ function ContactCard({ contact, listId }: { contact: Contact; listId: string }) 
     .join('')
 
   return (
-    <div className="card flex items-center gap-4 p-4 hover:shadow-md transition-all group">
+    <div className="card flex items-center gap-4 p-4 hover:shadow-md transition-all group bg-white/90 backdrop-blur-sm">
       <Link to={`/lists/${listId}/contacts/${contact.id}`} className="flex items-center gap-4 flex-1 min-w-0">
         <div className="w-10 h-10 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center font-semibold text-sm shrink-0">
           {initials || <User className="w-5 h-5" />}
@@ -129,7 +129,7 @@ export default function ListDetail() {
   const list = listData
 
   return (
-    <Layout>
+    <Layout bgImage={list?.background || undefined}>
       {/* Hlavička */}
       <div className="flex items-center gap-4 mb-6">
         <Link to="/dashboard" className="btn-ghost p-2 text-zinc-500">

@@ -8,6 +8,7 @@ const createContactSchema = z.object({
   last_name: z.string().max(255).optional(),
   custom_data: z.record(z.unknown()).optional().default({}),
   is_starred: z.boolean().optional().default(false),
+  background: z.string().max(500).nullable().optional(),
 })
 
 const updateContactSchema = createContactSchema.partial()
@@ -102,20 +103,22 @@ export async function contactsRoutes(app: FastifyInstance) {
     const [existing] = await sql`SELECT * FROM contacts WHERE id = ${contactId} AND list_id = ${listId}`
     if (!existing) return reply.status(404).send({ error: 'Kontakt nenalezen' })
 
-    const { first_name, last_name, is_starred, custom_data } = body.data
+    const { first_name, last_name, is_starred, custom_data, background } = body.data
 
     const newFirstName = first_name !== undefined ? first_name : existing.first_name
     const newLastName = last_name !== undefined ? (last_name || null) : existing.last_name
     const newIsStarred = is_starred !== undefined ? is_starred : existing.is_starred
     const rawJson = custom_data !== undefined ? custom_data : existing.custom_data
     const newCustomData = (rawJson !== null && typeof rawJson === 'object' && !Array.isArray(rawJson)) ? rawJson : {}
+    const newBackground = background !== undefined ? (background ?? null) : existing.background
 
     const [updated] = await sql`
       UPDATE contacts
       SET first_name = ${newFirstName},
           last_name = ${newLastName},
           is_starred = ${newIsStarred},
-          custom_data = ${sql.json(newCustomData as any)}
+          custom_data = ${sql.json(newCustomData as any)},
+          background = ${newBackground}
       WHERE id = ${contactId}
       RETURNING *
     `

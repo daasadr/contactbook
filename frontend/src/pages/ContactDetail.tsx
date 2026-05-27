@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Trash2, Save, User, Bell, ChevronDown, ChevronUp, PenLine } from 'lucide-react'
+import { ArrowLeft, Star, Trash2, Save, User, Bell, ChevronDown, ChevronUp, PenLine, Palette, Check } from 'lucide-react'
 import Layout from '@/components/Layout'
 import { contactsApi } from '@/api/contacts'
+import { listsApi } from '@/api/lists'
+import { BACKGROUNDS, getSwatchStyle, isBgDark } from '@/lib/backgrounds'
 import type { FieldDefinition } from '@/types'
 import clsx from 'clsx'
 
@@ -214,6 +216,8 @@ export default function ContactDetail() {
   const [detailsExpanded, setDetailsExpanded] = useState(false)
   const [editingFields, setEditingFields] = useState<Set<string>>(new Set())
   const [nameEditing, setNameEditing] = useState(false)
+  const [contactBg, setContactBg] = useState<string | null | undefined>(undefined)
+  const [showBgPicker, setShowBgPicker] = useState(false)
 
   const { data: contactData, isLoading: contactLoading } = useQuery({
     queryKey: ['contact', contactId],
@@ -228,9 +232,16 @@ export default function ContactDetail() {
       setLastName(contactData.last_name ?? '')
       const raw = contactData.custom_data
       setCustomData(raw !== null && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, unknown> : {})
+      setContactBg(contactData.background ?? null)
       setInitialized(true)
     }
   }, [contactData, initialized])
+
+  const { data: listData } = useQuery({
+    queryKey: ['list', listId],
+    queryFn: () => listsApi.getOne(listId!).then(r => r.data.list),
+    enabled: !!listId,
+  })
 
   const { data: fieldsData } = useQuery({
     queryKey: ['fields', listId],
@@ -255,6 +266,7 @@ export default function ContactDetail() {
       first_name: firstName,
       last_name: lastName || undefined,
       custom_data: customData,
+      background: contactBg ?? null,
     } as any),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['contact', contactId] })
@@ -309,6 +321,7 @@ export default function ContactDetail() {
   const contact = contactData
   const fullName = [firstName, lastName].filter(Boolean).join(' ')
   const initials = [firstName, lastName].filter(Boolean).map((n) => n[0].toUpperCase()).join('')
+  const pageBg = contactBg || listData?.background || undefined
 
   if (contactLoading) {
     return (
@@ -321,13 +334,20 @@ export default function ContactDetail() {
   }
 
   return (
-    <Layout maxWidth="xl">
+    <Layout maxWidth="xl" bgImage={pageBg}>
       {/* Hlavička */}
-      <div className="flex items-center gap-3 mb-6">
+      <div className="flex items-center gap-3 mb-3">
         <Link to={`/lists/${listId}`} className="btn-ghost p-2 text-zinc-500">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex-1" />
+        <button
+          onClick={() => setShowBgPicker(!showBgPicker)}
+          title="Pozadí stránky"
+          className={clsx('btn-ghost p-2', showBgPicker ? 'text-primary-600 bg-primary-50' : 'text-zinc-400')}
+        >
+          <Palette className="w-5 h-5" />
+        </button>
         <button
           onClick={() => starMutation.mutate()}
           className={clsx('btn-ghost p-2', contact?.is_starred ? 'text-yellow-500' : 'text-zinc-400')}
@@ -342,11 +362,40 @@ export default function ContactDetail() {
         </button>
       </div>
 
+      {/* Picker pozadí */}
+      {showBgPicker && (
+        <div className="card p-4 mb-4 bg-white/95">
+          <p className="text-xs text-zinc-500 mb-3">
+            Pozadí stránky kontaktu — výchozí je pozadí skupiny
+            {listData?.background ? ` (${BACKGROUNDS.find(b => b.value === listData.background)?.label ?? 'vlastní'})` : ' (žádné)'}
+          </p>
+          <div className="grid grid-cols-10 gap-1.5">
+            {BACKGROUNDS.map((bg) => (
+              <button
+                key={bg.id}
+                type="button"
+                title={bg.label}
+                onClick={() => setContactBg(bg.value)}
+                className={`relative w-8 h-8 rounded-lg border-2 transition-all ${(contactBg ?? null) === bg.value ? 'border-primary-500 scale-110 shadow-md' : 'border-zinc-200 hover:border-zinc-400'}`}
+                style={getSwatchStyle(bg.value)}
+              >
+                {(contactBg ?? null) === bg.value && (
+                  <span className="absolute inset-0 flex items-center justify-center">
+                    <Check className={`w-3.5 h-3.5 ${bg.dark ? 'text-white' : 'text-zinc-700'}`} />
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-zinc-400 mt-2">Změna se uloží tlačítkem "Uložit změny" níže.</p>
+        </div>
+      )}
+
       {/* HORNÍ ŘADA: Profil + Aktuality */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
 
         {/* Profil karta */}
-        <div className="card p-6">
+        <div className="card p-6 bg-white/90 backdrop-blur-sm">
           <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4">Profil</h2>
 
           {/* Avatar + jméno */}
@@ -402,7 +451,7 @@ export default function ContactDetail() {
         </div>
 
         {/* Aktuality — placeholder */}
-        <div className="card p-6 flex flex-col items-center justify-center min-h-[220px] border-dashed border-zinc-200">
+        <div className="card p-6 flex flex-col items-center justify-center min-h-[220px] border-dashed border-zinc-200 bg-white/80 backdrop-blur-sm">
           <Bell className="w-10 h-10 text-zinc-200 mb-3" />
           <p className="text-sm font-medium text-zinc-400">Připomínky a aktuality</p>
           <p className="text-xs text-zinc-300 mt-1">Narozeniny, výročí, AI tipy… Připravujeme</p>
@@ -413,7 +462,7 @@ export default function ContactDetail() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">
 
         {/* Podrobnosti (3/5) */}
-        <div className="lg:col-span-3 card p-6">
+        <div className="lg:col-span-3 card p-6 bg-white/90 backdrop-blur-sm">
           <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide mb-4">Podrobnosti</h2>
 
           {detailFields.length === 0 ? (
@@ -458,7 +507,7 @@ export default function ContactDetail() {
         </div>
 
         {/* Kniha záznamů (2/5) */}
-        <div className="lg:col-span-2 card p-2 flex flex-col">
+        <div className="lg:col-span-2 card p-2 flex flex-col bg-white/90 backdrop-blur-sm">
           <Link
             to={`/lists/${listId}/contacts/${contactId}/events`}
             className="group flex flex-col flex-1 hover:opacity-90 transition-opacity"

@@ -46,6 +46,7 @@ export interface Contact {
   avatar_url: string | null
   custom_data: Record<string, unknown>
   is_starred: boolean
+  background: string | null
   created_at: string
   updated_at: string
 }

@@ -8,6 +8,7 @@ import { z } from 'zod'
 import Layout from '@/components/Layout'
 import { listsApi } from '@/api/lists'
 import { useAuthStore } from '@/stores/auth'
+import { BACKGROUNDS, getSwatchStyle, isBgDark } from '@/lib/backgrounds'
 import type { ContactList, TemplateMeta } from '@/types'
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -18,45 +19,11 @@ const iconMap: Record<string, React.ReactNode> = {
   settings: <Settings2 className="w-5 h-5" />,
 }
 
-const BACKGROUNDS: Array<{ id: string; label: string; value: string | null; dark: boolean }> = [
-  { id: 'none', label: 'Výchozí', value: null, dark: false },
-  { id: 'white', label: 'Bílá', value: '#ffffff', dark: false },
-  { id: 'cream', label: 'Krémová', value: '#faf7f0', dark: false },
-  { id: 'mint', label: 'Mátová', value: '#ecfdf5', dark: false },
-  { id: 'sky', label: 'Nebeská', value: '#eff6ff', dark: false },
-  { id: 'lavender', label: 'Levandule', value: '#f5f3ff', dark: false },
-  { id: 'rose', label: 'Růžová', value: '#fff1f2', dark: false },
-  { id: 'amber', label: 'Jantarová', value: '#fffbeb', dark: false },
-  { id: 'slate', label: 'Břidlice', value: '#1e293b', dark: true },
-  { id: 'black', label: 'Černá', value: '#18181b', dark: true },
-  { id: 'sunrise', label: 'Západ slunce', value: 'linear-gradient(135deg, #f6d365 0%, #fda085 100%)', dark: false },
-  { id: 'morning', label: 'Ranní obloha', value: 'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)', dark: false },
-  { id: 'forest', label: 'Les', value: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)', dark: false },
-  { id: 'lilac', label: 'Šeřík', value: 'linear-gradient(135deg, #a18cd1 0%, #fbc2eb 100%)', dark: false },
-  { id: 'night', label: 'Noční obloha', value: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', dark: true },
-  { id: 'rosegold', label: 'Růžové zlato', value: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', dark: true },
-  { id: 'ocean', label: 'Oceán', value: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', dark: false },
-  { id: 'abyss', label: 'Hlubina', value: 'linear-gradient(135deg, #30cfd0 0%, #330867 100%)', dark: true },
-  { id: 'space', label: 'Vesmír', value: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)', dark: true },
-  { id: 'peach', label: 'Broskev', value: 'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)', dark: false },
-]
-
-function getSwatchStyle(value: string | null): React.CSSProperties {
-  if (!value) return { background: 'repeating-linear-gradient(-45deg, #e4e4e7 0px, #e4e4e7 4px, #f9f9f9 4px, #f9f9f9 8px)' }
-  if (value.startsWith('linear-gradient')) return { backgroundImage: value }
-  return { backgroundColor: value }
-}
-
 function getHeaderBgStyle(list: ContactList): React.CSSProperties {
   const bg = list.background
   if (!bg) return { backgroundColor: list.color + '28' }
   if (bg.startsWith('linear-gradient')) return { backgroundImage: bg }
   return { backgroundColor: bg }
-}
-
-function isListBgDark(list: ContactList): boolean {
-  if (!list.background) return false
-  return BACKGROUNDS.find(b => b.value === list.background)?.dark ?? false
 }
 
 const createSchema = z.object({
@@ -173,7 +140,7 @@ function CreateListModal({ onClose }: { onClose: () => void }) {
                   </button>
                 ))}
               </div>
-              {/* Preview */}
+              {/* Live preview */}
               <div
                 className="mt-3 h-12 rounded-xl border border-zinc-200 flex items-center px-4 gap-3 transition-all"
                 style={getSwatchStyle(selectedBg)}
@@ -182,14 +149,14 @@ function CreateListModal({ onClose }: { onClose: () => void }) {
                   className="w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0"
                   style={{
                     backgroundColor: selectedBg ? 'rgba(255,255,255,0.35)' : selectedTemplate.color + '20',
-                    color: selectedBg ? (BACKGROUNDS.find(b => b.value === selectedBg)?.dark ? '#fff' : selectedTemplate.color) : selectedTemplate.color,
+                    color: selectedBg ? (isBgDark(selectedBg) ? '#fff' : selectedTemplate.color) : selectedTemplate.color,
                   }}
                 >
                   {iconMap[selectedTemplate.icon] ?? <Users className="w-4 h-4" />}
                 </div>
                 <span
                   className="text-sm font-medium"
-                  style={{ color: selectedBg && BACKGROUNDS.find(b => b.value === selectedBg)?.dark ? '#fff' : '#18181b' }}
+                  style={{ color: isBgDark(selectedBg) ? '#fff' : '#18181b' }}
                 >
                   {BACKGROUNDS.find(b => b.value === selectedBg)?.label ?? 'Výchozí'}
                 </span>
@@ -239,7 +206,7 @@ export default function Dashboard() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-zinc-900 drop-shadow-sm">Moje seznamy</h1>
-          <p className="text-zinc-600 text-sm mt-1">Vítej zpět, {user?.name} 👋</p>
+          <p className="text-zinc-700 text-sm mt-1">Vítej zpět, {user?.name} 👋</p>
         </div>
         <button onClick={() => setShowCreate(true)} className="btn-primary">
           <Plus className="w-4 h-4" /> Nový seznam
@@ -251,7 +218,7 @@ export default function Dashboard() {
           <div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : !data?.length ? (
-        <div className="text-center py-20">
+        <div className="text-center py-20 bg-white/70 backdrop-blur-sm rounded-2xl">
           <div className="w-16 h-16 bg-primary-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <BookUser className="w-8 h-8 text-primary-600" />
           </div>
@@ -264,10 +231,10 @@ export default function Dashboard() {
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {data.map((list) => {
-            const dark = isListBgDark(list)
             const hasBg = !!list.background
+            const dark = isBgDark(list.background)
             return (
-              <div key={list.id} className="rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all group relative bg-white">
+              <div key={list.id} className="rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all group relative bg-white/85 backdrop-blur-sm">
                 <Link to={`/lists/${list.id}`} className="block">
                   {/* Colored header band */}
                   <div
@@ -302,15 +269,15 @@ export default function Dashboard() {
                 <div className="absolute top-3 right-3 hidden group-hover:flex items-center gap-1">
                   <Link
                     to={`/lists/${list.id}/settings`}
-                    className="p-1.5 rounded-lg transition-colors"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.8)', color: '#71717a' }}
+                    className="p-1.5 rounded-lg transition-colors hover:text-zinc-700"
+                    style={{ backgroundColor: 'rgba(255,255,255,0.85)', color: '#71717a' }}
                   >
                     <Settings2 className="w-4 h-4" />
                   </Link>
                   <button
                     onClick={() => handleDelete(list)}
                     className="p-1.5 rounded-lg transition-colors hover:text-red-600"
-                    style={{ backgroundColor: 'rgba(255,255,255,0.8)', color: '#71717a' }}
+                    style={{ backgroundColor: 'rgba(255,255,255,0.85)', color: '#71717a' }}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -321,7 +288,7 @@ export default function Dashboard() {
 
           <button
             onClick={() => setShowCreate(true)}
-            className="rounded-2xl border-dashed border-2 border-zinc-300 hover:border-primary-400 hover:bg-primary-50/70 bg-white/60 transition-all flex items-center justify-center gap-2 p-6 text-zinc-400 hover:text-primary-600 min-h-[140px]"
+            className="rounded-2xl border-dashed border-2 border-white/60 hover:border-primary-400 bg-white/50 backdrop-blur-sm hover:bg-primary-50/70 transition-all flex items-center justify-center gap-2 p-6 text-white hover:text-primary-600 min-h-[140px] drop-shadow-sm"
           >
             <Plus className="w-5 h-5" />
             <span className="font-medium">Nový seznam</span>
