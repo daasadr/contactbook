@@ -31,8 +31,9 @@ export function buildContactSystemPrompt(params: {
   fieldData: Record<string, { label: string; value: unknown; type: string }>
   events: Array<{ title: string; content: string; event_date: string; tags: string[] }>
   listName: string
+  connections?: Array<{ name: string; listName: string; label: string | null }>
 }): string {
-  const { contactName, fieldData, events, listName } = params
+  const { contactName, fieldData, events, listName, connections } = params
 
   const fieldsSection = Object.entries(fieldData)
     .filter(([, v]) => v.value !== null && v.value !== undefined && v.value !== '')
@@ -49,6 +50,13 @@ export function buildContactSystemPrompt(params: {
           return `${date}${tags}: ${e.title}\n${e.content}`
         })
         .join('\n\n---\n\n')
+
+  const connectionsSection = !connections || connections.length === 0
+    ? '(žádná propojení)'
+    : connections.map(c => {
+        const label = c.label ? ` (${c.label})` : ''
+        return `- ${c.name} [seznam: ${c.listName}]${label}`
+      }).join('\n')
 
   return `Jsi osobní asistent aplikace Peopleworth — nástroje pro správu mezilidských vztahů.
 Pomáháš uživateli pečovat o vztahy s konkrétním člověkem z jejich života.
@@ -67,6 +75,9 @@ Seznam: ${listName}
 
 === INFORMACE O KONTAKTU ===
 ${fieldsSection}
+
+=== PROPOJENÍ (lidé, které tento kontakt zná) ===
+${connectionsSection}
 
 === KNIHA ZÁZNAMŮ (záznamy ze setkání, seřazeny od nejnovějšího) ===
 ${eventsSection}`

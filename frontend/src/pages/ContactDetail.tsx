@@ -7,6 +7,7 @@ import { contactsApi } from '@/api/contacts'
 import { listsApi } from '@/api/lists'
 import BackgroundPicker from '@/components/BackgroundPicker'
 import ContactAIChat from '@/components/ContactAIChat'
+import ContactConnections from '@/components/ContactConnections'
 import type { FieldDefinition } from '@/types'
 import clsx from 'clsx'
 
@@ -524,6 +525,11 @@ export default function ContactDetail() {
             </div>
           </Link>
         </div>
+      </div>
+
+      {/* Propojení — kdo koho zná */}
+      <div className="mb-6">
+        <ContactConnections contactId={contactId!} />
       </div>
 
       {/* Uložit */}

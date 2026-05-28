@@ -24,7 +24,7 @@ export async function aiRoutes(app: FastifyInstance) {
   // POST /ai/contacts/:contactId/chat — microchat pro konkrétní kontakt
   app.post('/contacts/:contactId/chat', { preHandler: authenticate, ...aiRateLimit }, async (request, reply) => {
     if (!isAIAvailable()) {
-      return reply.status(503).send({ error: 'AI asistent není nakonfigurován.' })
+      return reply.status(503).send({ error: 'Funkce AI asistenta není momentálně k dispozici.' })
     }
 
     const { contactId } = request.params as { contactId: string }
@@ -61,6 +61,26 @@ export async function aiRoutes(app: FastifyInstance) {
       LIMIT 40
     `
 
+    // Načti propojení (kdo koho zná)
+    const connectionRows = await sql`
+      SELECT
+        CASE WHEN r.contact_a_id = ${contactId} THEN b.first_name ELSE a.first_name END AS first_name,
+        CASE WHEN r.contact_a_id = ${contactId} THEN b.last_name  ELSE a.last_name  END AS last_name,
+        CASE WHEN r.contact_a_id = ${contactId} THEN bl.name      ELSE al.name      END AS list_name,
+        r.label
+      FROM contact_relationships r
+      JOIN contacts a  ON a.id  = r.contact_a_id
+      JOIN contacts b  ON b.id  = r.contact_b_id
+      JOIN contact_lists al ON al.id = a.list_id
+      JOIN contact_lists bl ON bl.id = b.list_id
+      WHERE r.contact_a_id = ${contactId} OR r.contact_b_id = ${contactId}
+    `
+    const connections = connectionRows.map(r => ({
+      name: [r.first_name, r.last_name].filter(Boolean).join(' '),
+      listName: r.list_name as string,
+      label: r.label as string | null,
+    }))
+
     // Sestavení mapy pole → hodnota s labelem
     const customData = (contact.custom_data ?? {}) as Record<string, unknown>
     const fieldData: Record<string, { label: string; value: unknown; type: string }> = {}
@@ -77,6 +97,7 @@ export async function aiRoutes(app: FastifyInstance) {
       fieldData,
       events: events as any[],
       listName: contact.list_name,
+      connections,
     })
 
     try {
@@ -98,9 +119,8 @@ export async function aiRoutes(app: FastifyInstance) {
 
       return reply.send({ reply: text })
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Neznámá chyba'
       request.log.error({ err }, 'AI chat error')
-      return reply.status(500).send({ error: `AI odpověď selhala: ${msg}` })
+      return reply.status(500).send({ error: 'AI asistent momentálně neodpovídá. Zkus to za chvíli.' })
     }
   })
 }

@@ -43,7 +43,13 @@ export default function ContactAIChat({ contactId, contactName }: Props) {
       const res = await aiApi.chat(contactId, next)
       setMessages([...next, { role: 'assistant', content: res.data.reply }])
     } catch (err: any) {
-      setError(err.response?.data?.error ?? 'AI odpověď selhala. Zkus to znovu.')
+      const status = err.response?.status
+      const msg = status === 429
+        ? 'Příliš mnoho dotazů. Zkus to za chvíli.'
+        : status === 503
+        ? 'Funkce AI asistenta není momentálně k dispozici.'
+        : (err.response?.data?.error ?? 'Nepodařilo se získat odpověď. Zkus to znovu.')
+      setError(msg)
       setMessages(next.slice(0, -1))
     } finally {
       setLoading(false)
