@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
 const UPDATED = '28. 5. 2026'
-const CONTROLLER_EMAIL = 'TODO: doplnit kontaktní e-mail'
+const CONTROLLER_EMAIL = 'annlibertas@seznam.cz'
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
