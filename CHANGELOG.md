@@ -2,6 +2,80 @@
 
 ---
 
+## [2026-05-28] — AI uložené chaty, propojení kontaktů, GDPR, kosmetické opravy
+
+### Co bylo uděláno
+
+**AI uložené chaty (nová funkce):**
+- **`backend/src/db/migrations/007_saved_ai_chats.sql`** — nová tabulka `saved_ai_chats` (user_id, contact_id, title, messages JSONB)
+- **`backend/src/routes/ai.ts`** — nové endpointy: `POST /ai/contacts/:id/chats` (uložit), `GET /ai/contacts/:id/chats` (seznam), `GET /ai/chats/:id` (detail), `DELETE /ai/chats/:id` (smazat)
+- **`frontend/src/api/ai.ts`** — rozhraní `SavedChat` a metody `saveChat`, `getSavedChats`, `getSavedChat`, `deleteSavedChat`
+- **`frontend/src/components/ContactAIChat.tsx`** — tlačítko "Uložit konverzaci" (zobrazí se po 2+ zprávy), link "Uložené" v headeru chatu, stavové zobrazení "Uloženo ✓"
+- **`frontend/src/pages/SavedAIChats.tsx`** (nová stránka) — seznam uložených chatů s názvem, datem, počtem zpráv; rozkliknutím se zobrazí plný chat; mazání jednotlivých chatů
+- **`frontend/src/App.tsx`** — route `/lists/:listId/contacts/:contactId/saved-chats`
+
+**Propojení kontaktů — "Kdo koho zná":**
+- **`backend/src/db/migrations/006_contact_relationships.sql`** — tabulka `contact_relationships` s normalizovaným párem (UUID pair ordering pro unikátní bidirectionality)
+- **`backend/src/routes/relationships.ts`** — CRUD: přidat/smazat propojení, vyhledat kontakty pro propojení
+- **`frontend/src/api/relationships.ts`** — API metody
+- **`frontend/src/components/ContactConnections.tsx`** — sekce "Zná tyto lidi" v detailu kontaktu, debounced vyhledávání, volitelný popisek
+- **`frontend/src/pages/ContactDetail.tsx`** — přidána komponenta `ContactConnections`
+- **`backend/src/routes/ai.ts`** — AI systémový prompt zahrnuje propojení kontaktu
+- **`backend/src/lib/ai.ts`** — `buildContactSystemPrompt` přijímá volitelný parametr `connections`
+
+**GDPR compliance:**
+- **`frontend/src/pages/PrivacyPolicy.tsx`** — kompletní česká GDPR politika (správce: annlibertas@seznam.cz, cookies, Anthropic data flow, výjimka pro domácnost)
+- **`frontend/src/components/CookieBanner.tsx`** — informační cookie lišta (ne consent), jednorázová, localStorage klíč `pw_cookie_notice_dismissed`
+- **`frontend/src/pages/AccountSettings.tsx`** — export dat (JSON blob) + smazání účtu (vyžaduje potvrzení heslem)
+- **`backend/src/routes/auth.ts`** — `GET /auth/export` (kompletní data uživatele), `DELETE /auth/account` (kaskádové smazání)
+- **`frontend/package.json`** + **`frontend/src/main.tsx`** — nahrazen Google Fonts za `@fontsource/inter` (lokální, bez úniku IP)
+
+**Kosmetické opravy:**
+- `ListSettings.tsx` — hint k poli "Pouze malá písmena bez háčků, číslice a podtržítko"
+- `ContactEvents.tsx` + `ContactDetail.tsx` — "Záznamy ze setkání" → "Zápisky ze setkání"
+
+**Sanitizace chybových hlášek AI:**
+- Chyby AI asistenta zobrazují jen uživatelsky přívětivé hlášky (žádné SDK detaily, technické texty)
+
+### Proč
+Uživatelé chtějí ukládat si zajímavé rady od AI asistenta pro pozdější použití. Propojení kontaktů (kdo koho zná) je klíčová networkingová funkce. GDPR compliance je nutnost pro `.eu` doménu. Fontsource nahradil Google Fonts kvůli úniku IP adres navštěvovatelů na Google servery.
+
+### Soubory změněny
+- `backend/src/db/migrations/006_contact_relationships.sql` (nový)
+- `backend/src/db/migrations/007_saved_ai_chats.sql` (nový)
+- `backend/src/routes/relationships.ts` (nový)
+- `backend/src/routes/ai.ts`
+- `backend/src/routes/auth.ts`
+- `backend/src/lib/ai.ts`
+- `backend/src/app.ts`
+- `frontend/src/pages/SavedAIChats.tsx` (nový)
+- `frontend/src/pages/PrivacyPolicy.tsx` (nový)
+- `frontend/src/pages/AccountSettings.tsx` (nový)
+- `frontend/src/components/CookieBanner.tsx` (nový)
+- `frontend/src/components/ContactConnections.tsx` (nový)
+- `frontend/src/components/ContactAIChat.tsx`
+- `frontend/src/pages/ContactDetail.tsx`
+- `frontend/src/pages/ContactEvents.tsx`
+- `frontend/src/pages/ListSettings.tsx`
+- `frontend/src/api/ai.ts`
+- `frontend/src/api/relationships.ts` (nový)
+- `frontend/src/api/auth.ts`
+- `frontend/src/App.tsx`
+- `frontend/package.json`
+- `frontend/src/main.tsx`
+- `frontend/index.html`
+
+### Nasazení na server
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+Migrace se aplikují automaticky při startu backendu. Nové tabulky `contact_relationships` a `saved_ai_chats` budou vytvořeny. Je potřeba plný rebuild (nová npm závislost `@fontsource/inter`).
+
+---
+
 ## [2026-05-27] — Reset hesla, silné heslo, XSS ochrana
 
 ### Co bylo uděláno
