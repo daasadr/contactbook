@@ -20,11 +20,12 @@ export default function ContactAIChat({ contactId, contactName }: Props) {
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const bottomRef = useRef<HTMLDivElement>(null)
+  const messagesRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+    const el = messagesRef.current
+    if (el) el.scrollTop = el.scrollHeight
   }, [messages, loading])
 
   const send = async (text: string) => {
@@ -66,7 +67,7 @@ export default function ContactAIChat({ contactId, contactName }: Props) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto space-y-3 min-h-0 pr-1">
+      <div ref={messagesRef} className="flex-1 overflow-y-auto space-y-3 min-h-0 pr-1">
         {messages.length === 0 && !loading ? (
           <div className="text-center py-3">
             <p className="text-xs text-zinc-400 mb-3">
@@ -113,7 +114,6 @@ export default function ContactAIChat({ contactId, contactName }: Props) {
           <p className="text-xs text-red-500 text-center">{error}</p>
         )}
 
-        <div ref={bottomRef} />
       </div>
 
       {/* Input */}

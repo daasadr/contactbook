@@ -1,8 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { config } from '../config'
 
-export const AI_MODEL = 'claude-haiku-4-5-20251001'
-export const AI_MAX_TOKENS = 1024
+export const AI_MODEL = 'claude-sonnet-4-6'
+export const AI_MAX_TOKENS = 2048
 
 let _client: Anthropic | null = null
 
@@ -18,6 +18,12 @@ export function getAIClient(): Anthropic {
 
 export function isAIAvailable(): boolean {
   return !!config.ANTHROPIC_API_KEY
+}
+
+function todayCZ(): string {
+  return new Date().toLocaleDateString('cs-CZ', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  })
 }
 
 export function buildContactSystemPrompt(params: {
@@ -47,10 +53,13 @@ export function buildContactSystemPrompt(params: {
   return `Jsi osobní asistent aplikace Peopleworth — nástroje pro správu mezilidských vztahů.
 Pomáháš uživateli pečovat o vztahy s konkrétním člověkem z jejich života.
 
+Dnešní datum: ${todayCZ()}
+
 Níže jsou veškeré informace, které o tomto kontaktu uživatel zaznamenal.
-Odpovídej vždy v češtině. Buď konkrétní, praktický a empatický.
+Odpovídej vždy v přirozené, plynné češtině. Buď konkrétní, praktický a empatický.
 Pokud nemáš dostatek informací pro kvalitní odpověď, řekni to upřímně a navrhni, co by uživatel mohl doplnit.
 Nikdy nevymýšlej fakta, která nejsou v datech. Drž se toho, co víš.
+Počítej věk, délku odmlky a jiné časové údaje vždy od dnešního data výše.
 
 === KONTAKT ===
 Jméno: ${contactName}
