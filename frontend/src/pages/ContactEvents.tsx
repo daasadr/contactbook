@@ -36,7 +36,7 @@ export default function ContactEvents() {
         />
         <h2 className="text-2xl font-bold text-zinc-800 mb-3">Záznamy ze setkání</h2>
         <p className="text-zinc-500 max-w-sm mb-2">
-          Tady budeš zapisovat, co se dělo — setkání, hovory, domluvy, postřehy.
+          Tady budeš zapisovat zápisky ze setkání — hovory, domluvy, postřehy.
         </p>
         <p className="text-zinc-400 text-sm max-w-xs">
           Každý záznam bude mít datum, nadpis a volný text. Listovat budeš od nejnovějšího k nejstaršímu.

@@ -521,7 +521,7 @@ export default function ContactDetail() {
             />
             <div className="text-center py-2">
               <p className="font-semibold text-zinc-800 group-hover:text-primary-700 transition-colors text-sm">Kniha záznamů</p>
-              <p className="text-xs text-zinc-400">Záznamy ze setkání</p>
+              <p className="text-xs text-zinc-400">Zápisky ze setkání</p>
             </div>
           </Link>
         </div>

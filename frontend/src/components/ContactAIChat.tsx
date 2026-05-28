@@ -1,5 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Sparkles, Loader2 } from 'lucide-react'
+import { Send, Sparkles, Loader2, BookmarkPlus, Check } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { aiApi, type ChatMessage } from '@/api/ai'
 
 const SUGGESTED = [
@@ -16,10 +18,13 @@ interface Props {
 }
 
 export default function ContactAIChat({ contactId, contactName }: Props) {
+  const { listId } = useParams<{ listId: string }>()
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
   const messagesRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
@@ -57,6 +62,22 @@ export default function ContactAIChat({ contactId, contactName }: Props) {
     }
   }
 
+  const saveChat = async () => {
+    if (messages.length < 2 || saving) return
+    setSaving(true)
+    try {
+      const firstUserMsg = messages.find(m => m.role === 'user')?.content ?? 'Konverzace'
+      const title = firstUserMsg.length > 80 ? firstUserMsg.slice(0, 77) + '…' : firstUserMsg
+      await aiApi.saveChat(contactId, title, messages)
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch {
+      setError('Uložení se nezdařilo.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const handleKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -69,7 +90,14 @@ export default function ContactAIChat({ contactId, contactName }: Props) {
       {/* Header */}
       <div className="flex items-center gap-2 mb-3 shrink-0">
         <Sparkles className="w-4 h-4 text-primary-500" />
-        <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide">AI asistent</h2>
+        <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide flex-1">AI asistent</h2>
+        <Link
+          to={`/lists/${listId}/contacts/${contactId}/saved-chats`}
+          className="text-xs text-zinc-400 hover:text-primary-600 flex items-center gap-1"
+        >
+          <BookmarkPlus className="w-3.5 h-3.5" />
+          Uložené
+        </Link>
       </div>
 
       {/* Messages */}
@@ -145,12 +173,35 @@ export default function ContactAIChat({ contactId, contactName }: Props) {
       </div>
 
       {messages.length > 0 && (
-        <button
-          onClick={() => setMessages([])}
-          className="mt-1.5 text-xs text-zinc-300 hover:text-zinc-500 text-center self-center"
-        >
-          Smazat konverzaci
-        </button>
+        <div className="mt-1.5 flex items-center justify-between gap-2">
+          <button
+            onClick={() => setMessages([])}
+            className="text-xs text-zinc-300 hover:text-zinc-500"
+          >
+            Smazat konverzaci
+          </button>
+          <div className="flex items-center gap-2">
+            {messages.length >= 2 && (
+              <button
+                onClick={saveChat}
+                disabled={saving || saved}
+                className="flex items-center gap-1 text-xs text-primary-500 hover:text-primary-700 disabled:opacity-60"
+              >
+                {saved ? (
+                  <><Check className="w-3.5 h-3.5" /> Uloženo</>
+                ) : (
+                  <><BookmarkPlus className="w-3.5 h-3.5" /> Uložit konverzaci</>
+                )}
+              </button>
+            )}
+            <Link
+              to={`/lists/${listId}/contacts/${contactId}/saved-chats`}
+              className="text-xs text-zinc-400 hover:text-zinc-600"
+            >
+              Uložené chaty
+            </Link>
+          </div>
+        </div>
       )}
     </div>
   )

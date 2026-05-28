@@ -123,4 +123,77 @@ export async function aiRoutes(app: FastifyInstance) {
       return reply.status(500).send({ error: 'AI asistent momentálně neodpovídá. Zkus to za chvíli.' })
     }
   })
+
+  // POST /ai/contacts/:contactId/chats — uložit konverzaci
+  app.post('/contacts/:contactId/chats', { preHandler: authenticate }, async (request, reply) => {
+    const { contactId } = request.params as { contactId: string }
+
+    const body = z.object({
+      title: z.string().min(1).max(200),
+      messages: z.array(z.object({
+        role: z.enum(['user', 'assistant']),
+        content: z.string().min(1).max(4000),
+      })).min(2),
+    }).safeParse(request.body)
+
+    if (!body.success) return reply.status(400).send({ error: 'Neplatná data' })
+
+    const [contact] = await sql`
+      SELECT c.id FROM contacts c
+      JOIN contact_lists cl ON cl.id = c.list_id
+      WHERE c.id = ${contactId} AND cl.user_id = ${request.userId}
+    `
+    if (!contact) return reply.status(404).send({ error: 'Kontakt nenalezen' })
+
+    const [chat] = await sql`
+      INSERT INTO saved_ai_chats (user_id, contact_id, title, messages)
+      VALUES (${request.userId}, ${contactId}, ${body.data.title}, ${sql.json(body.data.messages as any)})
+      RETURNING id, title, created_at
+    `
+    return reply.status(201).send({ chat })
+  })
+
+  // GET /ai/contacts/:contactId/chats — seznam uložených konverzací
+  app.get('/contacts/:contactId/chats', { preHandler: authenticate }, async (request, reply) => {
+    const { contactId } = request.params as { contactId: string }
+
+    const [contact] = await sql`
+      SELECT c.id FROM contacts c
+      JOIN contact_lists cl ON cl.id = c.list_id
+      WHERE c.id = ${contactId} AND cl.user_id = ${request.userId}
+    `
+    if (!contact) return reply.status(404).send({ error: 'Kontakt nenalezen' })
+
+    const chats = await sql`
+      SELECT id, title, created_at,
+             jsonb_array_length(messages) AS message_count
+      FROM saved_ai_chats
+      WHERE contact_id = ${contactId} AND user_id = ${request.userId}
+      ORDER BY created_at DESC
+    `
+    return reply.send({ chats })
+  })
+
+  // GET /ai/chats/:chatId — detail uložené konverzace
+  app.get('/chats/:chatId', { preHandler: authenticate }, async (request, reply) => {
+    const { chatId } = request.params as { chatId: string }
+    const [chat] = await sql`
+      SELECT id, title, messages, created_at, contact_id
+      FROM saved_ai_chats
+      WHERE id = ${chatId} AND user_id = ${request.userId}
+    `
+    if (!chat) return reply.status(404).send({ error: 'Konverzace nenalezena' })
+    return reply.send({ chat })
+  })
+
+  // DELETE /ai/chats/:chatId — smazat uloženou konverzaci
+  app.delete('/chats/:chatId', { preHandler: authenticate }, async (request, reply) => {
+    const { chatId } = request.params as { chatId: string }
+    const [chat] = await sql`
+      SELECT id FROM saved_ai_chats WHERE id = ${chatId} AND user_id = ${request.userId}
+    `
+    if (!chat) return reply.status(404).send({ error: 'Konverzace nenalezena' })
+    await sql`DELETE FROM saved_ai_chats WHERE id = ${chatId}`
+    return reply.send({ ok: true })
+  })
 }

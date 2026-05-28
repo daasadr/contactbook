@@ -33,7 +33,7 @@ const sections = [
 ]
 
 const addFieldSchema = z.object({
-  name: z.string().min(1).max(100).regex(/^[a-z0-9_]+$/, 'Pouze malá písmena, číslice a podtržítko'),
+  name: z.string().min(1).max(100).regex(/^[a-z0-9_]+$/, 'Pouze malá písmena bez háčků, číslice a podtržítko'),
   label: z.string().min(1).max(255),
   field_type: z.enum(['text', 'textarea', 'email', 'phone', 'url', 'date', 'number', 'select', 'multiselect', 'checkbox']),
   section: z.string(),
@@ -71,7 +71,7 @@ function AddFieldModal({ listId, onClose }: { listId: string; onClose: () => voi
               className={`input font-mono text-sm ${errors.name ? 'input-error' : ''}`}
               placeholder="moje_pole"
             />
-            <p className="text-xs text-zinc-400 mt-1">Pouze malá písmena, číslice a podtržítko. Např: <code>oblibena_kapela</code></p>
+            <p className="text-xs text-zinc-400 mt-1">Pouze malá písmena bez háčků, číslice a podtržítko. Např: <code>oblibena_kapela</code></p>
             {errors.name && <p className="error-text">{errors.name.message}</p>}
           </div>
 
