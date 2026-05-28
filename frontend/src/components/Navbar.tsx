@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { BookUser, LogOut, LayoutDashboard } from 'lucide-react'
+import { BookUser, LogOut, LayoutDashboard, Settings } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/api/auth'
 
@@ -34,6 +34,9 @@ export default function Navbar() {
                 </div>
                 <span className="text-sm font-medium text-zinc-700 hidden sm:block">{user.name}</span>
               </div>
+              <Link to="/settings" className="btn-ghost text-zinc-500" title="Nastavení účtu">
+                <Settings className="w-4 h-4" />
+              </Link>
               <button onClick={handleLogout} className="btn-ghost text-zinc-500 hover:text-red-600">
                 <LogOut className="w-4 h-4" />
               </button>

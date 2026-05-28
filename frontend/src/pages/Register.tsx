@@ -190,7 +190,10 @@ export default function Register() {
           </form>
 
           <p className="mt-4 text-xs text-center text-zinc-400">
-            Registrací souhlasíš se zpracováním osobních údajů za účelem poskytování služby.
+            Registrací souhlasíš se zpracováním osobních údajů za účelem poskytování služby dle{' '}
+            <a href="/privacy" target="_blank" className="text-primary-600 hover:underline">
+              Zásad ochrany osobních údajů
+            </a>.
           </p>
         </div>
       </div>

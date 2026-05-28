@@ -20,4 +20,10 @@ export const authApi = {
 
   resetPassword: (token: string, password: string) =>
     apiClient.post('/auth/reset-password', { token, password }),
+
+  deleteAccount: (password: string) =>
+    apiClient.delete('/auth/account', { data: { password } }),
+
+  exportData: () =>
+    apiClient.get('/auth/export', { responseType: 'blob' }),
 }

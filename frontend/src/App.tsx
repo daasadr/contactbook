@@ -13,6 +13,9 @@ import ContactDetail from '@/pages/ContactDetail'
 import ContactEvents from '@/pages/ContactEvents'
 import ListSettings from '@/pages/ListSettings'
 import ProtectedRoute from '@/components/ProtectedRoute'
+import PrivacyPolicy from '@/pages/PrivacyPolicy'
+import AccountSettings from '@/pages/AccountSettings'
+import CookieBanner from '@/components/CookieBanner'
 
 export default function App() {
   const { setAuth, logout, isLoading } = useAuthStore()
@@ -33,18 +36,21 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <CookieBanner />
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/lists/:listId" element={<ListDetail />} />
           <Route path="/lists/:listId/contacts/:contactId" element={<ContactDetail />} />
           <Route path="/lists/:listId/contacts/:contactId/events" element={<ContactEvents />} />
           <Route path="/lists/:listId/settings" element={<ListSettings />} />
+          <Route path="/settings" element={<AccountSettings />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

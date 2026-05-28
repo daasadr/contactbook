@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { sql } from '../db'
 import { config } from '../config'
 import { sendEmail, passwordResetEmailHtml } from '../lib/email'
+import { authenticate } from '../middleware/authenticate'
 
 const BCRYPT_ROUNDS = 12
 const ACCESS_TOKEN_TTL = '15m'
@@ -199,6 +200,64 @@ export async function authRoutes(app: FastifyInstance) {
     }
     reply.clearCookie('refresh_token', { path: '/' })
     return reply.send({ ok: true })
+  })
+
+  // DELETE /auth/account — GDPR právo na výmaz (vyžaduje potvrzení heslem)
+  app.delete('/account', { preHandler: authenticate }, async (request, reply) => {
+    const body = z.object({ password: z.string().min(1) }).safeParse(request.body)
+    if (!body.success) return reply.status(400).send({ error: 'Neplatná data' })
+
+    const [user] = await sql`SELECT password_hash FROM users WHERE id = ${request.userId}`
+    if (!user) return reply.status(404).send({ error: 'Uživatel nenalezen' })
+
+    const valid = await bcrypt.compare(body.data.password, user.password_hash)
+    if (!valid) return reply.status(403).send({ error: 'Nesprávné heslo' })
+
+    await sql`DELETE FROM users WHERE id = ${request.userId}`
+    reply.clearCookie('refresh_token', { path: '/' })
+    return reply.send({ ok: true })
+  })
+
+  // GET /auth/export — GDPR právo na přenositelnost dat
+  app.get('/export', { preHandler: authenticate }, async (request, reply) => {
+    const [user] = await sql`
+      SELECT id, email, name, created_at, last_login FROM users WHERE id = ${request.userId}
+    `
+
+    const lists = await sql`
+      SELECT id, name, description, template_type, created_at FROM contact_lists
+      WHERE user_id = ${request.userId} ORDER BY created_at ASC
+    `
+
+    const exportLists = []
+    for (const list of lists) {
+      const contacts = await sql`
+        SELECT id, first_name, last_name, custom_data, is_starred, created_at
+        FROM contacts WHERE list_id = ${list.id} ORDER BY created_at ASC
+      `
+      const exportContacts = []
+      for (const contact of contacts) {
+        const events = await sql`
+          SELECT id, title, content, event_date, tags, created_at
+          FROM contact_events WHERE contact_id = ${contact.id} ORDER BY event_date DESC
+        `
+        const connections = await sql`
+          SELECT
+            CASE WHEN r.contact_a_id = ${contact.id} THEN b.first_name ELSE a.first_name END AS first_name,
+            CASE WHEN r.contact_a_id = ${contact.id} THEN b.last_name  ELSE a.last_name  END AS last_name,
+            r.label
+          FROM contact_relationships r
+          JOIN contacts a ON a.id = r.contact_a_id
+          JOIN contacts b ON b.id = r.contact_b_id
+          WHERE r.contact_a_id = ${contact.id} OR r.contact_b_id = ${contact.id}
+        `
+        exportContacts.push({ ...contact, events, connections })
+      }
+      exportLists.push({ ...list, contacts: exportContacts })
+    }
+
+    reply.header('Content-Disposition', 'attachment; filename="peopleworth-export.json"')
+    return reply.send({ exportDate: new Date().toISOString(), user, lists: exportLists })
   })
 
   // GET /auth/me
