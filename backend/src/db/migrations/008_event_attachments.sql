@@ -1,0 +1,2 @@
+ALTER TABLE contact_events
+ADD COLUMN IF NOT EXISTS attachments JSONB NOT NULL DEFAULT '[]';

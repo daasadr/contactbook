@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Plus, PenLine, Trash2, Tag, Calendar } from 'lucide-react'
+import { ArrowLeft, Plus, PenLine, Trash2, Tag, Calendar, Camera, Loader2, X } from 'lucide-react'
 import Layout from '@/components/Layout'
 import { contactsApi } from '@/api/contacts'
-import { eventsApi, type ContactEvent, type EventInput } from '@/api/events'
+import { eventsApi, type ContactEvent, type EventAttachment, type EventInput } from '@/api/events'
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10)
@@ -113,8 +113,50 @@ function EventForm({
   )
 }
 
+function AttachmentGallery({
+  attachments,
+  onDelete,
+  deleting,
+}: {
+  attachments: EventAttachment[]
+  onDelete: (id: string) => void
+  deleting: string | null
+}) {
+  if (attachments.length === 0) return null
+  return (
+    <div className="flex flex-wrap gap-2 mt-3">
+      {attachments.map(att => (
+        <div key={att.id} className="relative group/photo">
+          <a href={`/uploads/${att.filename}`} target="_blank" rel="noopener noreferrer">
+            <img
+              src={`/uploads/${att.filename}`}
+              alt={att.original_name}
+              className="w-24 h-24 object-cover rounded-lg border border-zinc-200 hover:opacity-90 transition-opacity"
+            />
+          </a>
+          <button
+            onClick={() => onDelete(att.id)}
+            disabled={deleting === att.id}
+            title="Odstranit foto"
+            className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-opacity hover:bg-red-600"
+          >
+            {deleting === att.id
+              ? <Loader2 className="w-3 h-3 animate-spin" />
+              : <X className="w-3 h-3" />
+            }
+          </button>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 function EventCard({ event, listId, contactId }: { event: ContactEvent; listId: string; contactId: string }) {
   const [editing, setEditing] = useState(false)
+  const [deletingAtt, setDeletingAtt] = useState<string | null>(null)
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
 
   const updateMutation = useMutation({
@@ -129,6 +171,35 @@ function EventCard({ event, listId, contactId }: { event: ContactEvent; listId: 
     mutationFn: () => eventsApi.delete(listId, contactId, event.id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['events', contactId] }),
   })
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!fileInputRef.current) return
+    fileInputRef.current.value = ''
+    if (!file) return
+    setUploadError('')
+    setUploading(true)
+    try {
+      await eventsApi.uploadAttachment(listId, contactId, event.id, file)
+      queryClient.invalidateQueries({ queryKey: ['events', contactId] })
+    } catch (err: any) {
+      setUploadError(err.response?.data?.error ?? 'Nahrávání selhalo.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  const handleDeleteAttachment = async (attachmentId: string) => {
+    setDeletingAtt(attachmentId)
+    try {
+      await eventsApi.deleteAttachment(listId, contactId, event.id, attachmentId)
+      queryClient.invalidateQueries({ queryKey: ['events', contactId] })
+    } catch {
+      // ignore
+    } finally {
+      setDeletingAtt(null)
+    }
+  }
 
   if (editing) {
     return (
@@ -188,6 +259,33 @@ function EventCard({ event, listId, contactId }: { event: ContactEvent; listId: 
           ))}
         </div>
       )}
+
+      <AttachmentGallery
+        attachments={event.attachments ?? []}
+        onDelete={handleDeleteAttachment}
+        deleting={deletingAtt}
+      />
+
+      <div className="mt-3 flex items-center gap-3">
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          className="hidden"
+          onChange={handleFileChange}
+        />
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          className="flex items-center gap-1.5 text-xs text-zinc-400 hover:text-primary-600 transition-colors"
+        >
+          {uploading
+            ? <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Nahrávám…</>
+            : <><Camera className="w-3.5 h-3.5" /> Přidat foto</>
+          }
+        </button>
+        {uploadError && <span className="text-xs text-red-500">{uploadError}</span>}
+      </div>
     </div>
   )
 }

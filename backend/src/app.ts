@@ -4,7 +4,14 @@ import fastifyCookie from '@fastify/cookie'
 import fastifyCors from '@fastify/cors'
 import fastifyRateLimit from '@fastify/rate-limit'
 import fastifyHelmet from '@fastify/helmet'
+import fastifyMultipart from '@fastify/multipart'
+import fs from 'fs'
 import { config } from './config'
+
+export const UPLOADS_DIR = process.env.UPLOADS_DIR || '/app/uploads'
+
+// Ensure uploads directory exists at startup
+fs.mkdirSync(UPLOADS_DIR, { recursive: true })
 import { authRoutes } from './routes/auth'
 import { listsRoutes } from './routes/lists'
 import { contactsRoutes } from './routes/contacts'
@@ -42,6 +49,11 @@ export async function buildApp() {
   await app.register(fastifyJwt, {
     secret: config.JWT_SECRET,
     sign: { algorithm: 'HS256' },
+  })
+
+  // Multipart (file uploads) — 10 MB limit per file
+  await app.register(fastifyMultipart, {
+    limits: { fileSize: 10 * 1024 * 1024, files: 1 },
   })
 
   // Rate limiting — 200 req/min globally; auth routes use stricter per-route limits
