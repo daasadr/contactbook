@@ -20,7 +20,7 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions): Promis
   const { Resend } = await import('resend')
   const resend = new Resend(config.RESEND_API_KEY)
 
-  const { error } = await resend.emails.send({
+  const { data, error } = await resend.emails.send({
     from: config.FROM_EMAIL,
     to,
     subject,
@@ -28,8 +28,10 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions): Promis
   })
 
   if (error) {
+    console.error('[Email] Resend API error:', JSON.stringify(error))
     throw new Error(`Odeslání e-mailu selhalo: ${error.message}`)
   }
+  console.log('[Email] Odesláno, id:', data?.id)
 }
 
 export function passwordResetEmailHtml(name: string, resetUrl: string): string {

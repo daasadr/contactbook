@@ -126,11 +126,15 @@ export async function authRoutes(app: FastifyInstance) {
     `
 
     const resetUrl = `${config.APP_URL}/reset-password?token=${token}`
-    await sendEmail({
-      to: body.data.email,
-      subject: 'Resetování hesla — Peopleworth',
-      html: passwordResetEmailHtml(user.name, resetUrl),
-    })
+    try {
+      await sendEmail({
+        to: body.data.email,
+        subject: 'Resetování hesla — Peopleworth',
+        html: passwordResetEmailHtml(user.name, resetUrl),
+      })
+    } catch (err) {
+      request.log.error({ err }, 'Odeslání reset e-mailu selhalo')
+    }
 
     return reply.send({ ok: true })
   })
