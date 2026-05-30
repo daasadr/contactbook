@@ -4,6 +4,31 @@ import {
   BookUser, Network, Briefcase, Heart, Users,
   Star, CalendarClock, NotebookPen, Sliders, ArrowRight, Sparkles, Gift, Lock
 } from 'lucide-react'
+import SEOHead from '@/components/SEOHead'
+
+const LANDING_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'SoftwareApplication',
+  name: 'Peopleworth',
+  url: 'https://peopleworth.eu',
+  description: 'Chytrá webová aplikace pro správu kontaktů s plně přizpůsobitelnými poli, deníkem setkání, AI asistentem a správou vztahů.',
+  applicationCategory: 'BusinessApplication',
+  operatingSystem: 'Web',
+  inLanguage: 'cs',
+  offers: {
+    '@type': 'Offer',
+    price: '0',
+    priceCurrency: 'EUR',
+    description: 'Základní přístup zdarma, AI asistent za kredity',
+  },
+  featureList: [
+    'Správa kontaktů s vlastními poli',
+    'Deník setkání (Kniha záznamů)',
+    'AI asistent pro každý kontakt',
+    'Propojení kontaktů',
+    'Export dat (GDPR)',
+  ],
+}
 
 const features = [
   {
@@ -50,6 +75,11 @@ export default function Landing() {
 
   return (
     <div className="min-h-screen bg-white">
+      <SEOHead
+        canonical="/"
+        description="Peopleworth je chytrá webová aplikace pro správu kontaktů. Vlastní pole, deník setkání, AI asistent, propojení kontaktů. Lidé jsou tvé bohatství."
+        jsonLd={LANDING_JSON_LD}
+      />
       {/* Navbar */}
       <header className="border-b border-zinc-100 sticky top-0 bg-white/95 backdrop-blur z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">

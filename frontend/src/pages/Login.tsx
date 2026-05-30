@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import SEOHead from '@/components/SEOHead'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -44,6 +45,7 @@ export default function Login() {
         backgroundColor: '#1a0405',
       }}
     >
+      <SEOHead title="Přihlášení" noIndex canonical="/login" />
       {/* Book background effect */}
       <div className="absolute inset-0 flex justify-center items-center pointer-events-none select-none overflow-hidden">
         <div style={{ position: 'relative', width: 'clamp(300px, 72vw, 680px)' }}>

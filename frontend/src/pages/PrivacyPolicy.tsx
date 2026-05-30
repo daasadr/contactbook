@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
+import SEOHead from '@/components/SEOHead'
 
 const UPDATED = '30. 5. 2026'
 const CONTROLLER_EMAIL = 'annlibertas@seznam.cz'
@@ -41,6 +42,11 @@ function Table({ headers, rows }: { headers: string[]; rows: string[][] }) {
 export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-zinc-50">
+      <SEOHead
+        title="Zásady ochrany osobních údajů"
+        description="Informace o zpracování osobních údajů v aplikaci Peopleworth — správce, právní základ, třetí strany, vaše práva (GDPR)."
+        canonical="/privacy"
+      />
       <div className="max-w-3xl mx-auto px-4 py-10">
         <div className="mb-6">
           <Link to="/" className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-primary-600">

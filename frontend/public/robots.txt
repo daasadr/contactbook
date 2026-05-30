@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /privacy
+
+Disallow: /dashboard
+Disallow: /lists/
+Disallow: /settings
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://peopleworth.eu/sitemap.xml
