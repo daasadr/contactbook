@@ -244,6 +244,24 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* PWA hint */}
+      <div className="bg-zinc-50 border-t border-zinc-100 py-6">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-center gap-3 text-sm text-zinc-500">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">📱</span>
+            <span className="font-medium text-zinc-700">Peopleworth jako mobilní appka</span>
+          </div>
+          <span className="hidden sm:inline text-zinc-300">·</span>
+          <span>
+            <strong className="text-zinc-600">Android:</strong> menu prohlížeče → <em>Přidat na plochu</em>
+          </span>
+          <span className="hidden sm:inline text-zinc-300">·</span>
+          <span>
+            <strong className="text-zinc-600">iPhone (Safari):</strong> ikona sdílení 🔗 → <em>Přidat na plochu</em>
+          </span>
+        </div>
+      </div>
+
       <footer className="py-8 border-t border-zinc-100 text-center text-sm text-zinc-400">
         © {new Date().getFullYear()} Peopleworth — Tvé kontakty, tvé bohatství
       </footer>
