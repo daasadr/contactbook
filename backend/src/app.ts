@@ -19,6 +19,7 @@ import { fieldsRoutes } from './routes/fields'
 import { aiRoutes } from './routes/ai'
 import { relationshipsRoutes } from './routes/relationships'
 import { eventsRoutes } from './routes/events'
+import { billingRoutes } from './routes/billing'
 
 export async function buildApp() {
   const app = Fastify({
@@ -76,6 +77,7 @@ export async function buildApp() {
   await app.register(aiRoutes, { prefix: '/ai' })
   await app.register(relationshipsRoutes, { prefix: '/relationships' })
   await app.register(eventsRoutes, { prefix: '/lists' })
+  await app.register(billingRoutes, { prefix: '/billing' })
 
   return app
 }

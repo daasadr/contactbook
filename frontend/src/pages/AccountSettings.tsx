@@ -1,9 +1,210 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { ArrowLeft, Download, Trash2, Shield } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { ArrowLeft, Download, Trash2, Shield, Sparkles, CreditCard, Heart, Zap } from 'lucide-react'
 import Layout from '@/components/Layout'
 import { authApi } from '@/api/auth'
+import { billingApi, type CreditPack } from '@/api/billing'
 import { useAuthStore } from '@/stores/auth'
+
+// ── Credits & billing ──────────────────────────────────────────────────────
+
+function CreditsSection() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const queryClient = useQueryClient()
+  const [donationAmount, setDonationAmount] = useState('')
+  const [loadingPack, setLoadingPack] = useState<string | null>(null)
+  const [loadingDonation, setLoadingDonation] = useState(false)
+  const [statusMsg, setStatusMsg] = useState<{ type: 'success' | 'info' | 'error'; text: string } | null>(null)
+
+  const { data: balanceData } = useQuery({
+    queryKey: ['billing-balance'],
+    queryFn: () => billingApi.getBalance().then(r => r.data.credits),
+  })
+
+  const { data: packsData } = useQuery({
+    queryKey: ['billing-packs'],
+    queryFn: () => billingApi.getPacks().then(r => r.data),
+  })
+
+  const stripeEnabled = packsData?.stripe_enabled ?? false
+  const credits = balanceData ?? 0
+
+  // Zpracuj návrat ze Stripe
+  useEffect(() => {
+    const payment = searchParams.get('payment')
+    const sessionId = searchParams.get('session_id')
+
+    if (payment === 'success' && sessionId) {
+      setSearchParams({})
+      billingApi.complete(sessionId)
+        .then(res => {
+          queryClient.setQueryData(['billing-balance'], res.data.credits)
+          setStatusMsg({ type: 'success', text: `Platba proběhla ✓ Kredity přičteny, aktuální stav: ${res.data.credits}` })
+        })
+        .catch(() => setStatusMsg({ type: 'error', text: 'Nepodařilo se ověřit platbu. Kontaktuj podporu.' }))
+    } else if (payment === 'donated') {
+      setSearchParams({})
+      setStatusMsg({ type: 'success', text: 'Díky za podporu! ❤️' })
+    } else if (payment === 'cancelled') {
+      setSearchParams({})
+      setStatusMsg({ type: 'info', text: 'Platba byla zrušena.' })
+    }
+  }, [])
+
+  const buyPack = async (pack: CreditPack) => {
+    setLoadingPack(pack.id)
+    try {
+      const res = await billingApi.checkoutCredits(pack.id)
+      window.location.href = res.data.url
+    } catch {
+      setStatusMsg({ type: 'error', text: 'Nepodařilo se zahájit platbu. Zkus to znovu.' })
+      setLoadingPack(null)
+    }
+  }
+
+  const sendDonation = async () => {
+    const amount = parseFloat(donationAmount)
+    if (!amount || amount < 1) return
+    setLoadingDonation(true)
+    try {
+      const res = await billingApi.checkoutDonation(amount)
+      window.location.href = res.data.url
+    } catch {
+      setStatusMsg({ type: 'error', text: 'Nepodařilo se zahájit platbu. Zkus to znovu.' })
+      setLoadingDonation(false)
+    }
+  }
+
+  const PRESET_AMOUNTS = [2, 5, 10, 20]
+
+  return (
+    <div className="space-y-4">
+      {/* Stav kreditů */}
+      <div className="card p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-10 h-10 rounded-xl bg-primary-100 flex items-center justify-center shrink-0">
+            <Sparkles className="w-5 h-5 text-primary-600" />
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center justify-between mb-1">
+              <h2 className="font-semibold text-zinc-900">AI kredity</h2>
+              <span className={`text-2xl font-bold ${credits <= 5 ? 'text-red-600' : 'text-primary-600'}`}>
+                {credits}
+              </span>
+            </div>
+            <p className="text-sm text-zinc-500">
+              Každý dotaz AI asistenta spotřebuje 1 kredit.
+              {credits <= 5 && credits > 0 && (
+                <span className="text-amber-600 font-medium"> Brzy dojdou — doplň zásobu.</span>
+              )}
+              {credits === 0 && (
+                <span className="text-red-600 font-medium"> Kredity vyčerpány.</span>
+              )}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {statusMsg && (
+        <div className={`rounded-xl px-4 py-3 text-sm ${
+          statusMsg.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' :
+          statusMsg.type === 'error' ? 'bg-red-50 text-red-700 border border-red-200' :
+          'bg-zinc-100 text-zinc-600'
+        }`}>
+          {statusMsg.text}
+        </div>
+      )}
+
+      {/* Nákup kreditů */}
+      <div className="card p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <CreditCard className="w-4 h-4 text-zinc-500" />
+          <h2 className="font-semibold text-zinc-900">Dobít kredity</h2>
+        </div>
+
+        {!stripeEnabled ? (
+          <p className="text-sm text-zinc-400 italic">Platby nejsou momentálně k dispozici.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {(packsData?.packs ?? []).map(pack => (
+              <button
+                key={pack.id}
+                onClick={() => buyPack(pack)}
+                disabled={loadingPack !== null}
+                className="relative flex flex-col items-center gap-1 p-4 rounded-xl border-2 border-zinc-200 hover:border-primary-400 hover:bg-primary-50 transition-all group text-center"
+              >
+                {pack.id === 'standard' && (
+                  <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-wide bg-primary-500 text-white px-2 py-0.5 rounded-full">
+                    Oblíbený
+                  </span>
+                )}
+                <Zap className="w-5 h-5 text-primary-500 group-hover:text-primary-600 mb-1" />
+                <span className="font-bold text-zinc-900">{pack.label}</span>
+                <span className="text-xs text-zinc-500">{pack.note}</span>
+                <span className="mt-1 text-sm font-semibold text-primary-600">
+                  {(pack.price_cents / 100).toFixed(2)} €
+                </span>
+                {loadingPack === pack.id && (
+                  <span className="absolute inset-0 rounded-xl bg-white/70 flex items-center justify-center text-xs text-zinc-400">
+                    Přesměrování…
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Donace */}
+      {stripeEnabled && (
+        <div className="card p-6">
+          <div className="flex items-center gap-2 mb-3">
+            <Heart className="w-4 h-4 text-rose-500" />
+            <h2 className="font-semibold text-zinc-900">Podpora programátora</h2>
+          </div>
+          <p className="text-sm text-zinc-500 mb-4">
+            Peopleworth je projekt jednoho člověka. Příspěvkem podpoříš další vývoj. ❤️
+          </p>
+          <div className="flex flex-wrap gap-2 mb-3">
+            {PRESET_AMOUNTS.map(a => (
+              <button
+                key={a}
+                onClick={() => setDonationAmount(String(a))}
+                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-colors ${
+                  donationAmount === String(a)
+                    ? 'bg-rose-500 text-white border-rose-500'
+                    : 'border-zinc-200 text-zinc-700 hover:border-rose-300 hover:text-rose-600'
+                }`}
+              >
+                {a} €
+              </button>
+            ))}
+            <input
+              type="number"
+              value={donationAmount}
+              onChange={e => setDonationAmount(e.target.value)}
+              placeholder="Vlastní částka (€)"
+              min={1}
+              max={500}
+              className="input w-40 text-sm"
+            />
+          </div>
+          <button
+            onClick={sendDonation}
+            disabled={!donationAmount || parseFloat(donationAmount) < 1 || loadingDonation}
+            className="btn-primary bg-rose-500 hover:bg-rose-600 focus:ring-rose-400"
+          >
+            <Heart className="w-4 h-4" />
+            {loadingDonation ? 'Přesměrování…' : `Přispět ${donationAmount ? `${donationAmount} €` : ''}`}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── Export ──────────────────────────────────────────────────────────────────
 
 function ExportSection() {
   const [loading, setLoading] = useState(false)
@@ -40,11 +241,7 @@ function ExportSection() {
             Stáhni kompletní zálohu všech svých dat ve formátu JSON — účet, všechny seznamy,
             kontakty, deníkové záznamy i propojení.
           </p>
-          <button
-            onClick={handleExport}
-            disabled={loading}
-            className="btn-primary"
-          >
+          <button onClick={handleExport} disabled={loading} className="btn-primary">
             <Download className="w-4 h-4" />
             {loading ? 'Připravuji export…' : 'Stáhnout export dat'}
           </button>
@@ -54,6 +251,8 @@ function ExportSection() {
     </div>
   )
 }
+
+// ── Delete account ──────────────────────────────────────────────────────────
 
 function DeleteSection() {
   const [open, setOpen] = useState(false)
@@ -90,16 +289,13 @@ function DeleteSection() {
             Trvale smaže tvůj účet, všechny kontakty, seznamy, deníkové záznamy a veškerá data.
             Tuto akci nelze vrátit.
           </p>
-
           {!open ? (
             <button onClick={() => setOpen(true)} className="btn-danger">
               <Trash2 className="w-4 h-4" /> Smazat účet
             </button>
           ) : (
             <div className="space-y-3 max-w-sm">
-              <p className="text-sm font-medium text-red-700">
-                Pro potvrzení zadej své aktuální heslo:
-              </p>
+              <p className="text-sm font-medium text-red-700">Pro potvrzení zadej své aktuální heslo:</p>
               <input
                 type="password"
                 value={password}
@@ -111,11 +307,7 @@ function DeleteSection() {
               />
               {error && <p className="text-sm text-red-600">{error}</p>}
               <div className="flex gap-3">
-                <button
-                  onClick={handleDelete}
-                  disabled={loading || !password}
-                  className="btn-danger"
-                >
+                <button onClick={handleDelete} disabled={loading || !password} className="btn-danger">
                   {loading ? 'Mazání…' : 'Potvrdit smazání'}
                 </button>
                 <button onClick={() => { setOpen(false); setPassword(''); setError('') }} className="btn-secondary">
@@ -129,6 +321,8 @@ function DeleteSection() {
     </div>
   )
 }
+
+// ── Page ────────────────────────────────────────────────────────────────────
 
 export default function AccountSettings() {
   const user = useAuthStore(s => s.user)
@@ -145,15 +339,27 @@ export default function AccountSettings() {
         </div>
       </div>
 
-      <div className="space-y-4">
-        {/* GDPR sekce */}
-        <div className="flex items-center gap-2 mb-2">
-          <Shield className="w-4 h-4 text-zinc-400" />
-          <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide">Ochrana soukromí & GDPR</h2>
+      <div className="space-y-6">
+        {/* AI kredity a platby */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="w-4 h-4 text-primary-500" />
+            <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide">AI asistent & platby</h2>
+          </div>
+          <CreditsSection />
         </div>
 
-        <ExportSection />
-        <DeleteSection />
+        {/* GDPR */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <Shield className="w-4 h-4 text-zinc-400" />
+            <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide">Ochrana soukromí & GDPR</h2>
+          </div>
+          <div className="space-y-4">
+            <ExportSection />
+            <DeleteSection />
+          </div>
+        </div>
 
         <p className="text-xs text-zinc-400 text-center pt-2">
           Podrobnosti o zpracování osobních údajů:{' '}

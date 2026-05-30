@@ -49,7 +49,9 @@ export default function ContactAIChat({ contactId, contactName }: Props) {
       setMessages([...next, { role: 'assistant', content: res.data.reply }])
     } catch (err: any) {
       const status = err.response?.status
-      const msg = status === 429
+      const msg = status === 402
+        ? 'Kredity vyčerpány. Doplň je v nastavení účtu.'
+        : status === 429
         ? 'Příliš mnoho dotazů. Zkus to za chvíli.'
         : status === 503
         ? 'Funkce AI asistenta není momentálně k dispozici.'
