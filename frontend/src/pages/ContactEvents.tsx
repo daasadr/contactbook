@@ -134,8 +134,8 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
       <button
         onClick={onClose}
         title="Zavřít (Esc)"
-        className="fixed top-5 right-5 w-12 h-12 rounded-full bg-gradient-to-br from-fuchsia-400 via-violet-500 to-indigo-600 text-white flex items-center justify-center ring-2 ring-white/30 hover:scale-110 active:scale-95 transition-all duration-150"
-        style={{ boxShadow: '0 5px 0 #4c1d95, 0 8px 24px rgba(139,92,246,0.65)' }}
+        className="fixed top-5 right-5 w-12 h-12 rounded-full bg-gradient-to-br from-amber-200 via-stone-500 to-teal-400 text-white flex items-center justify-center ring-2 ring-white/30 hover:scale-110 active:scale-95 transition-all duration-150"
+        style={{ boxShadow: '0 5px 0 #3d2c1e, 0 8px 24px rgba(45,212,191,0.55)' }}
       >
         <X className="w-6 h-6" strokeWidth={2.5} />
       </button>
