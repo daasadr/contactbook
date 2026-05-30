@@ -100,9 +100,11 @@ export async function aiRoutes(app: FastifyInstance) {
       connections,
     })
 
-    // Zkontroluj kredity
-    const [userCredits] = await sql`SELECT ai_credits FROM users WHERE id = ${request.userId}`
-    if (!userCredits || userCredits.ai_credits <= 0) {
+    // Zkontroluj kredity (VIP uživatelé mají neomezený přístup)
+    const [userRow] = await sql`SELECT ai_credits, is_vip FROM users WHERE id = ${request.userId}`
+    if (!userRow) return reply.status(404).send({ error: 'Uživatel nenalezen' })
+    const isVip = !!userRow.is_vip
+    if (!isVip && userRow.ai_credits <= 0) {
       return reply.status(402).send({ error: 'Nedostatek kreditů. Zakup si další v nastavení účtu.' })
     }
 
@@ -123,14 +125,16 @@ export async function aiRoutes(app: FastifyInstance) {
         .map(b => (b as { type: 'text'; text: string }).text)
         .join('')
 
-      // Odpočet 1 kreditu po úspěšné odpovědi
-      await sql`UPDATE users SET ai_credits = ai_credits - 1 WHERE id = ${request.userId}`
-      await sql`
-        INSERT INTO credit_transactions (user_id, type, credits, description)
-        VALUES (${request.userId}, 'usage', -1, 'AI chat')
-      `
+      // Odpočet 1 kreditu po úspěšné odpovědi (VIP neplatí)
+      if (!isVip) {
+        await sql`UPDATE users SET ai_credits = ai_credits - 1 WHERE id = ${request.userId}`
+        await sql`
+          INSERT INTO credit_transactions (user_id, type, credits, description)
+          VALUES (${request.userId}, 'usage', -1, 'AI chat')
+        `
+      }
 
-      return reply.send({ reply: text, credits_remaining: userCredits.ai_credits - 1 })
+      return reply.send({ reply: text, credits_remaining: isVip ? null : userRow.ai_credits - 1 })
     } catch (err: unknown) {
       request.log.error({ err }, 'AI chat error')
       return reply.status(500).send({ error: 'AI asistent momentálně neodpovídá. Zkus to za chvíli.' })
