@@ -48,6 +48,7 @@ services:
       FROM_EMAIL: ${FROM_EMAIL}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      ADMIN_SECRET: ${ADMIN_SECRET}
     volumes:
       - uploads-data:/app/uploads
     networks:
