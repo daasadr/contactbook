@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Plus, PenLine, Trash2, Tag, Calendar, Camera, Loader2, X } from 'lucide-react'
@@ -124,28 +125,30 @@ function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: ()
     }
   }, [onClose])
 
-  return (
+  return createPortal(
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm animate-[fadeIn_0.15s_ease]"
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/85 backdrop-blur-sm animate-fadeIn"
       onClick={onClose}
     >
-      {/* Close button */}
+      {/* 3D close button */}
       <button
         onClick={onClose}
-        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors border border-white/20"
         title="Zavřít (Esc)"
+        className="fixed top-5 right-5 w-12 h-12 rounded-full bg-gradient-to-br from-fuchsia-400 via-violet-500 to-indigo-600 text-white flex items-center justify-center ring-2 ring-white/30 hover:scale-110 active:scale-95 transition-all duration-150"
+        style={{ boxShadow: '0 5px 0 #4c1d95, 0 8px 24px rgba(139,92,246,0.65)' }}
       >
-        <X className="w-5 h-5" />
+        <X className="w-6 h-6" strokeWidth={2.5} />
       </button>
 
-      {/* Image — click on it does NOT close */}
+      {/* Image — click does NOT close */}
       <img
         src={src}
         alt={alt}
         onClick={e => e.stopPropagation()}
-        className="max-w-[92vw] max-h-[88vh] object-contain rounded-lg shadow-2xl"
+        className="max-w-[92vw] max-h-[88vh] object-contain rounded-xl shadow-2xl"
       />
-    </div>
+    </div>,
+    document.body,
   )
 }
 
