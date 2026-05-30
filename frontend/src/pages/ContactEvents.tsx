@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ArrowLeft, Plus, PenLine, Trash2, Tag, Calendar, Camera, Loader2, X } from 'lucide-react'
@@ -113,6 +113,42 @@ function EventForm({
   )
 }
 
+function Lightbox({ src, alt, onClose }: { src: string; alt: string; onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
+    document.addEventListener('keydown', onKey)
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.removeEventListener('keydown', onKey)
+      document.body.style.overflow = ''
+    }
+  }, [onClose])
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm animate-[fadeIn_0.15s_ease]"
+      onClick={onClose}
+    >
+      {/* Close button */}
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/25 text-white flex items-center justify-center transition-colors border border-white/20"
+        title="Zavřít (Esc)"
+      >
+        <X className="w-5 h-5" />
+      </button>
+
+      {/* Image — click on it does NOT close */}
+      <img
+        src={src}
+        alt={alt}
+        onClick={e => e.stopPropagation()}
+        className="max-w-[92vw] max-h-[88vh] object-contain rounded-lg shadow-2xl"
+      />
+    </div>
+  )
+}
+
 function AttachmentGallery({
   attachments,
   onDelete,
@@ -122,32 +158,44 @@ function AttachmentGallery({
   onDelete: (id: string) => void
   deleting: string | null
 }) {
+  const [lightbox, setLightbox] = useState<EventAttachment | null>(null)
+
   if (attachments.length === 0) return null
   return (
-    <div className="flex flex-wrap gap-2 mt-3">
-      {attachments.map(att => (
-        <div key={att.id} className="relative group/photo">
-          <a href={`/uploads/${att.filename}`} target="_blank" rel="noopener noreferrer">
-            <img
-              src={`/uploads/${att.filename}`}
-              alt={att.original_name}
-              className="w-24 h-24 object-cover rounded-lg border border-zinc-200 hover:opacity-90 transition-opacity"
-            />
-          </a>
-          <button
-            onClick={() => onDelete(att.id)}
-            disabled={deleting === att.id}
-            title="Odstranit foto"
-            className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-opacity hover:bg-red-600"
-          >
-            {deleting === att.id
-              ? <Loader2 className="w-3 h-3 animate-spin" />
-              : <X className="w-3 h-3" />
-            }
-          </button>
-        </div>
-      ))}
-    </div>
+    <>
+      <div className="flex flex-wrap gap-2 mt-3">
+        {attachments.map(att => (
+          <div key={att.id} className="relative group/photo">
+            <button onClick={() => setLightbox(att)} className="focus:outline-none">
+              <img
+                src={`/uploads/${att.filename}`}
+                alt={att.original_name}
+                className="w-24 h-24 object-cover rounded-lg border border-zinc-200 hover:opacity-90 transition-opacity cursor-zoom-in"
+              />
+            </button>
+            <button
+              onClick={() => onDelete(att.id)}
+              disabled={deleting === att.id}
+              title="Odstranit foto"
+              className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-white flex items-center justify-center opacity-0 group-hover/photo:opacity-100 transition-opacity hover:bg-red-600"
+            >
+              {deleting === att.id
+                ? <Loader2 className="w-3 h-3 animate-spin" />
+                : <X className="w-3 h-3" />
+              }
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {lightbox && (
+        <Lightbox
+          src={`/uploads/${lightbox.filename}`}
+          alt={lightbox.original_name}
+          onClose={() => setLightbox(null)}
+        />
+      )}
+    </>
   )
 }
 

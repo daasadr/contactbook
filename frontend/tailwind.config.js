@@ -20,6 +20,12 @@ export default {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
       },
+      keyframes: {
+        fadeIn: { from: { opacity: '0' }, to: { opacity: '1' } },
+      },
+      animation: {
+        fadeIn: 'fadeIn 0.15s ease',
+      },
     },
   },
   plugins: [],
