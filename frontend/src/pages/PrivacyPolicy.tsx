@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 
-const UPDATED = '28. 5. 2026'
+const UPDATED = '30. 5. 2026'
 const CONTROLLER_EMAIL = 'annlibertas@seznam.cz'
 
 function Section({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
@@ -135,6 +135,7 @@ export default function PrivacyPolicy() {
                 ['Logy serveru', 'Oprávněný zájem (bezpečnost)', 'čl. 6 odst. 1 písm. f)'],
                 ['Odeslání e-mailu (reset hesla)', 'Plnění smlouvy / vaše žádost', 'čl. 6 odst. 1 písm. b)'],
                 ['AI asistent (přenos dat na Anthropic)', 'Plnění smlouvy + informovaný souhlas použitím funkce', 'čl. 6 odst. 1 písm. a) + b)'],
+                ['Platební transakce (Stripe)', 'Plnění smlouvy (nákup kreditů)', 'čl. 6 odst. 1 písm. b)'],
               ]}
             />
           </Section>
@@ -165,6 +166,26 @@ export default function PrivacyPolicy() {
                 <p className="text-sm text-zinc-500 mt-1">
                   Vaše e-mailová adresa je předána Resend pouze při odeslání e-mailu pro reset hesla.
                   Data nejsou používána k jiným účelům.
+                </p>
+              </div>
+
+              <div className="border border-zinc-200 rounded-lg p-4">
+                <p className="font-semibold text-zinc-900">Stripe, Inc. (platební brána)</p>
+                <p className="text-sm text-zinc-600 mt-1">
+                  <strong>Sídlo:</strong> USA ·
+                  <strong> Účel:</strong> Zpracování platebních transakcí ·
+                  <strong> GDPR:</strong> Standardní smluvní doložky (SCC), DPA na stripe.com/privacy
+                </p>
+                <p className="text-sm text-zinc-500 mt-2">
+                  Při nákupu AI kreditů nebo odeslání příspěvku jste přesměrováni na platební stránku Stripe.
+                  <strong> My nikdy nevidíme, nezpracováváme ani neukládáme číslo vaší platební karty, CVV kód
+                  ani expiraci.</strong> Veškerá platební data zadáváte přímo na infrastruktuře Stripe,
+                  která je certifikována podle standardu <strong>PCI DSS Level 1</strong> — nejvyšší možné úrovně
+                  zabezpečení platebních dat.
+                </p>
+                <p className="text-sm text-zinc-500 mt-1">
+                  My ukládáme pouze: identifikátor Stripe session (pro ověření platby), výši transakce
+                  a počet přidělených kreditů. Žádná citlivá platební data nejsou na našich serverech.
                 </p>
               </div>
 
