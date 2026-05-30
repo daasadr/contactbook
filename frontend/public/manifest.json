@@ -1,0 +1,30 @@
+{
+  "name": "Peopleworth",
+  "short_name": "Peopleworth",
+  "description": "Chytrá správa kontaktů — lidé jsou tvé bohatství",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#f4f4f5",
+  "theme_color": "#6366f1",
+  "lang": "cs",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
