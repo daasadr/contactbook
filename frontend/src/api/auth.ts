@@ -1,6 +1,17 @@
 import { apiClient } from './client'
 import type { User } from '@/types'
 
+export interface UserProfile {
+  role?: string
+  values?: string
+  goals?: string
+  communication_style?: string
+  strengths?: string
+  challenges?: string
+  interests?: string
+  about?: string
+}
+
 export const authApi = {
   register: (data: { name: string; email: string; password: string }) =>
     apiClient.post<{ user: User; accessToken: string }>('/auth/register', data),
@@ -26,4 +37,10 @@ export const authApi = {
 
   exportData: () =>
     apiClient.get('/auth/export', { responseType: 'blob' }),
+
+  getProfile: () =>
+    apiClient.get<{ profile: UserProfile }>('/auth/profile'),
+
+  updateProfile: (profile: UserProfile) =>
+    apiClient.patch<{ profile: UserProfile }>('/auth/profile', profile),
 }

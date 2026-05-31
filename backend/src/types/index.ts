@@ -11,7 +11,7 @@ export type FieldType =
   | 'multiselect'
   | 'checkbox'
 
-export type TemplateType = 'networking' | 'business' | 'personal' | 'general' | 'custom'
+export type TemplateType = 'networking' | 'business' | 'personal' | 'general' | 'custom' | 'inspirations'
 
 export interface SelectOption {
   value: string

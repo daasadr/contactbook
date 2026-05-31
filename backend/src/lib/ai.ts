@@ -26,14 +26,42 @@ function todayCZ(): string {
   })
 }
 
+export interface UserProfile {
+  role?: string
+  values?: string
+  goals?: string
+  communication_style?: string
+  strengths?: string
+  challenges?: string
+  interests?: string
+  about?: string
+}
+
+function buildUserProfileSection(profile: UserProfile | null): string {
+  if (!profile || Object.values(profile).every(v => !v)) return ''
+  const lines = [
+    profile.role && `- Profese/role: ${profile.role}`,
+    profile.values && `- Hodnoty: ${profile.values}`,
+    profile.goals && `- Cíle: ${profile.goals}`,
+    profile.communication_style && `- Styl komunikace: ${profile.communication_style}`,
+    profile.strengths && `- Silné stránky: ${profile.strengths}`,
+    profile.challenges && `- Aktuální výzvy: ${profile.challenges}`,
+    profile.interests && `- Zájmy: ${profile.interests}`,
+    profile.about && `- O uživateli: ${profile.about}`,
+  ].filter(Boolean).join('\n')
+  return `\n=== PROFIL UŽIVATELE (pro kontext) ===\n${lines}`
+}
+
 export function buildContactSystemPrompt(params: {
   contactName: string
   fieldData: Record<string, { label: string; value: unknown; type: string }>
   events: Array<{ title: string; content: string; event_date: string; tags: string[] }>
   listName: string
   connections?: Array<{ name: string; listName: string; label: string | null }>
+  userProfile?: UserProfile | null
+  isInspiration?: boolean
 }): string {
-  const { contactName, fieldData, events, listName, connections } = params
+  const { contactName, fieldData, events, listName, connections, userProfile, isInspiration } = params
 
   const fieldsSection = Object.entries(fieldData)
     .filter(([, v]) => v.value !== null && v.value !== undefined && v.value !== '')
@@ -58,16 +86,20 @@ export function buildContactSystemPrompt(params: {
         return `- ${c.name} [seznam: ${c.listName}]${label}`
       }).join('\n')
 
+  const inspirationNote = isInspiration
+    ? `\nTento kontakt je INSPIRATIVNÍ OSOBNOST — člověk, kterého uživatel osobně nezná, ale obdivuje ho. Kombinuj znalosti z tréninkových dat o této osobnosti s uživatelovými poznámkami.`
+    : ''
+
   return `Jsi osobní asistent aplikace Peopleworth — nástroje pro správu mezilidských vztahů.
-Pomáháš uživateli pečovat o vztahy s konkrétním člověkem z jejich života.
+Pomáháš uživateli pečovat o vztahy a čerpat z inspirace lidí, kteří mu záleží.${inspirationNote}
 
 Dnešní datum: ${todayCZ()}
 
-Níže jsou veškeré informace, které o tomto kontaktu uživatel zaznamenal.
 Odpovídej vždy v přirozené, plynné češtině. Buď konkrétní, praktický a empatický.
-Pokud nemáš dostatek informací pro kvalitní odpověď, řekni to upřímně a navrhni, co by uživatel mohl doplnit.
-Nikdy nevymýšlej fakta, která nejsou v datech. Drž se toho, co víš.
+Pokud nemáš dostatek informací, řekni to upřímně.
+Nikdy nevymýšlej fakta, která nejsou v datech.
 Počítej věk, délku odmlky a jiné časové údaje vždy od dnešního data výše.
+${buildUserProfileSection(userProfile ?? null)}
 
 === KONTAKT ===
 Jméno: ${contactName}

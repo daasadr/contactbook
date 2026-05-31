@@ -103,18 +103,35 @@ const generalTemplate: Template = {
   ],
 }
 
+const inspirationsTemplate: Template = {
+  type: 'inspirations',
+  fields: [
+    { name: 'why_inspiring', label: 'Proč mě inspiruje', field_type: 'textarea', placeholder: 'Čím mě oslovila, co na ní obdivuji...', sort_order: 1, section: 'personal' },
+    { name: 'key_quote', label: 'Citát nebo klíčová myšlenka', field_type: 'textarea', placeholder: '"Citát nebo myšlenka, která mi utkvěla..."', sort_order: 2, section: 'personal' },
+    { name: 'life_lesson', label: 'Co z toho aplikuji', field_type: 'textarea', placeholder: 'Jak tato inspirace ovlivňuje můj život...', sort_order: 3, section: 'personal' },
+    { name: 'field_of_work', label: 'Obor / oblast', field_type: 'text', placeholder: 'Věda, umění, podnikání...', sort_order: 10, section: 'professional' },
+    { name: 'era', label: 'Éra / životní období', field_type: 'text', placeholder: '20. stol., starověk, současnost...', sort_order: 11, section: 'professional' },
+    { name: 'born_died', label: 'Narozen/a — zemřel/a', field_type: 'text', placeholder: '1867 — 1934', sort_order: 12, section: 'professional' },
+    { name: 'nationality', label: 'Původ / národnost', field_type: 'text', sort_order: 13, section: 'professional' },
+    { name: 'website', label: 'Zdroj / odkaz', field_type: 'url', placeholder: 'Wikipedia, kniha, dokumentární film...', sort_order: 20, section: 'contact' },
+    { name: 'notes', label: 'Další poznámky', field_type: 'textarea', sort_order: 99, section: 'notes' },
+  ],
+}
+
 export const templates: Record<TemplateType, Template> = {
   networking: networkingTemplate,
   business: businessTemplate,
   personal: personalTemplate,
   general: generalTemplate,
+  inspirations: inspirationsTemplate,
   custom: { type: 'custom', fields: [] },
 }
 
 export const templateMeta = {
-  networking: { label: 'Networking', icon: 'network', color: '#6366f1', description: 'Pro networkery a budování vztahů' },
-  business:   { label: 'Byznys', icon: 'briefcase', color: '#0ea5e9', description: 'Klienti, prospekti a obchodní kontakty' },
-  personal:   { label: 'Přátelé & Rodina', icon: 'heart', color: '#ec4899', description: 'Blízcí lidé a osobní vztahy' },
-  general:    { label: 'Obecné', icon: 'users', color: '#10b981', description: 'Univerzální seznam kontaktů' },
-  custom:     { label: 'Vlastní', icon: 'settings', color: '#f59e0b', description: 'Začni s prázdnou šablonou' },
+  networking:    { label: 'Networking', icon: 'network', color: '#6366f1', description: 'Pro networkery a budování vztahů' },
+  business:      { label: 'Byznys', icon: 'briefcase', color: '#0ea5e9', description: 'Klienti, prospekti a obchodní kontakty' },
+  personal:      { label: 'Přátelé & Rodina', icon: 'heart', color: '#ec4899', description: 'Blízcí lidé a osobní vztahy' },
+  general:       { label: 'Obecné', icon: 'users', color: '#10b981', description: 'Univerzální seznam kontaktů' },
+  inspirations:  { label: 'Inspirativní osobnosti', icon: 'sparkles', color: '#8b5cf6', description: 'Lidé, kteří tě inspirují — i ti, které jsi nikdy nepotkal/a' },
+  custom:        { label: 'Vlastní', icon: 'settings', color: '#f59e0b', description: 'Začni s prázdnou šablonou' },
 }

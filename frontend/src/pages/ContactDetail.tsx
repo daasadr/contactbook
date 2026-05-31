@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Trash2, Save, User, ChevronDown, ChevronUp, PenLine, Palette, Cake, Loader2 } from 'lucide-react'
+import { ArrowLeft, Star, Trash2, Save, User, ChevronDown, ChevronUp, PenLine, Palette, Cake, Loader2, Sparkles } from 'lucide-react'
 import Layout from '@/components/Layout'
 import { contactsApi } from '@/api/contacts'
 import { listsApi } from '@/api/lists'
@@ -9,6 +9,7 @@ import BackgroundPicker from '@/components/BackgroundPicker'
 import ContactAIChat from '@/components/ContactAIChat'
 import ContactConnections from '@/components/ContactConnections'
 import TaskList from '@/components/TaskList'
+import { aiApi } from '@/api/ai'
 import type { FieldDefinition } from '@/types'
 import clsx from 'clsx'
 
@@ -226,6 +227,63 @@ const SECTION_LABELS: Record<string, string> = {
   personal: 'Osobní informace',
   notes: 'Poznámky',
   general: 'Obecné',
+}
+
+function InspirationPanel({ contactId, contactName }: { contactId: string; contactName: string }) {
+  const [situation, setSituation] = useState('')
+  const [result, setResult] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const ask = async () => {
+    if (!situation.trim()) return
+    setLoading(true)
+    setError('')
+    setResult('')
+    try {
+      const res = await aiApi.inspire(contactId, situation.trim())
+      setResult(res.data.reply)
+    } catch (err: any) {
+      const status = err.response?.status
+      setError(
+        status === 402 ? 'Nedostatek kreditů.' :
+        status === 503 ? 'AI není momentálně k dispozici.' :
+        'Nepodařilo se získat odpověď.'
+      )
+    } finally { setLoading(false) }
+  }
+
+  return (
+    <div className="card p-6 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 mb-6">
+      <div className="flex items-center gap-2 mb-3">
+        <Sparkles className="w-5 h-5 text-violet-600" />
+        <h2 className="font-semibold text-violet-900">Co by {contactName || 'tato osobnost'} udělala?</h2>
+      </div>
+      <p className="text-sm text-violet-600 mb-4">
+        Popiš svou situaci nebo výzvu a AI odpoví z perspektivy {contactName ? `${contactName}` : 'této osobnosti'} — kombinuje jejich hodnoty s tím, co o nich víš.
+      </p>
+      <textarea
+        value={situation}
+        onChange={e => setSituation(e.target.value)}
+        placeholder={`Jak by se ${contactName || 'tato osobnost'} postavila k mé situaci? Např.: "Bojím se začít nový projekt, mám strach ze selhání..."`}
+        rows={3}
+        className="input resize-none mb-3 w-full"
+      />
+      <button
+        onClick={ask}
+        disabled={loading || !situation.trim()}
+        className="btn-primary bg-violet-600 hover:bg-violet-700 focus:ring-violet-400"
+      >
+        {loading ? <><Loader2 className="w-4 h-4 animate-spin" /> Přemýšlím…</> : <><Sparkles className="w-4 h-4" /> Zeptat se (1 kredit)</>}
+      </button>
+      {error && <p className="text-sm text-red-600 mt-2">{error}</p>}
+      {result && (
+        <div className="mt-4 p-4 bg-white/70 rounded-xl border border-violet-200">
+          <p className="text-sm text-zinc-800 whitespace-pre-wrap leading-relaxed">{result}</p>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function ContactDetail() {
@@ -527,6 +585,11 @@ export default function ContactDetail() {
           <ContactAIChat contactId={contactId!} contactName={fullName || 'kontakt'} />
         </div>
       </div>
+
+      {/* Co by X udělal? — pouze pro inspirativní osobnosti */}
+      {listData?.template_type === 'inspirations' && (
+        <InspirationPanel contactId={contactId!} contactName={fullName} />
+      )}
 
       {/* DOLNÍ ŘADA: Podrobnosti + Kniha záznamů */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-6">

@@ -36,7 +36,7 @@ export async function aiRoutes(app: FastifyInstance) {
 
     // Načti kontakt + ověř vlastnictví přes seznam
     const [contact] = await sql`
-      SELECT c.*, cl.name AS list_name, cl.id AS list_id
+      SELECT c.*, cl.name AS list_name, cl.id AS list_id, cl.template_type
       FROM contacts c
       JOIN contact_lists cl ON cl.id = c.list_id
       WHERE c.id = ${contactId} AND cl.user_id = ${request.userId}
@@ -44,6 +44,10 @@ export async function aiRoutes(app: FastifyInstance) {
     if (!contact) {
       return reply.status(404).send({ error: 'Kontakt nenalezen' })
     }
+
+    // Načti profil uživatele + kredity najednou
+    const [userDataRow] = await sql`SELECT profile, ai_credits, is_vip FROM users WHERE id = ${request.userId}`
+    const userProfile = userDataRow?.profile ?? null
 
     // Načti definice polí
     const fields = await sql`
@@ -98,13 +102,14 @@ export async function aiRoutes(app: FastifyInstance) {
       events: events as any[],
       listName: contact.list_name,
       connections,
+      userProfile,
+      isInspiration: contact.template_type === 'inspirations',
     })
 
     // Zkontroluj kredity (VIP uživatelé mají neomezený přístup)
-    const [userRow] = await sql`SELECT ai_credits, is_vip FROM users WHERE id = ${request.userId}`
-    if (!userRow) return reply.status(404).send({ error: 'Uživatel nenalezen' })
-    const isVip = !!userRow.is_vip
-    if (!isVip && userRow.ai_credits <= 0) {
+    if (!userDataRow) return reply.status(404).send({ error: 'Uživatel nenalezen' })
+    const isVip = !!userDataRow.is_vip
+    if (!isVip && userDataRow.ai_credits <= 0) {
       return reply.status(402).send({ error: 'Nedostatek kreditů. Zakup si další v nastavení účtu.' })
     }
 
@@ -134,9 +139,98 @@ export async function aiRoutes(app: FastifyInstance) {
         `
       }
 
-      return reply.send({ reply: text, credits_remaining: isVip ? null : userRow.ai_credits - 1 })
+      return reply.send({ reply: text, credits_remaining: isVip ? null : userDataRow.ai_credits - 1 })
     } catch (err: unknown) {
       request.log.error({ err }, 'AI chat error')
+      return reply.status(500).send({ error: 'AI asistent momentálně neodpovídá. Zkus to za chvíli.' })
+    }
+  })
+
+  // POST /ai/contacts/:contactId/inspire — "Co by X udělal/a v mé situaci?"
+  app.post('/contacts/:contactId/inspire', { preHandler: authenticate, ...aiRateLimit }, async (request, reply) => {
+    if (!isAIAvailable()) {
+      return reply.status(503).send({ error: 'AI není momentálně k dispozici.' })
+    }
+
+    const { contactId } = request.params as { contactId: string }
+    const body = z.object({ situation: z.string().min(1).max(2000) }).safeParse(request.body)
+    if (!body.success) return reply.status(400).send({ error: 'Popiš svou situaci' })
+
+    // Zkontroluj kredity
+    const [userRow] = await sql`SELECT ai_credits, is_vip, profile FROM users WHERE id = ${request.userId}`
+    if (!userRow) return reply.status(404).send({ error: 'Uživatel nenalezen' })
+    if (!userRow.is_vip && userRow.ai_credits <= 0) {
+      return reply.status(402).send({ error: 'Nedostatek kreditů. Zakup si další v nastavení účtu.' })
+    }
+
+    // Načti kontakt (inspirativní osobnost)
+    const [contact] = await sql`
+      SELECT c.*, cl.name AS list_name, cl.template_type
+      FROM contacts c JOIN contact_lists cl ON cl.id = c.list_id
+      WHERE c.id = ${contactId} AND cl.user_id = ${request.userId}
+    `
+    if (!contact) return reply.status(404).send({ error: 'Kontakt nenalezen' })
+
+    const fields = await sql`
+      SELECT name, label, field_type FROM field_definitions
+      WHERE list_id = ${contact.list_id} ORDER BY sort_order ASC
+    `
+    const customData = (contact.custom_data ?? {}) as Record<string, unknown>
+    const fieldData: Record<string, { label: string; value: unknown; type: string }> = {}
+    for (const f of fields) {
+      const val = customData[f.name]
+      if (val !== undefined && val !== null && val !== '') {
+        fieldData[f.name] = { label: f.label, value: val, type: f.field_type }
+      }
+    }
+
+    const contactName = [contact.first_name, contact.last_name].filter(Boolean).join(' ')
+    const userProfile = userRow.profile ?? null
+
+    // Sestav popis osobnosti z polí
+    const personalityNotes = Object.entries(fieldData)
+      .map(([, v]) => `- ${v.label}: ${v.value}`)
+      .join('\n') || '(bez poznámek)'
+
+    const prompt = `Uživatel tě prosí o radu skrze perspektivu inspirativní osobnosti: ${contactName}.
+
+Co uživatel o ${contactName} zaznamenal:
+${personalityNotes}
+
+${userProfile ? `O uživateli samotném:
+${Object.entries(userProfile as Record<string,string>).filter(([,v]) => v).map(([k,v]) => `- ${k}: ${v}`).join('\n')}
+` : ''}
+Situace nebo výzva uživatele:
+"${body.data.situation}"
+
+Odpověz ve dvou částech:
+1. POHLED ${contactName.toUpperCase()}: Krátce (2–3 věty) jak by se ${contactName} na tuto situaci pravděpodobně dívala — v první osobě ("Já bych..."), vycházej z toho, co o ní víš ze svého tréninkového kontextu i z uživatelových poznámek.
+2. KONKRÉTNÍ RADA: Praktický návrh pro uživatele inspirovaný hodnotami a přístupy ${contactName}.
+
+Piš česky, srdečně a konkrétně. Nebuď generický.`
+
+    try {
+      const client = getAIClient()
+      const response = await client.messages.create({
+        model: AI_MODEL,
+        max_tokens: AI_MAX_TOKENS,
+        messages: [{ role: 'user', content: prompt }],
+      })
+
+      const text = response.content
+        .filter(b => b.type === 'text')
+        .map(b => (b as any).text)
+        .join('')
+
+      if (!userRow.is_vip) {
+        await sql`UPDATE users SET ai_credits = ai_credits - 1 WHERE id = ${request.userId}`
+        await sql`INSERT INTO credit_transactions (user_id, type, credits, description)
+                  VALUES (${request.userId}, 'usage', -1, ${'Inspirace: ' + contactName})`
+      }
+
+      return reply.send({ reply: text, contact_name: contactName, credits_remaining: userRow.is_vip ? null : userRow.ai_credits - 1 })
+    } catch (err) {
+      request.log.error({ err }, 'Inspire AI error')
       return reply.status(500).send({ error: 'AI asistent momentálně neodpovídá. Zkus to za chvíli.' })
     }
   })

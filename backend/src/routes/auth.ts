@@ -264,6 +264,37 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.send({ exportDate: new Date().toISOString(), user, lists: exportLists })
   })
 
+  // GET /auth/profile — načte profil uživatele pro AI
+  app.get('/profile', { preHandler: authenticate }, async (request, reply) => {
+    const [user] = await sql`SELECT profile FROM users WHERE id = ${request.userId}`
+    if (!user) return reply.status(404).send({ error: 'Uživatel nenalezen' })
+    return reply.send({ profile: user.profile ?? {} })
+  })
+
+  // PATCH /auth/profile — uloží profil uživatele
+  app.patch('/profile', { preHandler: authenticate }, async (request, reply) => {
+    const body = z.object({
+      role: z.string().max(200).optional(),
+      values: z.string().max(1000).optional(),
+      goals: z.string().max(1000).optional(),
+      communication_style: z.string().max(500).optional(),
+      strengths: z.string().max(500).optional(),
+      challenges: z.string().max(500).optional(),
+      interests: z.string().max(500).optional(),
+      about: z.string().max(2000).optional(),
+    }).safeParse(request.body)
+    if (!body.success) return reply.status(400).send({ error: 'Neplatná data' })
+
+    // Merge s existujícím profilem
+    const [user] = await sql`SELECT profile FROM users WHERE id = ${request.userId}`
+    const merged = { ...(user?.profile ?? {}), ...body.data }
+    const [updated] = await sql`
+      UPDATE users SET profile = ${sql.json(merged as any)} WHERE id = ${request.userId}
+      RETURNING profile
+    `
+    return reply.send({ profile: updated.profile })
+  })
+
   // GET /auth/me
   app.get('/me', async (request, reply) => {
     try {

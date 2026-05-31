@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Download, Trash2, Shield, Sparkles, CreditCard, Heart, Zap } from 'lucide-react'
+import { ArrowLeft, Download, Trash2, Shield, Sparkles, CreditCard, Heart, Zap, UserCircle, Loader2 } from 'lucide-react'
 import Layout from '@/components/Layout'
-import { authApi } from '@/api/auth'
+import { authApi, type UserProfile } from '@/api/auth'
 import { billingApi, type CreditPack } from '@/api/billing'
 import { useAuthStore } from '@/stores/auth'
 
@@ -204,6 +204,96 @@ function CreditsSection() {
   )
 }
 
+// ── User profile for AI ──────────────────────────────────────────────────────
+
+const PROFILE_FIELDS: Array<{ key: keyof UserProfile; label: string; placeholder: string; multiline?: boolean }> = [
+  { key: 'role', label: 'Profese / role', placeholder: 'Grafik, učitelka, podnikatelka...' },
+  { key: 'about', label: 'O mně (volný text)', placeholder: 'Pár vět o sobě — co tě vystihuje...', multiline: true },
+  { key: 'values', label: 'Mé hodnoty', placeholder: 'Co mi záleží, co je pro mě důležité...', multiline: true },
+  { key: 'goals', label: 'Mé cíle', placeholder: 'Na čem pracuji, co chci dosáhnout...', multiline: true },
+  { key: 'communication_style', label: 'Styl komunikace', placeholder: 'Introvert, preferuji e-mail, přímý styl...' },
+  { key: 'strengths', label: 'Silné stránky', placeholder: 'V čem jsem dobrá, co mi jde...' },
+  { key: 'challenges', label: 'Aktuální výzvy', placeholder: 'Co řeším, co mi dělá potíže...' },
+  { key: 'interests', label: 'Zájmy a koníčky', placeholder: 'Knihy, příroda, design...' },
+]
+
+function ProfileSection() {
+  const { data: profileData, isLoading } = useQuery({
+    queryKey: ['user-profile'],
+    queryFn: () => authApi.getProfile().then(r => r.data.profile),
+  })
+
+  const [form, setForm] = useState<UserProfile>({})
+  const [saved, setSaved] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    if (profileData) setForm(profileData)
+  }, [profileData])
+
+  const handleSave = async () => {
+    setSaving(true)
+    try {
+      await authApi.updateProfile(form)
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 3000)
+    } catch { /* ignore */ } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="card p-6">
+      <div className="flex items-start gap-4">
+        <div className="w-10 h-10 rounded-xl bg-violet-100 flex items-center justify-center shrink-0">
+          <UserCircle className="w-5 h-5 text-violet-600" />
+        </div>
+        <div className="flex-1">
+          <h2 className="font-semibold text-zinc-900 mb-1">Můj profil pro AI asistenta</h2>
+          <p className="text-sm text-zinc-500 mb-4">
+            Tyto informace AI použije jako kontext při všech konverzacích — rady budou osobnější a přesnější.
+            Vyplň jen to, co chceš sdílet.
+          </p>
+          {isLoading ? (
+            <div className="flex items-center gap-2 text-zinc-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Načítám…</div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {PROFILE_FIELDS.map(f => (
+                <div key={f.key} className={f.multiline ? 'sm:col-span-2' : ''}>
+                  <label className="label">{f.label}</label>
+                  {f.multiline ? (
+                    <textarea
+                      value={form[f.key] ?? ''}
+                      onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                      placeholder={f.placeholder}
+                      rows={3}
+                      className="input resize-none"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      value={form[f.key] ?? ''}
+                      onChange={e => setForm(p => ({ ...p, [f.key]: e.target.value }))}
+                      placeholder={f.placeholder}
+                      className="input"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="flex items-center gap-3 mt-4">
+            <button onClick={handleSave} disabled={saving} className="btn-primary">
+              {saving ? 'Ukládám…' : 'Uložit profil'}
+            </button>
+            {saved && <span className="text-sm text-green-600">✓ Uloženo</span>}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ── Export ──────────────────────────────────────────────────────────────────
 
 function ExportSection() {
@@ -340,6 +430,15 @@ export default function AccountSettings() {
       </div>
 
       <div className="space-y-6">
+        {/* Profil pro AI */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <UserCircle className="w-4 h-4 text-violet-500" />
+            <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide">Můj profil pro AI</h2>
+          </div>
+          <ProfileSection />
+        </div>
+
         {/* AI kredity a platby */}
         <div>
           <div className="flex items-center gap-2 mb-3">

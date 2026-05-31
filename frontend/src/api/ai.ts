@@ -32,4 +32,10 @@ export const aiApi = {
 
   deleteSavedChat: (chatId: string) =>
     apiClient.delete(`/ai/chats/${chatId}`),
+
+  inspire: (contactId: string, situation: string) =>
+    apiClient.post<{ reply: string; contact_name: string; credits_remaining: number | null }>(
+      `/ai/contacts/${contactId}/inspire`,
+      { situation },
+    ),
 }

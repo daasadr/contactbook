@@ -8,7 +8,7 @@ import type { TemplateType } from '../types'
 const createListSchema = z.object({
   name: z.string().min(1).max(255),
   description: z.string().max(1000).optional(),
-  template_type: z.enum(['networking', 'business', 'personal', 'general', 'custom']),
+  template_type: z.enum(['networking', 'business', 'personal', 'general', 'custom', 'inspirations']),
   icon: z.string().max(50).optional(),
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   background: z.string().max(500).nullable().optional().refine(
