@@ -38,8 +38,13 @@ export async function signalRoutes(app: FastifyInstance) {
       WHERE cl.user_id = ${request.userId}
       GROUP BY c.id, cl.id, cl.name, cl.color, cl.radar_days
       HAVING
-        MAX(ce.event_date) IS NULL
-        OR (NOW()::date - MAX(ce.event_date))::int >= cl.radar_days
+        -- Má záznamy, ale poslední byl před víc než radar_days
+        (MAX(ce.event_date) IS NOT NULL
+          AND (NOW()::date - MAX(ce.event_date))::int >= cl.radar_days)
+        OR
+        -- Nemá žádný záznam, ale kontakt byl přidán před víc než radar_days (není nový)
+        (MAX(ce.event_date) IS NULL
+          AND (NOW()::date - c.created_at::date)::int >= cl.radar_days)
       ORDER BY days_since DESC NULLS FIRST
       LIMIT ${MAX_NEGLECTED}
     `
