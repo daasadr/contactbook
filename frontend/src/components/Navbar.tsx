@@ -17,7 +17,7 @@ export default function Navbar() {
     <header className="bg-white border-b border-zinc-200 sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2 text-primary-600 font-bold text-lg">
+          <Link to="/" className="flex items-center gap-2 text-primary-600 font-bold text-lg">
             <BookUser className="w-6 h-6" />
             <span>Peopleworth</span>
           </Link>
