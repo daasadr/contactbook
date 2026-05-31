@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Trash2, Save, User, ChevronDown, ChevronUp, PenLine, Palette } from 'lucide-react'
+import { ArrowLeft, Star, Trash2, Save, User, ChevronDown, ChevronUp, PenLine, Palette, Cake, Loader2 } from 'lucide-react'
 import Layout from '@/components/Layout'
 import { contactsApi } from '@/api/contacts'
 import { listsApi } from '@/api/lists'
@@ -237,6 +237,8 @@ export default function ContactDetail() {
   const [lastName, setLastName] = useState('')
   const [initialized, setInitialized] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [nameDayResult, setNameDayResult] = useState<{ date: string; label: string } | null>(null)
+  const [findingNameDay, setFindingNameDay] = useState(false)
   const [detailsExpanded, setDetailsExpanded] = useState(false)
   const [editingFields, setEditingFields] = useState<Set<string>>(new Set())
   const [nameEditing, setNameEditing] = useState(false)
@@ -347,6 +349,27 @@ export default function ContactDetail() {
   const initials = [firstName, lastName].filter(Boolean).map((n) => n[0].toUpperCase()).join('')
   const pageBg = contactBg || listData?.background || undefined
 
+  const findNameDay = async () => {
+    if (!firstName.trim()) return
+    setFindingNameDay(true)
+    setNameDayResult(null)
+    try {
+      const { apiClient } = await import('@/api/client')
+      const res = await apiClient.post<{ date: string | null; name: string }>('/name-day', { name: firstName.trim() })
+      if (res.data.date) {
+        const [m, d] = res.data.date.split('-').map(Number)
+        const label = new Date(2000, m - 1, d).toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long' })
+        setNameDayResult({ date: res.data.date, label })
+      } else {
+        setNameDayResult(null)
+        alert(`Svátek pro jméno "${firstName}" nebyl nalezen v českém kalendáři.`)
+      }
+    } catch { alert('Nepodařilo se vyhledat svátek.') }
+    finally { setFindingNameDay(false) }
+  }
+
+  const monthDayFields = fields.filter(f => f.field_type === 'month_day')
+
   if (contactLoading) {
     return (
       <Layout>
@@ -434,6 +457,50 @@ export default function ContactDetail() {
                     <PenLine className="w-4 h-4" />
                   </button>
                 </div>
+
+                {/* Svátek */}
+                {firstName && (
+                  <div className="mt-1.5">
+                    {!nameDayResult ? (
+                      <button
+                        onClick={findNameDay}
+                        disabled={findingNameDay}
+                        className="flex items-center gap-1 text-xs text-zinc-400 hover:text-primary-600 transition-colors"
+                      >
+                        {findingNameDay
+                          ? <><Loader2 className="w-3 h-3 animate-spin" /> Hledám svátek…</>
+                          : <><Cake className="w-3 h-3" /> Zjistit svátek</>
+                        }
+                      </button>
+                    ) : (
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs text-primary-700 font-medium flex items-center gap-1">
+                          <Cake className="w-3 h-3" /> Svátek: {nameDayResult.label}
+                        </span>
+                        {monthDayFields.length > 0 && (
+                          <select
+                            onChange={e => {
+                              if (e.target.value) {
+                                updateField(e.target.value, nameDayResult.date)
+                                setNameDayResult(null)
+                              }
+                            }}
+                            defaultValue=""
+                            className="text-xs border border-zinc-200 rounded px-1.5 py-0.5 bg-white text-zinc-600"
+                          >
+                            <option value="">Vyplnit do pole…</option>
+                            {monthDayFields.map(f => (
+                              <option key={f.id} value={f.name}>{f.label}</option>
+                            ))}
+                          </select>
+                        )}
+                        <button onClick={() => setNameDayResult(null)} className="text-zinc-300 hover:text-zinc-500">
+                          <span className="text-xs">×</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
           </div>
