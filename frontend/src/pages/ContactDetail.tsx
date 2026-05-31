@@ -8,6 +8,7 @@ import { listsApi } from '@/api/lists'
 import BackgroundPicker from '@/components/BackgroundPicker'
 import ContactAIChat from '@/components/ContactAIChat'
 import ContactConnections from '@/components/ContactConnections'
+import TaskList from '@/components/TaskList'
 import type { FieldDefinition } from '@/types'
 import clsx from 'clsx'
 
@@ -530,6 +531,11 @@ export default function ContactDetail() {
       {/* Propojení — kdo koho zná */}
       <div className="mb-6">
         <ContactConnections contactId={contactId!} />
+      </div>
+
+      {/* Úkoly pro tento kontakt */}
+      <div className="card p-5 bg-white/90 backdrop-blur-sm mb-6">
+        <TaskList contactId={contactId!} title={`Úkoly — ${fullName || 'kontakt'}`} />
       </div>
 
       {/* Uložit */}

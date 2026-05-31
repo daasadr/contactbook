@@ -17,7 +17,9 @@ const createListSchema = z.object({
   ),
 })
 
-const updateListSchema = createListSchema.partial()
+const updateListSchema = createListSchema.extend({
+  radar_days: z.number().int().min(1).max(365).optional(),
+}).partial()
 
 export async function listsRoutes(app: FastifyInstance) {
   // GET /lists — všechny seznamy přihlášeného uživatele

@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from 'react'
-import { Send, Sparkles, Loader2, BookmarkPlus, Check } from 'lucide-react'
+import { Send, Sparkles, Loader2, BookmarkPlus, Check, Pin, X } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useParams } from 'react-router-dom'
+import { useQueryClient } from '@tanstack/react-query'
 import { aiApi, type ChatMessage } from '@/api/ai'
+import { tasksApi } from '@/api/tasks'
 
 const SUGGESTED = [
   'Téma pro příští hovor?',
@@ -15,6 +17,62 @@ const SUGGESTED = [
 interface Props {
   contactId: string
   contactName: string
+}
+
+function SaveAsTaskInline({ contactId, aiText }: { contactId: string; aiText: string }) {
+  const [open, setOpen] = useState(false)
+  const [saved, setSaved] = useState(false)
+  const [title, setTitle] = useState('')
+  const [dueDate, setDueDate] = useState('')
+  const [saving, setSaving] = useState(false)
+  const queryClient = useQueryClient()
+
+  const openForm = () => {
+    const firstLine = aiText.split('\n')[0].replace(/^[#*•\-\d.]+\s*/, '').slice(0, 80)
+    setTitle(firstLine)
+    setOpen(true)
+  }
+
+  const save = async () => {
+    if (!title.trim()) return
+    setSaving(true)
+    try {
+      await tasksApi.create({ contact_id: contactId, title: title.trim(), due_date: dueDate || null })
+      queryClient.invalidateQueries({ queryKey: ['tasks'] })
+      setSaved(true)
+      setOpen(false)
+      setTimeout(() => setSaved(false), 3000)
+    } catch { /* ignore */ } finally { setSaving(false) }
+  }
+
+  if (saved) return <span className="text-[10px] text-green-600 mt-1">✓ Úkol uložen</span>
+
+  return (
+    <div className="mt-1">
+      {!open ? (
+        <button onClick={openForm} className="flex items-center gap-1 text-[10px] text-zinc-400 hover:text-primary-600 transition-colors">
+          <Pin className="w-3 h-3" /> Zapsat jako úkol
+        </button>
+      ) : (
+        <div className="mt-1 flex gap-1.5 flex-wrap items-center bg-zinc-50 rounded-lg p-2 border border-zinc-200">
+          <input
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            className="input text-xs py-1 flex-1 min-w-[140px]"
+            placeholder="Název úkolu"
+            autoFocus
+          />
+          <input type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} className="input text-xs py-1 w-32" />
+          <button onClick={save} disabled={saving || !title.trim()} className="btn-primary text-xs py-1 px-2">
+            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Check className="w-3 h-3" />}
+          </button>
+          <button onClick={() => setOpen(false)} className="text-zinc-400 hover:text-zinc-600">
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function ContactAIChat({ contactId, contactName }: Props) {
@@ -123,7 +181,7 @@ export default function ContactAIChat({ contactId, contactName }: Props) {
           </div>
         ) : (
           messages.map((m, i) => (
-            <div key={i} className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+            <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
               <div
                 className={`max-w-[85%] rounded-xl px-3 py-2 text-sm leading-relaxed ${
                   m.role === 'user'
@@ -133,6 +191,9 @@ export default function ContactAIChat({ contactId, contactName }: Props) {
               >
                 <p className="whitespace-pre-wrap">{m.content}</p>
               </div>
+              {m.role === 'assistant' && (
+                <SaveAsTaskInline contactId={contactId} aiText={m.content} />
+              )}
             </div>
           ))
         )}

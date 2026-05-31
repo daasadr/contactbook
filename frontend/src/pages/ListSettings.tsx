@@ -132,6 +132,8 @@ export default function ListSettings() {
   const [showAddField, setShowAddField] = useState(false)
   const [selectedBg, setSelectedBg] = useState<string | null | undefined>(undefined)
   const [bgSaved, setBgSaved] = useState(false)
+  const [radarDays, setRadarDays] = useState<number | undefined>(undefined)
+  const [radarSaved, setRadarSaved] = useState(false)
 
   const { data: listData } = useQuery({
     queryKey: ['list', listId],
@@ -140,10 +142,11 @@ export default function ListSettings() {
   })
 
   useEffect(() => {
-    if (listData && selectedBg === undefined) {
-      setSelectedBg(listData.background ?? null)
+    if (listData) {
+      if (selectedBg === undefined) setSelectedBg(listData.background ?? null)
+      if (radarDays === undefined) setRadarDays((listData as any).radar_days ?? 30)
     }
-  }, [listData, selectedBg])
+  }, [listData, selectedBg, radarDays])
 
   const updateBgMutation = useMutation({
     mutationFn: (bg: string | null) => listsApi.update(listId!, { background: bg }),
@@ -152,6 +155,16 @@ export default function ListSettings() {
       queryClient.invalidateQueries({ queryKey: ['lists'] })
       setBgSaved(true)
       setTimeout(() => setBgSaved(false), 2000)
+    },
+  })
+
+  const updateRadarMutation = useMutation({
+    mutationFn: (days: number) => listsApi.update(listId!, { radar_days: days } as any),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['list', listId] })
+      queryClient.invalidateQueries({ queryKey: ['signal'] })
+      setRadarSaved(true)
+      setTimeout(() => setRadarSaved(false), 2000)
     },
   })
 
@@ -273,6 +286,39 @@ export default function ListSettings() {
           className="btn-primary mt-1"
         >
           {updateBgMutation.isPending ? 'Ukládání…' : 'Uložit pozadí'}
+        </button>
+      </div>
+
+      {/* Signál — nastavení prahu */}
+      <div className="card p-6 mb-6">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="font-semibold text-zinc-900">Signál — práh upozornění</h2>
+          {radarSaved && <span className="text-sm text-green-600 font-medium">✓ Uloženo</span>}
+        </div>
+        <p className="text-sm text-zinc-500 mb-4">
+          Kontakty z tohoto seznamu se zobrazí v sekci Signál na dashboardu, pokud od posledního zápisku uplyne více dní než je nastaven práh.
+        </p>
+        <div className="flex items-center gap-4">
+          <input
+            type="range"
+            min={7} max={365} step={7}
+            value={radarDays ?? 30}
+            onChange={e => setRadarDays(Number(e.target.value))}
+            className="flex-1 accent-primary-500"
+          />
+          <span className="text-sm font-semibold text-zinc-700 w-20 text-right">
+            {radarDays ?? 30} dní
+          </span>
+        </div>
+        <p className="text-xs text-zinc-400 mt-1 mb-3">
+          Doporučení: networking 30 d · rodina 14 d · byznys 60 d · staří přátelé 90 d
+        </p>
+        <button
+          onClick={() => updateRadarMutation.mutate(radarDays ?? 30)}
+          disabled={updateRadarMutation.isPending || radarDays === ((listData as any)?.radar_days ?? 30)}
+          className="btn-primary"
+        >
+          {updateRadarMutation.isPending ? 'Ukládání…' : 'Uložit práh'}
         </button>
       </div>
 

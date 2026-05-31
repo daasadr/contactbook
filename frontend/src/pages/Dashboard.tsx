@@ -9,6 +9,8 @@ import Layout from '@/components/Layout'
 import { listsApi } from '@/api/lists'
 import { useAuthStore } from '@/stores/auth'
 import BackgroundPicker, { isBgDark } from '@/components/BackgroundPicker'
+import SignalWidget from '@/components/SignalWidget'
+import TaskList from '@/components/TaskList'
 import type { ContactList, TemplateMeta } from '@/types'
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -184,6 +186,16 @@ export default function Dashboard() {
           <Plus className="w-4 h-4" /> Nový seznam
         </button>
       </div>
+
+      {/* Signál widget */}
+      <SignalWidget />
+
+      {/* Úkoly */}
+      {(data?.length ?? 0) > 0 && (
+        <div className="card p-5 bg-white/90 backdrop-blur-sm mb-6">
+          <TaskList showContact title="Nadcházející úkoly" />
+        </div>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center py-16">
