@@ -329,28 +329,28 @@ function BookSpread({ events, listId, contactId }: {
   const toggle = (id: string) =>
     setExpandedIds(prev => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n })
 
+  const bookStyle = {
+    boxShadow: '0 12px 40px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.25)',
+    opacity: animDir ? 0 : 1,
+    transform: animDir === 'left' ? 'translateX(-16px)' : animDir === 'right' ? 'translateX(16px)' : 'none',
+    transition: 'opacity 0.18s ease, transform 0.18s ease',
+  }
+
   return (
     <div className="select-none">
-      {/* Book */}
-      <div
-        className="flex rounded overflow-hidden"
-        style={{
-          boxShadow: '0 12px 40px rgba(0,0,0,0.45), 0 2px 8px rgba(0,0,0,0.25)',
-          opacity: animDir ? 0 : 1,
-          transform: animDir === 'left' ? 'translateX(-16px)' : animDir === 'right' ? 'translateX(16px)' : 'none',
-          transition: 'opacity 0.18s ease, transform 0.18s ease',
-        }}
-      >
-        {/* Left page */}
+      {/* Mobil: jedna stránka se všemi záznamy */}
+      <div className="sm:hidden rounded overflow-hidden" style={bookStyle}>
+        <BookPage events={spreadEvents} side="left" pageNum={leftPage}
+          listId={listId} contactId={contactId} expandedIds={expandedIds} onToggle={toggle} />
+      </div>
+
+      {/* Desktop: dvě stránky side by side */}
+      <div className="hidden sm:flex rounded overflow-hidden" style={bookStyle}>
         <BookPage events={leftEvents} side="left" pageNum={leftPage}
           listId={listId} contactId={contactId} expandedIds={expandedIds} onToggle={toggle} />
-
-        {/* Spine */}
         <div className="w-4 shrink-0"
           style={{ background: 'linear-gradient(to right, #b8ad98, #f0e8d8, #e0d4bc, #f0e8d8, #b8ad98)',
             boxShadow: 'inset -3px 0 6px rgba(0,0,0,0.12), inset 3px 0 6px rgba(0,0,0,0.12)' }} />
-
-        {/* Right page */}
         <BookPage events={rightEvents} side="right" pageNum={rightPage}
           listId={listId} contactId={contactId} expandedIds={expandedIds} onToggle={toggle} />
       </div>

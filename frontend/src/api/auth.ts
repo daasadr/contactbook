@@ -38,6 +38,9 @@ export const authApi = {
   exportData: () =>
     apiClient.get('/auth/export', { responseType: 'blob' }),
 
+  updateName: (name: string) =>
+    apiClient.patch<{ user: { id: string; name: string; email: string } }>('/auth/name', { name }),
+
   getProfile: () =>
     apiClient.get<{ profile: UserProfile }>('/auth/profile'),
 

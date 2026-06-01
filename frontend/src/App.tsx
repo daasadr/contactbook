@@ -21,6 +21,7 @@ const ContactDetail   = lazy(() => import('@/pages/ContactDetail'))
 const ContactEvents   = lazy(() => import('@/pages/ContactEvents'))
 const SavedAIChats    = lazy(() => import('@/pages/SavedAIChats'))
 const PublicCard      = lazy(() => import('@/pages/PublicCard'))
+const HelpPage        = lazy(() => import('@/pages/HelpPage'))
 const ListSettings    = lazy(() => import('@/pages/ListSettings'))
 const AccountSettings = lazy(() => import('@/pages/AccountSettings'))
 
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/card/:slug" element={<PublicCard />} />
+        <Route path="/help" element={<HelpPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/lists/:listId" element={<ListDetail />} />

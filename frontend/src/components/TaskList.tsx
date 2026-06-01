@@ -107,12 +107,12 @@ export function AddTaskForm({ contactId, onDone }: AddTaskFormProps) {
         className="input text-sm py-1.5"
         autoFocus
       />
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <input
           type="datetime-local"
           value={dueDateTime}
           onChange={e => setDueDateTime(e.target.value)}
-          className="input text-sm py-1.5 flex-1"
+          className="input text-sm py-1.5 flex-1 min-w-[160px]"
         />
         <button
           onClick={submit}

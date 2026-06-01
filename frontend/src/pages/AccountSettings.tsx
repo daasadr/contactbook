@@ -345,16 +345,21 @@ function ExportSection() {
 
 // ── Delete account ──────────────────────────────────────────────────────────
 
+const DELETE_PHRASE = 'SMAZAT MŮJ ÚČET'
+
 function DeleteSection() {
   const [open, setOpen] = useState(false)
+  const [phrase, setPhrase] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const { logout } = useAuthStore()
   const navigate = useNavigate()
 
+  const phraseOk = phrase.trim().toUpperCase() === DELETE_PHRASE
+
   const handleDelete = async () => {
-    if (!password) return
+    if (!password || !phraseOk) return
     setLoading(true)
     setError('')
     try {
@@ -364,9 +369,10 @@ function DeleteSection() {
     } catch (err: any) {
       setError(err.response?.data?.error ?? 'Smazání se nezdařilo. Zkus to znovu.')
     } finally {
-      setLoading(false)
-    }
+      setLoading(false) }
   }
+
+  const reset = () => { setOpen(false); setPhrase(''); setPassword(''); setError('') }
 
   return (
     <div className="card p-6 border-red-200">
@@ -386,24 +392,38 @@ function DeleteSection() {
             </button>
           ) : (
             <div className="space-y-3 max-w-sm">
-              <p className="text-sm font-medium text-red-700">Pro potvrzení zadej své aktuální heslo:</p>
+              <div className="p-3 bg-red-50 rounded-lg border border-red-200">
+                <p className="text-sm font-medium text-red-800 mb-1">
+                  Napiš přesně tuto větu pro potvrzení:
+                </p>
+                <p className="text-sm font-mono font-bold text-red-700 select-all">{DELETE_PHRASE}</p>
+              </div>
+              <input
+                type="text"
+                value={phrase}
+                onChange={e => setPhrase(e.target.value)}
+                className={`input font-mono ${phrase && !phraseOk ? 'border-red-400' : phraseOk ? 'border-green-400' : ''}`}
+                placeholder={DELETE_PHRASE}
+                autoFocus
+              />
               <input
                 type="password"
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 className="input"
                 placeholder="Tvoje heslo"
-                autoFocus
-                onKeyDown={e => e.key === 'Enter' && handleDelete()}
+                onKeyDown={e => e.key === 'Enter' && phraseOk && handleDelete()}
               />
               {error && <p className="text-sm text-red-600">{error}</p>}
               <div className="flex gap-3">
-                <button onClick={handleDelete} disabled={loading || !password} className="btn-danger">
+                <button
+                  onClick={handleDelete}
+                  disabled={loading || !password || !phraseOk}
+                  className="btn-danger"
+                >
                   {loading ? 'Mazání…' : 'Potvrdit smazání'}
                 </button>
-                <button onClick={() => { setOpen(false); setPassword(''); setError('') }} className="btn-secondary">
-                  Zrušit
-                </button>
+                <button onClick={reset} className="btn-secondary">Zrušit</button>
               </div>
             </div>
           )}
@@ -414,6 +434,51 @@ function DeleteSection() {
 }
 
 // ── Page ────────────────────────────────────────────────────────────────────
+
+function NameSection() {
+  const { user, setAuth, accessToken } = useAuthStore()
+  const [name, setName] = useState(user?.name ?? '')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSaved] = useState(false)
+
+  const save = async () => {
+    if (!name.trim() || name === user?.name) return
+    setSaving(true)
+    try {
+      const res = await authApi.updateName(name.trim())
+      if (user) setAuth({ ...user, name: res.data.user.name }, accessToken ?? '')
+      setSaved(true); setTimeout(() => setSaved(false), 3000)
+    } catch { /* ignore */ } finally { setSaving(false) }
+  }
+
+  return (
+    <div className="card p-6">
+      <div className="flex items-start gap-4">
+        <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center shrink-0">
+          <UserCircle className="w-5 h-5 text-zinc-600" />
+        </div>
+        <div className="flex-1">
+          <h2 className="font-semibold text-zinc-900 mb-1">Zobrazované jméno</h2>
+          <p className="text-sm text-zinc-500 mb-3">Jméno zobrazené v aplikaci a na vizitce.</p>
+          <div className="flex gap-3 max-w-sm">
+            <input
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && save()}
+              placeholder="Tvoje jméno"
+              className="input flex-1"
+            />
+            <button onClick={save} disabled={saving || !name.trim() || name === user?.name} className="btn-primary">
+              {saving ? 'Ukládám…' : 'Uložit'}
+            </button>
+          </div>
+          {saved && <p className="text-sm text-green-600 mt-2">✓ Jméno aktualizováno</p>}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 export default function AccountSettings() {
   const user = useAuthStore(s => s.user)
@@ -431,6 +496,8 @@ export default function AccountSettings() {
       </div>
 
       <div className="space-y-6">
+        {/* Jméno */}
+        <NameSection />
         {/* Digitální vizitka — první sekce */}
         <div>
           <div className="flex items-center gap-2 mb-3">

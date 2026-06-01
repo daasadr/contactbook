@@ -264,6 +264,17 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.send({ exportDate: new Date().toISOString(), user, lists: exportLists })
   })
 
+  // PATCH /auth/name — změna zobrazovaného jména
+  app.patch('/name', { preHandler: authenticate }, async (request, reply) => {
+    const body = z.object({ name: z.string().min(2).max(100) }).safeParse(request.body)
+    if (!body.success) return reply.status(400).send({ error: 'Jméno musí mít 2–100 znaků.' })
+    const [user] = await sql`
+      UPDATE users SET name = ${body.data.name} WHERE id = ${request.userId}
+      RETURNING id, name, email, created_at
+    `
+    return reply.send({ user })
+  })
+
   // GET /auth/profile — načte profil uživatele pro AI
   app.get('/profile', { preHandler: authenticate }, async (request, reply) => {
     const [user] = await sql`SELECT profile FROM users WHERE id = ${request.userId}`

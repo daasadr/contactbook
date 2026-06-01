@@ -1,5 +1,5 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { BookUser, LogOut, LayoutDashboard, Settings } from 'lucide-react'
+import { BookUser, LogOut, LayoutDashboard, Settings, HelpCircle } from 'lucide-react'
 import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/api/auth'
 
@@ -27,6 +27,9 @@ export default function Navbar() {
               <Link to="/dashboard" className="btn-ghost hidden sm:flex">
                 <LayoutDashboard className="w-4 h-4" />
                 Dashboard
+              </Link>
+              <Link to="/help" className="btn-ghost hidden sm:flex text-zinc-500" title="Nápověda">
+                <HelpCircle className="w-4 h-4" />
               </Link>
               <div className="flex items-center gap-2 pl-3 border-l border-zinc-200">
                 <div className="w-8 h-8 rounded-full bg-primary-100 text-primary-700 flex items-center justify-center text-sm font-semibold">
