@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, lazy, Suspense } from 'react'
+const ScanContactModal = lazy(() => import('@/components/ScanContactModal'))
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Plus, Search, Star, Settings2, ArrowLeft, User, X } from 'lucide-react'
+import { Plus, Search, Star, Settings2, ArrowLeft, User, X, ScanLine } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -112,7 +113,9 @@ export default function ListDetail() {
   const { listId } = useParams<{ listId: string }>()
   const [search, setSearch] = useState('')
   const [showCreate, setShowCreate] = useState(false)
+  const [showScan, setShowScan] = useState(false)
   const [starredOnly, setStarredOnly] = useState(false)
+  const queryClient = useQueryClient()
 
   const { data: listData } = useQuery({
     queryKey: ['list', listId],
@@ -143,6 +146,9 @@ export default function ListDetail() {
           <Link to={`/lists/${listId}/settings`} className="btn-secondary gap-2">
             <Settings2 className="w-4 h-4" /> Nastavení
           </Link>
+          <button onClick={() => setShowScan(true)} className="btn-secondary" title="Nový kontakt ze skenu vizitky">
+            <ScanLine className="w-4 h-4" />
+          </button>
           <button onClick={() => setShowCreate(true)} className="btn-primary">
             <Plus className="w-4 h-4" /> Přidat
           </button>
@@ -201,6 +207,15 @@ export default function ListDetail() {
       )}
 
       {showCreate && <CreateContactModal listId={listId!} onClose={() => setShowCreate(false)} />}
+      {showScan && (
+        <Suspense fallback={null}>
+          <ScanContactModal
+            listId={listId!}
+            onClose={() => setShowScan(false)}
+            onCreated={_id => { setShowScan(false); queryClient.invalidateQueries({ queryKey: ['contacts', listId] }) }}
+          />
+        </Suspense>
+      )}
     </Layout>
   )
 }

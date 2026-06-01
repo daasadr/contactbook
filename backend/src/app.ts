@@ -24,6 +24,7 @@ import { adminRoutes } from './routes/admin'
 import { tasksRoutes } from './routes/tasks'
 import { signalRoutes } from './routes/signal'
 import { namedayRoutes } from './routes/nameday'
+import { extractRoutes } from './routes/extract'
 
 export async function buildApp() {
   const app = Fastify({
@@ -86,6 +87,7 @@ export async function buildApp() {
   await app.register(tasksRoutes, { prefix: '/tasks' })
   await app.register(signalRoutes, { prefix: '/signal' })
   await app.register(namedayRoutes, { prefix: '/name-day' })
+  await app.register(extractRoutes, { prefix: '/extract' })
 
   return app
 }

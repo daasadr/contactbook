@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Trash2, Save, User, ChevronDown, ChevronUp, PenLine, Palette, Cake, Loader2, Sparkles } from 'lucide-react'
+import { ArrowLeft, Star, Trash2, Save, User, ChevronDown, ChevronUp, PenLine, Palette, Cake, Loader2, Sparkles, ScanLine } from 'lucide-react'
 import Layout from '@/components/Layout'
 import { contactsApi } from '@/api/contacts'
 import { listsApi } from '@/api/lists'
@@ -10,6 +10,8 @@ import ContactAIChat from '@/components/ContactAIChat'
 import ContactConnections from '@/components/ContactConnections'
 import TaskList from '@/components/TaskList'
 import { aiApi } from '@/api/ai'
+import { lazy, Suspense } from 'react'
+const ScanContactModal = lazy(() => import('@/components/ScanContactModal'))
 import type { FieldDefinition } from '@/types'
 import clsx from 'clsx'
 
@@ -302,6 +304,7 @@ export default function ContactDetail() {
   const [nameEditing, setNameEditing] = useState(false)
   const [contactBg, setContactBg] = useState<string | null | undefined>(undefined)
   const [showBgPicker, setShowBgPicker] = useState(false)
+  const [showScan, setShowScan] = useState(false)
 
   const { data: contactData, isLoading: contactLoading } = useQuery({
     queryKey: ['contact', contactId],
@@ -452,6 +455,13 @@ export default function ContactDetail() {
           className={clsx('btn-ghost p-2', showBgPicker ? 'text-primary-600 bg-primary-50' : 'text-zinc-400')}
         >
           <Palette className="w-5 h-5" />
+        </button>
+        <button
+          onClick={() => setShowScan(true)}
+          title="Doplnit z vizitky / obrázku"
+          className="btn-ghost p-2 text-zinc-400 hover:text-primary-600"
+        >
+          <ScanLine className="w-5 h-5" />
         </button>
         <button
           onClick={() => starMutation.mutate()}
@@ -692,6 +702,23 @@ export default function ContactDetail() {
           {saveMutation.isPending ? 'Ukládání…' : 'Uložit změny'}
         </button>
       </div>
+
+      {showScan && (
+        <Suspense fallback={null}>
+          <ScanContactModal
+            listId={listId!}
+            contactId={contactId!}
+            existingData={customData}
+            existingFirstName={firstName}
+            existingLastName={lastName}
+            onClose={() => setShowScan(false)}
+            onUpdated={() => {
+              queryClient.invalidateQueries({ queryKey: ['contact', contactId] })
+              setShowScan(false)
+            }}
+          />
+        </Suspense>
+      )}
     </Layout>
   )
 }
