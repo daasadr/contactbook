@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/api/auth'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import CookieBanner from '@/components/CookieBanner'
+import { FloatingCardButton } from '@/components/BusinessCard'
 
 // Eagerly loaded — needed on first paint
 import Landing from '@/pages/Landing'
@@ -19,6 +20,7 @@ const ListDetail      = lazy(() => import('@/pages/ListDetail'))
 const ContactDetail   = lazy(() => import('@/pages/ContactDetail'))
 const ContactEvents   = lazy(() => import('@/pages/ContactEvents'))
 const SavedAIChats    = lazy(() => import('@/pages/SavedAIChats'))
+const PublicCard      = lazy(() => import('@/pages/PublicCard'))
 const ListSettings    = lazy(() => import('@/pages/ListSettings'))
 const AccountSettings = lazy(() => import('@/pages/AccountSettings'))
 
@@ -44,6 +46,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <CookieBanner />
+      <FloatingCardButton />
       <Suspense fallback={<PageLoader />}>
         <Routes>
           <Route path="/" element={<Landing />} />
@@ -52,6 +55,7 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/card/:slug" element={<PublicCard />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/lists/:listId" element={<ListDetail />} />

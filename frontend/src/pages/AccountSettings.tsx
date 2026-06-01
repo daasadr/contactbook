@@ -6,6 +6,7 @@ import Layout from '@/components/Layout'
 import { authApi, type UserProfile } from '@/api/auth'
 import { billingApi, type CreditPack } from '@/api/billing'
 import { useAuthStore } from '@/stores/auth'
+import BusinessCardEditor from '@/components/BusinessCardEditor'
 
 // ── Credits & billing ──────────────────────────────────────────────────────
 
@@ -430,6 +431,15 @@ export default function AccountSettings() {
       </div>
 
       <div className="space-y-6">
+        {/* Digitální vizitka — první sekce */}
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <CreditCard className="w-4 h-4 text-primary-500" />
+            <h2 className="text-sm font-semibold text-zinc-500 uppercase tracking-wide">Digitální vizitka</h2>
+          </div>
+          <BusinessCardEditor />
+        </div>
+
         {/* Profil pro AI */}
         <div>
           <div className="flex items-center gap-2 mb-3">

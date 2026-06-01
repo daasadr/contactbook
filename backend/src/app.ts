@@ -27,6 +27,7 @@ import { tasksRoutes } from './routes/tasks'
 import { signalRoutes } from './routes/signal'
 import { namedayRoutes } from './routes/nameday'
 import { extractRoutes } from './routes/extract'
+import { cardRoutes } from './routes/card'
 
 export async function buildApp() {
   const app = Fastify({
@@ -90,6 +91,7 @@ export async function buildApp() {
   await app.register(signalRoutes, { prefix: '/signal' })
   await app.register(namedayRoutes, { prefix: '/name-day' })
   await app.register(extractRoutes, { prefix: '/extract' })
+  await app.register(cardRoutes, { prefix: '/card' })
 
   // GET /contacts/all — všechny kontakty uživatele (pro výběr v úkolech)
   app.get('/contacts/all', { preHandler: authenticate }, async (request, reply) => {
