@@ -135,7 +135,7 @@ export default function ListDetail() {
     <Layout bgImage={list?.background || undefined}>
       {/* Hlavička */}
       <div className="flex items-center gap-4 mb-6">
-        <Link to="/dashboard" className="btn-ghost p-2 text-zinc-500">
+        <Link to="/dashboard" className="btn-ghost p-2 text-zinc-600 bg-white/80 hover:bg-white rounded-lg shadow-sm shrink-0">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex-1 min-w-0">

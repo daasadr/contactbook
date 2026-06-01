@@ -486,7 +486,7 @@ export default function ContactDetail() {
     <Layout maxWidth="xl" bgImage={pageBg}>
       {/* Hlavička */}
       <div className="flex items-center gap-3 mb-3">
-        <Link to={`/lists/${listId}`} className="btn-ghost p-2 text-zinc-500">
+        <Link to={`/lists/${listId}`} className="btn-ghost p-2 text-zinc-600 bg-white/80 hover:bg-white rounded-lg shadow-sm">
           <ArrowLeft className="w-5 h-5" />
         </Link>
         <div className="flex-1" />
