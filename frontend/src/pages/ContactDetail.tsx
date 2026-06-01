@@ -281,16 +281,16 @@ function InspirationPanel({ contactId, contactName }: { contactId: string; conta
       <div className="flex items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-violet-600" />
-          <h2 className="font-semibold text-violet-900">Co by {contactName || 'tato osobnost'} udělala?</h2>
+          <h2 className="font-semibold text-violet-900">Co by {contactName || 'tato osobnost'} udělal/a?</h2>
         </div>
       </div>
       <p className="text-sm text-violet-600 mb-4">
-        Popiš svou situaci nebo výzvu a AI odpoví z perspektivy {contactName ? `${contactName}` : 'této osobnosti'} — kombinuje jejich hodnoty s tím, co o nich víš.
+        Popiš svou situaci nebo výzvu a AI odpoví z perspektivy {contactName || 'této osobnosti'} — kombinuje jejich hodnoty s tím, co o nich víš.
       </p>
       <textarea
         value={situation}
         onChange={e => setSituation(e.target.value)}
-        placeholder={`Jak by se ${contactName || 'tato osobnost'} postavila k mé situaci? Např.: "Bojím se začít nový projekt, mám strach ze selhání..."`}
+        placeholder={`Jak by se ${contactName || 'tato osobnost'} postavil/a k mé situaci? Např.: "Bojím se začít nový projekt, mám strach ze selhání..."`}
         rows={3}
         className="input resize-none mb-3 w-full"
       />

@@ -223,7 +223,8 @@ Odpověz ve dvou částech:
 **Konkrétní kroky v duchu ${contactName}:**
 (2–3 praktické návrhy typické PŘÍMO pro tuto osobnost — ne obecné rady, ale přístupy, metody nebo otázky, které tato konkrétní osobnost skutečně používá.)
 
-Piš česky. Buď autentický/á a konkrétní — žádné generické rady.`
+Piš česky. Buď autentický/á a konkrétní — žádné generické rady.
+Používej správný gramatický rod pro ${contactName} (zjisti z kontextu nebo tréninkových dat).`
 
     try {
       const client = getAIClient()
