@@ -2,6 +2,84 @@
 
 ---
 
+## [2026-06-01] — Velká session: Tasks, Signál, Vizitka, Sken, Platby, PWA, SEO a další
+
+### Co bylo uděláno
+
+**Signál & Úkoly (Fáze 2 dokončena)**
+- `012_radar_days.sql` — `radar_days` na `contact_lists` (default 30 dní), nullable `due_date` na `tasks`
+- `backend/src/routes/tasks.ts` — CRUD úkolů (GET/POST/PATCH/DELETE + toggle complete)
+- `backend/src/routes/signal.ts` — zanedbané kontakty + blížící se narozeniny + AI analýza "Kdo je priorita tento týden?"
+- `GET /contacts/all` — endpoint pro výběr kontaktu v formuláři úkolu
+- `SignalWidget.tsx` — tmavý gradient widget na dashboardu s plovoucím tlačítkem Pin → přidat úkol inline
+- `TaskList.tsx` — přidat/splnit/smazat úkoly, datetime-local (datum + čas), na dashboardu i per kontakt
+- `ListSettings.tsx` — slider pro radar_days (7–365 dní) s doporučeními
+
+**Inspirativní osobnosti (nový typ seznamu)**
+- `013_user_profile.sql` — JSONB `profile` na `users`
+- Nový template type `inspirations` — pole: Proč mě inspiruje, Citát, Co aplikuji, Obor, Éra, Narozen/a, Zdroj
+- `POST /ai/contacts/:id/inspire` — "Co by X udělal/a?" — dramaticky vylepšený prompt (nastuduj vše co o osobnosti víš, autentický hlas v 1. osobě)
+- `GET/PATCH /auth/profile` — profil uživatele pro AI (8 polí: role, hodnoty, cíle, styl, silné stránky, výzvy, zájmy, o mně)
+- Profil zahrnován do VŠECH AI promptů → personalizovanější rady
+- `InspirationPanel` v ContactDetail — jen pro inspirations listy, skrývá běžný AI chat
+- Ukládání inspirací do saved chats (BookmarkPlus tlačítko)
+- AI svátek lookup — "Zjistit svátek" u jména, doplní do month_day pole
+
+**Stripe platby + AI kredity**
+- `009_ai_credits.sql` — `ai_credits` na `users` (25 kreditů nových, existující dostali 50), `credit_transactions`
+- `010_vip_users.sql` — `is_vip` flag, VIP přeskočí kontrolu kreditů
+- `backend/src/routes/billing.ts` — balíčky (50/200/500 kr.), Stripe Checkout, idempotentní complete endpoint
+- `backend/src/routes/admin.ts` — `/admin/set-vip`, `/admin/add-credits`, `/admin/users` (chráněno X-Admin-Secret)
+- AI chat, inspire, extract — 1/1/2 kredity, 402 při vyčerpání
+- `AccountSettings.tsx` — kredity, balíčky, donace programátorovi; live Stripe (bez webhooků)
+
+**Digitální vizitka**
+- `014_business_card.sql` — `business_card` JSONB, `show_card_button`, `card_slug` na `users`
+- `backend/src/routes/card.ts` — GET/PUT vizitky, POST /card/ai (AI generuje tagline + titul), GET /card/:slug (veřejné)
+- `FloatingCardButton` — portal, vždy viditelný vpravo dole, zobrazuje iniciály v barvě vizitky
+- `BusinessCardEditor` v AccountSettings — barva, všechna pole, toggle plovoucího tlačítka, AI generování
+- `PublicCard.tsx` — `/card/:slug` bez přihlášení, sdílení odkazem
+
+**Skenování vizitky (extrakce z obrázků)**
+- `backend/src/routes/extract.ts` — POST /extract/contact, Claude vision, 2 kredity, temp soubor okamžitě smazán
+- `ScanContactModal.tsx` — dvě tlačítka (Vyfotit / Ze souboru), komprese před uploadem (max 1400px), fuzzy matching polí (phone↔telefon/mobil), auto-vytvoření chybějících polí v seznamu
+- Tlačítko v ListDetail (nový kontakt ze skenu) a ContactDetail (doplnit z obrázku)
+
+**Fotky kontaktu**
+- `015_contact_photos.sql` — `photos` JSONB na `contacts`
+- POST/DELETE `/lists/:id/contacts/:id/photos` endpointy
+- `ContactPhotos.tsx` — kamera + soubor, galerie thumbnailů, lightbox, mazání
+
+**PWA (Progressive Web App)**
+- `manifest.json`, `sw.js`, ikony 192+512px (generované z SVG přes sharp)
+- `capture="environment"` pro přímé focení na mobilu
+- Plovoucí tlačítko (Lidl Plus pattern)
+- Hint na landing page pro Android a iOS
+
+**SEO**
+- `react-helmet-async` + `SEOHead` komponenta — dynamické meta tagy per stránka
+- Open Graph + Twitter Card na všech veřejných stránkách
+- JSON-LD SoftwareApplication na landing page
+- `robots.txt` + `sitemap.xml`
+- OG image 1200×630 generovaný ze `sharp` + SVG overlay (peopleworth.jpg + text)
+
+**Výkon a opravy**
+- Lazy loading routes (React.lazy + Suspense) — menší initial bundle
+- Nginx: split cache rules (HTML no-cache, JS/CSS 1y, assets 30d, sw.js no-store)
+- Gzip vylepšení
+- Responzivita: tlačítka v ListDetail jen ikony na mobilu, back arrows bg-white/80
+
+**GDPR aktualizace**
+- Privacy Policy: Stripe + PCI DSS Level 1, zpracování obrázků přes Anthropic (dočasné, hned smazáno)
+- `/auth/profile` (GET/PATCH) pro správu profilu
+
+### Nasazení
+Každá session — standardní `git pull && docker-compose down && up --build`.  
+Migrace 008–015 se aplikují automaticky při startu backendu.  
+Nová env proměnná: `STRIPE_SECRET_KEY`, `ADMIN_SECRET`
+
+---
+
 ## [2026-05-28] — AI uložené chaty, propojení kontaktů, GDPR, kosmetické opravy
 
 ### Co bylo uděláno

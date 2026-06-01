@@ -12,3 +12,4 @@ Thumbs.db
 *.key
 postgres-data/
 redis-data/
+_drafts/
