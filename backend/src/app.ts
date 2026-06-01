@@ -12,6 +12,8 @@ export const UPLOADS_DIR = process.env.UPLOADS_DIR || '/app/uploads'
 
 // Ensure uploads directory exists at startup
 fs.mkdirSync(UPLOADS_DIR, { recursive: true })
+import { sql } from './db'
+import { authenticate } from './middleware/authenticate'
 import { authRoutes } from './routes/auth'
 import { listsRoutes } from './routes/lists'
 import { contactsRoutes } from './routes/contacts'
@@ -88,6 +90,18 @@ export async function buildApp() {
   await app.register(signalRoutes, { prefix: '/signal' })
   await app.register(namedayRoutes, { prefix: '/name-day' })
   await app.register(extractRoutes, { prefix: '/extract' })
+
+  // GET /contacts/all — všechny kontakty uživatele (pro výběr v úkolech)
+  app.get('/contacts/all', { preHandler: authenticate }, async (request, reply) => {
+    const contacts = await sql`
+      SELECT c.id, c.first_name, c.last_name, cl.id AS list_id, cl.name AS list_name
+      FROM contacts c
+      JOIN contact_lists cl ON cl.id = c.list_id
+      WHERE cl.user_id = ${request.userId}
+      ORDER BY cl.name ASC, c.first_name ASC, c.last_name ASC
+    `
+    return reply.send({ contacts })
+  })
 
   return app
 }

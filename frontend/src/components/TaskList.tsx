@@ -1,59 +1,100 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { CheckSquare, Square, Trash2, Plus, Calendar, Loader2 } from 'lucide-react'
+import { CheckSquare, Square, Trash2, Plus, Loader2, Clock } from 'lucide-react'
 import { tasksApi, type Task, type TaskInput } from '@/api/tasks'
+import { apiClient } from '@/api/client'
 
 function formatDue(dateStr: string | null | undefined): { label: string; urgent: boolean } {
   if (!dateStr) return { label: '', urgent: false }
   const d = new Date(dateStr)
   const now = new Date()
-  const diff = Math.ceil((d.getTime() - now.getTime()) / 86400000)
-  if (diff < 0) return { label: `${Math.abs(diff)} dní po termínu`, urgent: true }
-  if (diff === 0) return { label: 'Dnes', urgent: true }
-  if (diff === 1) return { label: 'Zítra', urgent: true }
-  if (diff <= 7) return { label: `Za ${diff} dní`, urgent: false }
-  return { label: d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' }), urgent: false }
+  const diffMs = d.getTime() - now.getTime()
+  const diffDays = Math.ceil(diffMs / 86400000)
+  const hasTime = dateStr.includes('T') && !dateStr.endsWith('T00:00:00.000Z')
+
+  if (diffDays < 0) return { label: `${Math.abs(diffDays)} dní po termínu`, urgent: true }
+  if (diffDays === 0) {
+    if (hasTime) return { label: `Dnes ${d.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}`, urgent: true }
+    return { label: 'Dnes', urgent: true }
+  }
+  if (diffDays === 1) {
+    if (hasTime) return { label: `Zítra ${d.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}`, urgent: true }
+    return { label: 'Zítra', urgent: true }
+  }
+  if (diffDays <= 7) {
+    const base = `Za ${diffDays} dní`
+    if (hasTime) return { label: `${base} · ${d.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}`, urgent: false }
+    return { label: base, urgent: false }
+  }
+  const dateLabel = d.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'short' })
+  if (hasTime) return { label: `${dateLabel} · ${d.toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' })}`, urgent: false }
+  return { label: dateLabel, urgent: false }
 }
 
+// Lokální datum+čas → ISO string pro backend
+function localDateTimeToISO(local: string): string | null {
+  if (!local) return null
+  // datetime-local formát: "YYYY-MM-DDTHH:MM"
+  return new Date(local).toISOString()
+}
+
+
+interface AllContact { id: string; first_name: string; last_name?: string | null; list_id: string; list_name: string }
+
 interface AddTaskFormProps {
-  contactId?: string          // pro per-kontakt formulář
-  contactOptions?: Array<{ id: string; name: string; listId: string }>  // pro dashboard
+  contactId?: string
   onDone: () => void
 }
 
-export function AddTaskForm({ contactId, contactOptions, onDone }: AddTaskFormProps) {
+export function AddTaskForm({ contactId, onDone }: AddTaskFormProps) {
   const [title, setTitle] = useState('')
-  const [dueDate, setDueDate] = useState('')
+  const [dueDateTime, setDueDateTime] = useState('')
   const [selectedContact, setSelectedContact] = useState(contactId ?? '')
   const queryClient = useQueryClient()
+
+  // Načti kontakty pro dropdown (jen pokud není předán contactId)
+  const { data: allContactsData } = useQuery({
+    queryKey: ['all-contacts-for-task'],
+    queryFn: () => apiClient.get<{ contacts: AllContact[] }>('/contacts/all').then(r => r.data.contacts),
+    enabled: !contactId,
+    staleTime: 60_000,
+  })
 
   const createMutation = useMutation({
     mutationFn: (data: TaskInput) => tasksApi.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       setTitle('')
-      setDueDate('')
+      setDueDateTime('')
       onDone()
     },
   })
 
   const submit = () => {
     if (!title.trim() || !selectedContact) return
-    createMutation.mutate({ contact_id: selectedContact, title: title.trim(), due_date: dueDate || null })
+    createMutation.mutate({
+      contact_id: selectedContact,
+      title: title.trim(),
+      due_date: localDateTimeToISO(dueDateTime),
+    })
   }
+
+  const contacts = allContactsData ?? []
 
   return (
     <div className="flex flex-col gap-2 p-3 bg-zinc-50 rounded-xl border border-zinc-200">
-      {!contactId && contactOptions && (
+      {!contactId && (
         <select
           value={selectedContact}
           onChange={e => setSelectedContact(e.target.value)}
           className="input text-sm py-1.5"
         >
           <option value="">— Vybrat kontakt —</option>
-          {contactOptions.map(c => (
-            <option key={c.id} value={c.id}>{c.name}</option>
+          {contacts.map(c => (
+            <option key={c.id} value={c.id}>
+              {[c.first_name, c.last_name].filter(Boolean).join(' ')} · {c.list_name}
+            </option>
           ))}
         </select>
       )}
@@ -68,9 +109,9 @@ export function AddTaskForm({ contactId, contactOptions, onDone }: AddTaskFormPr
       />
       <div className="flex gap-2">
         <input
-          type="date"
-          value={dueDate}
-          onChange={e => setDueDate(e.target.value)}
+          type="datetime-local"
+          value={dueDateTime}
+          onChange={e => setDueDateTime(e.target.value)}
           className="input text-sm py-1.5 flex-1"
         />
         <button
@@ -126,8 +167,8 @@ function TaskRow({ task, showContact = false }: { task: Task; showContact?: bool
           </Link>
         )}
         {due.label && (
-          <span className={`text-xs ${due.urgent ? 'text-red-500 font-medium' : 'text-zinc-400'}`}>
-            {' · '}<Calendar className="inline w-3 h-3 -mt-0.5" /> {due.label}
+          <span className={`text-xs flex items-center gap-1 mt-0.5 ${due.urgent ? 'text-red-500 font-medium' : 'text-zinc-400'}`}>
+            <Clock className="w-3 h-3" /> {due.label}
           </span>
         )}
       </div>
@@ -144,8 +185,8 @@ function TaskRow({ task, showContact = false }: { task: Task; showContact?: bool
 }
 
 interface TaskListProps {
-  contactId?: string         // pokud je zadáno, filtruje per kontakt
-  showContact?: boolean      // zobrazit jméno kontaktu
+  contactId?: string
+  showContact?: boolean
   title?: string
   compact?: boolean
 }
@@ -207,15 +248,12 @@ export default function TaskList({ contactId, showContact = false, title = 'Úko
         tasks.map(t => <TaskRow key={t.id} task={t} showContact={showContact} />)
       )}
 
-      {/* Splněné */}
-      {done.length > 0 || !showCompleted ? (
-        <button
-          onClick={() => setShowCompleted(s => !s)}
-          className="text-xs text-zinc-400 hover:text-zinc-600 mt-2"
-        >
-          {showCompleted ? '▲ Skrýt splněné' : `▼ Splněné (${showCompleted ? done.length : '…'})`}
-        </button>
-      ) : null}
+      <button
+        onClick={() => setShowCompleted(s => !s)}
+        className="text-xs text-zinc-400 hover:text-zinc-600 mt-2"
+      >
+        {showCompleted ? '▲ Skrýt splněné' : `▼ Zobrazit splněné`}
+      </button>
 
       {showCompleted && done.map(t => <TaskRow key={t.id} task={t} showContact={showContact} />)}
     </div>
