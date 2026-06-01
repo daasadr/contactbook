@@ -142,15 +142,17 @@ export default function ListDetail() {
           <h1 className="text-xl font-bold text-zinc-900 truncate">{list?.name ?? '…'}</h1>
           {list?.description && <p className="text-sm text-zinc-500 truncate">{list.description}</p>}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           <Link to={`/lists/${listId}/settings`} className="btn-secondary gap-2">
-            <Settings2 className="w-4 h-4" /> Nastavení
+            <Settings2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Nastavení</span>
           </Link>
-          <button onClick={() => setShowScan(true)} className="btn-secondary" title="Nový kontakt ze skenu vizitky">
+          <button onClick={() => setShowScan(true)} className="btn-secondary p-2" title="Nový kontakt ze skenu vizitky">
             <ScanLine className="w-4 h-4" />
           </button>
           <button onClick={() => setShowCreate(true)} className="btn-primary">
-            <Plus className="w-4 h-4" /> Přidat
+            <Plus className="w-4 h-4" />
+            <span className="hidden sm:inline">Přidat</span>
           </button>
         </div>
       </div>
