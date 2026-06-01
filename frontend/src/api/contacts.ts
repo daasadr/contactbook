@@ -29,6 +29,17 @@ export const contactsApi = {
   updateField: (listId: string, fieldId: string, data: Partial<FieldDefinition>) =>
     apiClient.patch<{ field: FieldDefinition }>(`/lists/${listId}/fields/${fieldId}`, data),
 
+  uploadPhoto: (listId: string, contactId: string, file: File) => {
+    const form = new FormData()
+    form.append('file', file)
+    return apiClient.post(`/lists/${listId}/contacts/${contactId}/photos`, form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+  },
+
+  deletePhoto: (listId: string, contactId: string, photoId: string) =>
+    apiClient.delete(`/lists/${listId}/contacts/${contactId}/photos/${photoId}`),
+
   deleteField: (listId: string, fieldId: string) =>
     apiClient.delete(`/lists/${listId}/fields/${fieldId}`),
 

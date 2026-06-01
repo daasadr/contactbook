@@ -2,6 +2,14 @@ import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { sql } from '../db'
 import { authenticate } from '../middleware/authenticate'
+import { UPLOADS_DIR } from '../app'
+import fs from 'fs'
+import path from 'path'
+import crypto from 'crypto'
+import { pipeline } from 'stream/promises'
+
+const ALLOWED_PHOTO_MIME = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
+const MIME_TO_EXT: Record<string, string> = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp', 'image/gif': 'gif' }
 
 const createContactSchema = z.object({
   first_name: z.string().min(1).max(255),
@@ -155,5 +163,60 @@ export async function contactsRoutes(app: FastifyInstance) {
     `
     if (!contact) return reply.status(404).send({ error: 'Kontakt nenalezen' })
     return reply.send({ contact })
+  })
+
+  // POST /lists/:listId/contacts/:contactId/photos — nahrát fotku
+  app.post('/:listId/contacts/:contactId/photos', { preHandler: authenticate }, async (request, reply) => {
+    const { listId, contactId } = request.params as { listId: string; contactId: string }
+    if (!(await assertListOwnership(listId, request.userId))) return reply.status(404).send({ error: 'Seznam nenalezen' })
+
+    const [contact] = await sql`SELECT id, photos FROM contacts WHERE id = ${contactId} AND list_id = ${listId}`
+    if (!contact) return reply.status(404).send({ error: 'Kontakt nenalezen' })
+
+    const data = await (request as any).file() as any
+    if (!data) return reply.status(400).send({ error: 'Žádný soubor' })
+    if (!ALLOWED_PHOTO_MIME.includes(data.mimetype)) {
+      await data.file.resume()
+      return reply.status(400).send({ error: 'Nepodporovaný formát.' })
+    }
+
+    const ext = MIME_TO_EXT[data.mimetype]
+    const filename = `${crypto.randomUUID()}.${ext}`
+    const filepath = path.join(UPLOADS_DIR, filename)
+    try {
+      await pipeline(data.file, fs.createWriteStream(filepath))
+    } catch {
+      try { await fs.promises.unlink(filepath) } catch { /* ignore */ }
+      return reply.status(413).send({ error: 'Soubor je příliš velký.' })
+    }
+
+    const stat = await fs.promises.stat(filepath)
+    const photo = { id: crypto.randomUUID(), filename, original_name: data.filename, mime_type: data.mimetype, size: stat.size }
+    const [updated] = await sql`
+      UPDATE contacts SET photos = photos || ${sql.json([photo])} WHERE id = ${contactId}
+      RETURNING id, photos
+    `
+    return reply.status(201).send({ contact: updated })
+  })
+
+  // DELETE /lists/:listId/contacts/:contactId/photos/:photoId — smazat fotku
+  app.delete('/:listId/contacts/:contactId/photos/:photoId', { preHandler: authenticate }, async (request, reply) => {
+    const { listId, contactId, photoId } = request.params as { listId: string; contactId: string; photoId: string }
+    if (!(await assertListOwnership(listId, request.userId))) return reply.status(404).send({ error: 'Seznam nenalezen' })
+
+    const [contact] = await sql`SELECT id, photos FROM contacts WHERE id = ${contactId} AND list_id = ${listId}`
+    if (!contact) return reply.status(404).send({ error: 'Kontakt nenalezen' })
+
+    const photos = (contact.photos ?? []) as Array<{ id: string; filename: string }>
+    const photo = photos.find(p => p.id === photoId)
+    if (!photo) return reply.status(404).send({ error: 'Fotka nenalezena' })
+
+    const remaining = photos.filter(p => p.id !== photoId)
+    const [updated] = await sql`
+      UPDATE contacts SET photos = ${sql.json(remaining)} WHERE id = ${contactId}
+      RETURNING id, photos
+    `
+    try { await fs.promises.unlink(path.join(UPLOADS_DIR, photo.filename)) } catch { /* ignore */ }
+    return reply.send({ contact: updated })
   })
 }

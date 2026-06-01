@@ -38,6 +38,14 @@ export interface ContactList {
   contact_count: number
 }
 
+export interface ContactPhoto {
+  id: string
+  filename: string
+  original_name: string
+  mime_type: string
+  size: number
+}
+
 export interface Contact {
   id: string
   list_id: string
@@ -47,6 +55,7 @@ export interface Contact {
   custom_data: Record<string, unknown>
   is_starred: boolean
   background: string | null
+  photos: ContactPhoto[]
   created_at: string
   updated_at: string
 }

@@ -211,6 +211,7 @@ export default function PrivacyPolicy() {
                   <li>Záznamy deníku (max. 40 nejnovějších)</li>
                   <li>Propojení s dalšími kontakty (jméno + popisek vztahu)</li>
                   <li>Vaše zprávy v konverzaci s AI</li>
+                  <li><strong>Při extrakci z obrázku:</strong> nahraný obrázek (vizitka, screenshot, foto) je dočasně uložen na našem serveru, odeslán na Anthropic ke zpracování a <strong>okamžitě poté smazán</strong>. Na serveru není trvale uchováván.</li>
                 </ul>
                 <p className="text-sm text-zinc-600 mt-2">
                   Konverzace <strong>není</strong> ukládána na našich serverech — zpracovávána je pouze per-dotaz.

@@ -9,6 +9,7 @@ import BackgroundPicker from '@/components/BackgroundPicker'
 import ContactAIChat from '@/components/ContactAIChat'
 import ContactConnections from '@/components/ContactConnections'
 import TaskList from '@/components/TaskList'
+import ContactPhotos from '@/components/ContactPhotos'
 import { aiApi } from '@/api/ai'
 import { lazy, Suspense } from 'react'
 const ScanContactModal = lazy(() => import('@/components/ScanContactModal'))
@@ -709,6 +710,15 @@ export default function ContactDetail() {
             </div>
           </Link>
         </div>
+      </div>
+
+      {/* Fotky kontaktu */}
+      <div className="mb-6">
+        <ContactPhotos
+          listId={listId!}
+          contactId={contactId!}
+          photos={contactData?.photos ?? []}
+        />
       </div>
 
       {/* Propojení — kdo koho zná */}
