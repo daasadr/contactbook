@@ -590,10 +590,12 @@ export default function ContactDetail() {
           )}
         </div>
 
-        {/* AI asistent */}
-        <div className="card p-5 flex flex-col bg-white/90 backdrop-blur-sm" style={{ minHeight: '280px', maxHeight: '480px' }}>
-          <ContactAIChat contactId={contactId!} contactName={fullName || 'kontakt'} />
-        </div>
+        {/* AI asistent — skryto pro inspirativní osobnosti */}
+        {listData?.template_type !== 'inspirations' && (
+          <div className="card p-5 flex flex-col bg-white/90 backdrop-blur-sm" style={{ minHeight: '280px', maxHeight: '480px' }}>
+            <ContactAIChat contactId={contactId!} contactName={fullName || 'kontakt'} />
+          </div>
+        )}
       </div>
 
       {/* Co by X udělal? — pouze pro inspirativní osobnosti */}

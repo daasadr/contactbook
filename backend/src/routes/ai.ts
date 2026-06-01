@@ -192,28 +192,44 @@ export async function aiRoutes(app: FastifyInstance) {
       .map(([, v]) => `- ${v.label}: ${v.value}`)
       .join('\n') || '(bez poznámek)'
 
-    const prompt = `Uživatel tě prosí o radu skrze perspektivu inspirativní osobnosti: ${contactName}.
+    const userProfileLines = userProfile
+      ? Object.entries(userProfile as Record<string,string>).filter(([,v]) => v).map(([k,v]) => `- ${k}: ${v}`).join('\n')
+      : ''
 
-Co uživatel o ${contactName} zaznamenal:
+    const prompt = `Jsi odborný průvodce filozofiemi a přístupy inspirativních osobností.
+
+=== TVŮJ ÚKOL ===
+Uživatel se ptá: jak by se ${contactName} postavila/l k jejich konkrétní situaci?
+
+KROK 1 – NASTUDUJ OSOBNOST z tréninkových dat:
+Prohledej VŠE, co o ${contactName} víš: jejich knihy, přednášky, rozhovory, podcasty, filozofii, metody, klíčové pojmy a fráze, které používají, jejich typický způsob komunikace, životní příběh, zásadní myšlenky a hodnotový systém. Čerpej ze VŠECH dostupných zdrojů ve svém tréninku — chci autentickou odpověď, ne obecnou.
+
+KROK 2 – CO O NÍ/NĚM ŘÍKÁ UŽIVATEL:
 ${personalityNotes}
+(Těmto osobním poznámkám uživatele dej o něco větší váhu než obecným znalostem — jde o to, co osobnost znamená PRO TOHOTO konkrétního člověka.)
 
-${userProfile ? `O uživateli samotném:
-${Object.entries(userProfile as Record<string,string>).filter(([,v]) => v).map(([k,v]) => `- ${k}: ${v}`).join('\n')}
+${userProfileLines ? `KROK 3 – KDO JE UŽIVATEL (kontext pro personalizaci):
+${userProfileLines}
 ` : ''}
-Situace nebo výzva uživatele:
+=== SITUACE UŽIVATELE ===
 "${body.data.situation}"
 
+=== FORMÁT ODPOVĚDI ===
 Odpověz ve dvou částech:
-1. POHLED ${contactName.toUpperCase()}: Krátce (2–3 věty) jak by se ${contactName} na tuto situaci pravděpodobně dívala — v první osobě ("Já bych..."), vycházej z toho, co o ní víš ze svého tréninkového kontextu i z uživatelových poznámek.
-2. KONKRÉTNÍ RADA: Praktický návrh pro uživatele inspirovaný hodnotami a přístupy ${contactName}.
 
-Piš česky, srdečně a konkrétně. Nebuď generický.`
+**${contactName.toUpperCase()} by řekla/řekl:**
+(2–4 věty v PRVNÍ OSOBĚ — přesně v hlase a stylu ${contactName}, s jejich typickými pojmy, metaforami a způsobem myšlení. Ne "pravděpodobně by..." ale přímo "Já bych..." jako by mluvil/a skutečně. Buď tak autentický/á, aby uživatel měl pocit, že seděl/a přímo s touto osobností.)
+
+**Konkrétní kroky v duchu ${contactName}:**
+(2–3 praktické návrhy typické PŘÍMO pro tuto osobnost — ne obecné rady, ale přístupy, metody nebo otázky, které tato konkrétní osobnost skutečně používá.)
+
+Piš česky. Buď autentický/á a konkrétní — žádné generické rady.`
 
     try {
       const client = getAIClient()
       const response = await client.messages.create({
         model: AI_MODEL,
-        max_tokens: AI_MAX_TOKENS,
+        max_tokens: 3000,  // inspire potřebuje více prostoru než běžný chat
         messages: [{ role: 'user', content: prompt }],
       })
 
