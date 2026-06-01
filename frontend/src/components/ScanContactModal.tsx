@@ -73,6 +73,7 @@ export default function ScanContactModal({
   const [error, setError] = useState('')
   const [dragging, setDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const cameraInputRef = useRef<HTMLInputElement>(null)
   const queryClient = useQueryClient()
 
   const processFile = (file: File) => {
@@ -227,27 +228,54 @@ export default function ScanContactModal({
           {/* Upload fáze */}
           {phase === 'upload' && (
             <>
+              {/* Dvě tlačítka: foťák (mobil) + soubor/galerie */}
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <button
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex flex-col items-center gap-2 p-5 rounded-xl border-2 border-zinc-200 hover:border-primary-400 hover:bg-primary-50 transition-colors"
+                >
+                  <Camera className="w-8 h-8 text-primary-500" />
+                  <span className="text-sm font-medium text-zinc-700">Vyfotit</span>
+                  <span className="text-xs text-zinc-400">Otevřít foťák</span>
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex flex-col items-center gap-2 p-5 rounded-xl border-2 border-zinc-200 hover:border-primary-400 hover:bg-primary-50 transition-colors"
+                >
+                  <ScanLine className="w-8 h-8 text-primary-500" />
+                  <span className="text-sm font-medium text-zinc-700">Ze souboru</span>
+                  <span className="text-xs text-zinc-400">Galerie / soubor</span>
+                </button>
+              </div>
+
+              {/* Drag & drop — jen na desktopu */}
               <div
                 onDrop={onDrop}
                 onDragOver={e => { e.preventDefault(); setDragging(true) }}
                 onDragLeave={() => setDragging(false)}
-                onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-xl p-8 text-center cursor-pointer transition-colors ${
-                  dragging ? 'border-primary-400 bg-primary-50' : 'border-zinc-200 hover:border-primary-300 hover:bg-zinc-50'
+                className={`hidden sm:block border-2 border-dashed rounded-xl p-4 text-center transition-colors ${
+                  dragging ? 'border-primary-400 bg-primary-50' : 'border-zinc-100'
                 }`}
               >
-                <Camera className="w-10 h-10 text-zinc-300 mx-auto mb-3" />
-                <p className="font-medium text-zinc-700 mb-1">Přetáhni obrázek nebo klikni</p>
-                <p className="text-sm text-zinc-400">Vizitka, LinkedIn profil, dokument, screenshot</p>
-                <p className="text-xs text-zinc-300 mt-2">JPEG, PNG, WebP, GIF · max 10 MB</p>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/gif"
-                  className="hidden"
-                  onChange={e => e.target.files?.[0] && processFile(e.target.files[0])}
-                />
+                <p className="text-xs text-zinc-400">nebo přetáhni obrázek sem</p>
               </div>
+
+              {/* Skryté inputy */}
+              <input
+                ref={cameraInputRef}
+                type="file"
+                accept="image/*"
+                capture="environment"
+                className="hidden"
+                onChange={e => e.target.files?.[0] && processFile(e.target.files[0])}
+              />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                className="hidden"
+                onChange={e => e.target.files?.[0] && processFile(e.target.files[0])}
+              />
               {error && (
                 <div className="mt-3 flex items-start gap-2 text-sm text-red-600 bg-red-50 rounded-lg p-3">
                   <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
