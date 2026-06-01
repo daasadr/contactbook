@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ArrowLeft, Star, Trash2, Save, User, ChevronDown, ChevronUp, PenLine, Palette, Cake, Loader2, Sparkles, ScanLine } from 'lucide-react'
+import { ArrowLeft, Star, Trash2, Save, User, ChevronDown, ChevronUp, PenLine, Palette, Cake, Loader2, Sparkles, ScanLine, BookmarkPlus, Check } from 'lucide-react'
 import Layout from '@/components/Layout'
 import { contactsApi } from '@/api/contacts'
 import { listsApi } from '@/api/lists'
@@ -236,12 +236,15 @@ function InspirationPanel({ contactId, contactName }: { contactId: string; conta
   const [result, setResult] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saved, setSavedChat] = useState(false)
 
   const ask = async () => {
     if (!situation.trim()) return
     setLoading(true)
     setError('')
     setResult('')
+    setSavedChat(false)
     try {
       const res = await aiApi.inspire(contactId, situation.trim())
       setResult(res.data.reply)
@@ -255,11 +258,31 @@ function InspirationPanel({ contactId, contactName }: { contactId: string; conta
     } finally { setLoading(false) }
   }
 
+  const saveInspiration = async () => {
+    if (!result || saving) return
+    setSaving(true)
+    try {
+      const title = situation.length > 80
+        ? situation.slice(0, 77) + '…'
+        : situation
+      await aiApi.saveChat(contactId, `${contactName}: ${title}`, [
+        { role: 'user', content: situation },
+        { role: 'assistant', content: result },
+      ])
+      setSavedChat(true)
+      setTimeout(() => setSavedChat(false), 3000)
+    } catch {
+      setError('Uložení se nezdařilo.')
+    } finally { setSaving(false) }
+  }
+
   return (
     <div className="card p-6 bg-gradient-to-br from-violet-50 to-purple-50 border border-violet-200 mb-6">
-      <div className="flex items-center gap-2 mb-3">
-        <Sparkles className="w-5 h-5 text-violet-600" />
-        <h2 className="font-semibold text-violet-900">Co by {contactName || 'tato osobnost'} udělala?</h2>
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <div className="flex items-center gap-2">
+          <Sparkles className="w-5 h-5 text-violet-600" />
+          <h2 className="font-semibold text-violet-900">Co by {contactName || 'tato osobnost'} udělala?</h2>
+        </div>
       </div>
       <p className="text-sm text-violet-600 mb-4">
         Popiš svou situaci nebo výzvu a AI odpoví z perspektivy {contactName ? `${contactName}` : 'této osobnosti'} — kombinuje jejich hodnoty s tím, co o nich víš.
@@ -282,6 +305,24 @@ function InspirationPanel({ contactId, contactName }: { contactId: string; conta
       {result && (
         <div className="mt-4 p-4 bg-white/70 rounded-xl border border-violet-200">
           <p className="text-sm text-zinc-800 whitespace-pre-wrap leading-relaxed">{result}</p>
+          <div className="mt-3 flex items-center justify-between">
+            <button
+              onClick={saveInspiration}
+              disabled={saving || saved}
+              className="flex items-center gap-1.5 text-xs text-violet-500 hover:text-violet-700 transition-colors disabled:opacity-60"
+            >
+              {saved
+                ? <><Check className="w-3.5 h-3.5 text-green-600" /> <span className="text-green-600">Uloženo</span></>
+                : <><BookmarkPlus className="w-3.5 h-3.5" /> Uložit tuto inspiraci</>
+              }
+            </button>
+            <button
+              onClick={() => { setResult(''); setSituation('') }}
+              className="text-xs text-zinc-400 hover:text-zinc-600"
+            >
+              Nová otázka
+            </button>
+          </div>
         </div>
       )}
     </div>
