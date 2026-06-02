@@ -11,6 +11,12 @@
     <loc>https://peopleworth.eu/privacy</loc>
     <changefreq>monthly</changefreq>
     <priority>0.3</priority>
-    <lastmod>2026-05-30</lastmod>
+    <lastmod>2026-06-01</lastmod>
+  </url>
+  <url>
+    <loc>https://peopleworth.eu/help</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.5</priority>
+    <lastmod>2026-06-01</lastmod>
   </url>
 </urlset>

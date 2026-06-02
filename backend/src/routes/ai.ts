@@ -273,6 +273,15 @@ Používej správný gramatický rod pro ${contactName} (zjisti z kontextu nebo 
     `
     if (!contact) return reply.status(404).send({ error: 'Kontakt nenalezen' })
 
+    // Limit: max 100 uložených chatů per uživatel
+    const [countRow] = await sql`SELECT COUNT(*)::int AS cnt FROM saved_ai_chats WHERE user_id = ${request.userId}`
+    if ((countRow?.cnt ?? 0) >= 100) {
+      // Smaž nejstarší
+      await sql`DELETE FROM saved_ai_chats WHERE id = (
+        SELECT id FROM saved_ai_chats WHERE user_id = ${request.userId} ORDER BY created_at ASC LIMIT 1
+      )`
+    }
+
     const [chat] = await sql`
       INSERT INTO saved_ai_chats (user_id, contact_id, title, messages)
       VALUES (${request.userId}, ${contactId}, ${body.data.title}, ${sql.json(body.data.messages as any)})

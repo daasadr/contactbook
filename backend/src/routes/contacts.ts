@@ -173,6 +173,11 @@ export async function contactsRoutes(app: FastifyInstance) {
     const [contact] = await sql`SELECT id, photos FROM contacts WHERE id = ${contactId} AND list_id = ${listId}`
     if (!contact) return reply.status(404).send({ error: 'Kontakt nenalezen' })
 
+    const existingPhotos = (contact.photos ?? []) as any[]
+    if (existingPhotos.length >= 20) {
+      return reply.status(400).send({ error: 'Maximální počet fotek (20) byl dosažen.' })
+    }
+
     const data = await (request as any).file() as any
     if (!data) return reply.status(400).send({ error: 'Žádný soubor' })
     if (!ALLOWED_PHOTO_MIME.includes(data.mimetype)) {

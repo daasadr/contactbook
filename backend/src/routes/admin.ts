@@ -3,6 +3,8 @@ import { z } from 'zod'
 import { sql } from '../db'
 import { config } from '../config'
 
+const adminRateLimit = { config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }
+
 export async function adminRoutes(app: FastifyInstance) {
   // Middleware — všechny admin routes vyžadují X-Admin-Secret header
   app.addHook('preHandler', async (request, reply) => {
@@ -10,6 +12,8 @@ export async function adminRoutes(app: FastifyInstance) {
       return reply.status(503).send({ error: 'Admin rozhraní není aktivní.' })
     }
     if (request.headers['x-admin-secret'] !== config.ADMIN_SECRET) {
+      // Zpomalení při neplatném klíči
+      await new Promise(r => setTimeout(r, 500))
       return reply.status(403).send({ error: 'Neplatný admin klíč.' })
     }
   })

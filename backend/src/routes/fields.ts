@@ -6,7 +6,7 @@ import { authenticate } from '../middleware/authenticate'
 const fieldSchema = z.object({
   name: z.string().min(1).max(100).regex(/^[a-z0-9_]+$/, 'Pouze malá písmena, číslice a podtržítko'),
   label: z.string().min(1).max(255),
-  field_type: z.enum(['text', 'textarea', 'email', 'phone', 'url', 'date', 'number', 'select', 'multiselect', 'checkbox']),
+  field_type: z.enum(['text', 'textarea', 'email', 'phone', 'url', 'date', 'month_day', 'number', 'select', 'multiselect', 'checkbox']),
   options: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
   placeholder: z.string().max(255).optional(),
   is_required: z.boolean().optional().default(false),
