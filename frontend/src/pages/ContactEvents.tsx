@@ -281,9 +281,7 @@ function BookPage({ events, side, pageNum, listId, contactId, expandedIds, onTog
       {/* Content */}
       <div className="flex-1 px-6 py-4 overflow-y-auto">
         {events.length === 0 ? (
-          <div className="h-full flex items-center justify-center">
-            <p className="text-stone-300 text-xs italic select-none">— prázdná strana —</p>
-          </div>
+          <div className="h-full" />
         ) : (
           events.map(ev => (
             <BookEntry key={ev.id} event={ev} listId={listId} contactId={contactId}

@@ -194,12 +194,12 @@ function FieldRow({ field, value, onChange, isEditing, onToggleEdit }: {
 
   return (
     <div className={clsx('group', colSpan)}>
-      <div className="flex items-start justify-between gap-1 mb-0.5">
+      <div className="flex items-center gap-1 mb-0.5">
         <span className="text-xs font-medium text-zinc-400">
           {field.label}
           {field.is_required && <span className="text-red-400 ml-1">*</span>}
         </span>
-        <button onClick={onToggleEdit} title="Upravit" className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 p-0.5 rounded text-zinc-300 hover:text-zinc-500 -mt-0.5">
+        <button onClick={onToggleEdit} title="Upravit" className="opacity-0 group-hover:opacity-100 transition-opacity p-0.5 rounded text-zinc-300 hover:text-zinc-500">
           <PenLine className="w-3.5 h-3.5" />
         </button>
       </div>

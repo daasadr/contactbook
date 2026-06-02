@@ -95,7 +95,7 @@ export default function Landing() {
             ) : (
               <>
                 <Link to="/login" className="btn-secondary hidden sm:inline-flex">Přihlásit se</Link>
-                <Link to="/register" className="btn-primary">Začít zdarma</Link>
+                <Link to="/register" className="btn-primary">Vytvořit účet</Link>
               </>
             )}
           </div>
