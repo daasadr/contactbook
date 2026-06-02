@@ -46,8 +46,13 @@ export async function aiRoutes(app: FastifyInstance) {
     }
 
     // Načti profil uživatele + kredity najednou
-    const [userDataRow] = await sql`SELECT profile, ai_credits, is_vip FROM users WHERE id = ${request.userId}`
+    const [userDataRow] = await sql`SELECT profile, ai_credits, is_vip, email_verified FROM users WHERE id = ${request.userId}`
     const userProfile = userDataRow?.profile ?? null
+
+    // AI vyžaduje ověřený email (zabrání zneužití kreditů fake účty)
+    if (!userDataRow?.is_vip && !userDataRow?.email_verified) {
+      return reply.status(403).send({ error: 'Pro použití AI asistenta je třeba ověřit e-mail. Zkontroluj svou schránku.' })
+    }
 
     // Načti definice polí
     const fields = await sql`

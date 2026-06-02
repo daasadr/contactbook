@@ -5,6 +5,7 @@ import { authApi } from '@/api/auth'
 import ProtectedRoute from '@/components/ProtectedRoute'
 import CookieBanner from '@/components/CookieBanner'
 import { FloatingCardButton } from '@/components/BusinessCard'
+import EmailVerificationBanner from '@/components/EmailVerificationBanner'
 
 // Eagerly loaded — needed on first paint
 import Landing from '@/pages/Landing'
@@ -22,6 +23,7 @@ const ContactEvents   = lazy(() => import('@/pages/ContactEvents'))
 const SavedAIChats    = lazy(() => import('@/pages/SavedAIChats'))
 const PublicCard      = lazy(() => import('@/pages/PublicCard'))
 const HelpPage        = lazy(() => import('@/pages/HelpPage'))
+const VerifyEmail     = lazy(() => import('@/pages/VerifyEmail'))
 const ListSettings    = lazy(() => import('@/pages/ListSettings'))
 const AccountSettings = lazy(() => import('@/pages/AccountSettings'))
 
@@ -46,6 +48,7 @@ export default function App() {
 
   return (
     <BrowserRouter>
+      <EmailVerificationBanner />
       <CookieBanner />
       <FloatingCardButton />
       <Suspense fallback={<PageLoader />}>
@@ -58,6 +61,7 @@ export default function App() {
           <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/card/:slug" element={<PublicCard />} />
         <Route path="/help" element={<HelpPage />} />
+        <Route path="/verify-email" element={<VerifyEmail />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/lists/:listId" element={<ListDetail />} />

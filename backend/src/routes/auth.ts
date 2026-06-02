@@ -4,7 +4,9 @@ import crypto from 'crypto'
 import { z } from 'zod'
 import { sql } from '../db'
 import { config } from '../config'
-import { sendEmail, passwordResetEmailHtml } from '../lib/email'
+import { sendEmail, passwordResetEmailHtml, emailVerificationHtml } from '../lib/email'
+
+const EMAIL_VERIFICATION_HOURS = 24
 import { authenticate } from '../middleware/authenticate'
 
 const BCRYPT_ROUNDS = 12
@@ -59,10 +61,13 @@ export async function authRoutes(app: FastifyInstance) {
 
     const password_hash = await bcrypt.hash(password, BCRYPT_ROUNDS)
     const [user] = await sql`
-      INSERT INTO users (name, email, password_hash)
-      VALUES (${name}, ${email}, ${password_hash})
-      RETURNING id, name, email, created_at
+      INSERT INTO users (name, email, password_hash, email_verified)
+      VALUES (${name}, ${email}, ${password_hash}, FALSE)
+      RETURNING id, name, email, email_verified, created_at
     `
+
+    // Pošli ověřovací email
+    await sendVerificationEmail(user.id, name, email, config.APP_URL)
 
     const accessToken = app.jwt.sign({ id: user.id }, { expiresIn: ACCESS_TOKEN_TTL })
     const refreshToken = await issueRefreshToken(user.id)
@@ -80,7 +85,7 @@ export async function authRoutes(app: FastifyInstance) {
     const { email, password } = body.data
 
     const [user] = await sql`
-      SELECT id, name, email, password_hash, created_at FROM users WHERE email = ${email}
+      SELECT id, name, email, password_hash, email_verified, created_at FROM users WHERE email = ${email}
     `
     if (!user) {
       return reply.status(401).send({ error: 'Nesprávný e-mail nebo heslo' })
@@ -306,6 +311,36 @@ export async function authRoutes(app: FastifyInstance) {
     return reply.send({ profile: updated.profile })
   })
 
+  // POST /auth/verify-email — ověř token z emailu
+  app.post('/verify-email', async (request, reply) => {
+    const body = z.object({ token: z.string().min(1) }).safeParse(request.body)
+    if (!body.success) return reply.status(400).send({ error: 'Neplatný token' })
+
+    const tokenHash = hashToken(body.data.token)
+    const [row] = await sql`
+      SELECT user_id FROM email_verification_tokens
+      WHERE token_hash = ${tokenHash} AND expires_at > NOW()
+    `
+    if (!row) return reply.status(400).send({ error: 'Odkaz pro ověření je neplatný nebo vypršel.' })
+
+    await sql`UPDATE users SET email_verified = TRUE WHERE id = ${row.user_id}`
+    await sql`DELETE FROM email_verification_tokens WHERE user_id = ${row.user_id}`
+
+    return reply.send({ ok: true })
+  })
+
+  // POST /auth/resend-verification — znovu pošli ověřovací email
+  app.post('/resend-verification', { preHandler: authenticate }, async (request, reply) => {
+    const [user] = await sql`
+      SELECT id, name, email, email_verified FROM users WHERE id = ${request.userId}
+    `
+    if (!user) return reply.status(404).send({ error: 'Uživatel nenalezen' })
+    if (user.email_verified) return reply.send({ ok: true, already: true })
+
+    await sendVerificationEmail(user.id, user.name, user.email, config.APP_URL)
+    return reply.send({ ok: true })
+  })
+
   // GET /auth/me
   app.get('/me', async (request, reply) => {
     try {
@@ -320,6 +355,27 @@ export async function authRoutes(app: FastifyInstance) {
       return reply.status(401).send({ error: 'Nepřihlášen' })
     }
   })
+}
+
+async function sendVerificationEmail(userId: string, name: string, email: string, appUrl: string) {
+  await sql`DELETE FROM email_verification_tokens WHERE user_id = ${userId}`
+  const token = crypto.randomBytes(48).toString('hex')
+  const tokenHash = hashToken(token)
+  const expiresAt = new Date(Date.now() + EMAIL_VERIFICATION_HOURS * 3600 * 1000)
+  await sql`
+    INSERT INTO email_verification_tokens (user_id, token_hash, expires_at)
+    VALUES (${userId}, ${tokenHash}, ${expiresAt})
+  `
+  const verifyUrl = `${appUrl}/verify-email?token=${token}`
+  try {
+    await sendEmail({
+      to: email,
+      subject: 'Ověřte svůj e-mail — Peopleworth',
+      html: emailVerificationHtml(name, verifyUrl),
+    })
+  } catch (err) {
+    console.error('Verification email send failed:', err)
+  }
 }
 
 async function issueRefreshToken(userId: string): Promise<string> {

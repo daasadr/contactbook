@@ -41,6 +41,12 @@ export const authApi = {
   updateName: (name: string) =>
     apiClient.patch<{ user: { id: string; name: string; email: string } }>('/auth/name', { name }),
 
+  verifyEmail: (token: string) =>
+    apiClient.post('/auth/verify-email', { token }),
+
+  resendVerification: () =>
+    apiClient.post('/auth/resend-verification', {}),
+
   getProfile: () =>
     apiClient.get<{ profile: UserProfile }>('/auth/profile'),
 

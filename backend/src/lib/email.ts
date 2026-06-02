@@ -34,6 +34,37 @@ export async function sendEmail({ to, subject, html }: SendEmailOptions): Promis
   console.log('[Email] Odesláno, id:', data?.id)
 }
 
+export function emailVerificationHtml(name: string, verifyUrl: string): string {
+  return `<!DOCTYPE html>
+<html lang="cs">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"></head>
+<body style="margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif;background:#f4f4f5">
+  <table width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:40px auto">
+    <tr><td style="background:#ffffff;border-radius:16px;padding:40px;box-shadow:0 2px 8px rgba(0,0,0,0.08)">
+      <h1 style="margin:0 0 8px;font-size:22px;color:#18181b">Vítej v Peopleworth!</h1>
+      <p style="margin:0 0 24px;color:#71717a;font-size:15px">Ahoj ${escapeHtml(name)},</p>
+      <p style="color:#3f3f46;font-size:15px;line-height:1.6">
+        Potvrď svůj e-mail kliknutím na tlačítko níže. Odkaz je platný <strong>24 hodin</strong>.
+      </p>
+      <div style="text-align:center;margin:32px 0">
+        <a href="${verifyUrl}"
+           style="display:inline-block;background:#6366f1;color:#ffffff;text-decoration:none;padding:14px 32px;border-radius:10px;font-size:15px;font-weight:600">
+          Ověřit e-mail
+        </a>
+      </div>
+      <p style="color:#a1a1aa;font-size:13px;line-height:1.5">
+        Pokud jsi se nezaregistroval/a, tento e-mail ignoruj.
+      </p>
+      <hr style="border:none;border-top:1px solid #f4f4f5;margin:28px 0">
+      <p style="margin:0;color:#a1a1aa;font-size:12px;text-align:center">
+        Peopleworth &mdash; Tvé kontakty, tvé bohatství
+      </p>
+    </td></tr>
+  </table>
+</body>
+</html>`
+}
+
 export function passwordResetEmailHtml(name: string, resetUrl: string): string {
   return `<!DOCTYPE html>
 <html lang="cs">
