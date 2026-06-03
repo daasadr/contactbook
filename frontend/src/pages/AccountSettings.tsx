@@ -219,11 +219,13 @@ const PROFILE_FIELDS: Array<{ key: keyof UserProfile; label: string; placeholder
 ]
 
 function ProfileSection() {
+  const { user, setAuth, accessToken } = useAuthStore()
   const { data: profileData, isLoading } = useQuery({
     queryKey: ['user-profile'],
     queryFn: () => authApi.getProfile().then(r => r.data.profile),
   })
 
+  const [name, setName] = useState(user?.name ?? '')
   const [form, setForm] = useState<UserProfile>({})
   const [saved, setSaved] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -233,9 +235,18 @@ function ProfileSection() {
     if (profileData) setForm(profileData)
   }, [profileData])
 
+  useEffect(() => {
+    if (user?.name) setName(user.name)
+  }, [user?.name])
+
   const handleSave = async () => {
     setSaving(true)
     try {
+      // Uložit jméno pokud se změnilo
+      if (name.trim() && name !== user?.name) {
+        const res = await authApi.updateName(name.trim())
+        if (user) setAuth({ ...user, name: res.data.user.name }, accessToken ?? '')
+      }
       await authApi.updateProfile(form)
       queryClient.invalidateQueries({ queryKey: ['user-profile'] })
       setSaved(true)
@@ -250,15 +261,25 @@ function ProfileSection() {
           <UserCircle className="w-5 h-5 text-violet-600" />
         </div>
         <div className="flex-1">
-          <h2 className="font-semibold text-zinc-900 mb-1">Můj profil pro AI asistenta</h2>
+          <h2 className="font-semibold text-zinc-900 mb-1">Můj profil</h2>
           <p className="text-sm text-zinc-500 mb-4">
-            Tyto informace AI použije jako kontext při všech konverzacích — rady budou osobnější a přesnější.
-            Vyplň jen to, co chceš sdílet.
+            Jméno se zobrazuje v aplikaci. Ostatní informace AI používá pro osobnější rady.
           </p>
           {isLoading ? (
             <div className="flex items-center gap-2 text-zinc-400 text-sm"><Loader2 className="w-4 h-4 animate-spin" /> Načítám…</div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Jméno — první pole, ukládá se do users.name */}
+              <div className="sm:col-span-2">
+                <label className="label">Jméno a příjmení</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={e => setName(e.target.value)}
+                  placeholder="Tvoje jméno"
+                  className="input"
+                />
+              </div>
               {PROFILE_FIELDS.map(f => (
                 <div key={f.key} className={f.multiline ? 'sm:col-span-2' : ''}>
                   <label className="label">{f.label}</label>
@@ -398,22 +419,28 @@ function DeleteSection() {
                 </p>
                 <p className="text-sm font-mono font-bold text-red-700 select-all">{DELETE_PHRASE}</p>
               </div>
-              <input
-                type="text"
-                value={phrase}
-                onChange={e => setPhrase(e.target.value)}
-                className={`input font-mono ${phrase && !phraseOk ? 'border-red-400' : phraseOk ? 'border-green-400' : ''}`}
-                placeholder={DELETE_PHRASE}
-                autoFocus
-              />
-              <input
-                type="password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                className="input"
-                placeholder="Tvoje heslo"
-                onKeyDown={e => e.key === 'Enter' && phraseOk && handleDelete()}
-              />
+              <div>
+                <label className="label text-red-700">1. Napiš potvrzovací větu výše:</label>
+                <input
+                  type="text"
+                  value={phrase}
+                  onChange={e => setPhrase(e.target.value)}
+                  className={`input font-mono ${phrase && !phraseOk ? 'border-red-400' : phraseOk ? 'border-green-400' : ''}`}
+                  placeholder={DELETE_PHRASE}
+                  autoFocus
+                />
+              </div>
+              <div>
+                <label className="label text-red-700">2. Zadej své heslo:</label>
+                <input
+                  type="password"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="input"
+                  placeholder="Tvoje přihlašovací heslo"
+                  onKeyDown={e => e.key === 'Enter' && phraseOk && handleDelete()}
+                />
+              </div>
               {error && <p className="text-sm text-red-600">{error}</p>}
               <div className="flex gap-3">
                 <button
@@ -435,51 +462,6 @@ function DeleteSection() {
 
 // ── Page ────────────────────────────────────────────────────────────────────
 
-function NameSection() {
-  const { user, setAuth, accessToken } = useAuthStore()
-  const [name, setName] = useState(user?.name ?? '')
-  const [saving, setSaving] = useState(false)
-  const [saved, setSaved] = useState(false)
-
-  const save = async () => {
-    if (!name.trim() || name === user?.name) return
-    setSaving(true)
-    try {
-      const res = await authApi.updateName(name.trim())
-      if (user) setAuth({ ...user, name: res.data.user.name }, accessToken ?? '')
-      setSaved(true); setTimeout(() => setSaved(false), 3000)
-    } catch { /* ignore */ } finally { setSaving(false) }
-  }
-
-  return (
-    <div className="card p-6">
-      <div className="flex items-start gap-4">
-        <div className="w-10 h-10 rounded-xl bg-zinc-100 flex items-center justify-center shrink-0">
-          <UserCircle className="w-5 h-5 text-zinc-600" />
-        </div>
-        <div className="flex-1">
-          <h2 className="font-semibold text-zinc-900 mb-1">Zobrazované jméno</h2>
-          <p className="text-sm text-zinc-500 mb-3">Jméno zobrazené v aplikaci a na vizitce.</p>
-          <div className="flex gap-3 max-w-sm">
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && save()}
-              placeholder="Tvoje jméno"
-              className="input flex-1"
-            />
-            <button onClick={save} disabled={saving || !name.trim() || name === user?.name} className="btn-primary">
-              {saving ? 'Ukládám…' : 'Uložit'}
-            </button>
-          </div>
-          {saved && <p className="text-sm text-green-600 mt-2">✓ Jméno aktualizováno</p>}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export default function AccountSettings() {
   const user = useAuthStore(s => s.user)
 
@@ -496,8 +478,6 @@ export default function AccountSettings() {
       </div>
 
       <div className="space-y-6">
-        {/* Jméno */}
-        <NameSection />
         {/* Digitální vizitka — první sekce */}
         <div>
           <div className="flex items-center gap-2 mb-3">
