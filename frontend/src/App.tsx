@@ -24,6 +24,7 @@ const SavedAIChats    = lazy(() => import('@/pages/SavedAIChats'))
 const PublicCard      = lazy(() => import('@/pages/PublicCard'))
 const HelpPage        = lazy(() => import('@/pages/HelpPage'))
 const VerifyEmail     = lazy(() => import('@/pages/VerifyEmail'))
+const CheckEmail      = lazy(() => import('@/pages/CheckEmail'))
 const ListSettings    = lazy(() => import('@/pages/ListSettings'))
 const AccountSettings = lazy(() => import('@/pages/AccountSettings'))
 
@@ -70,6 +71,7 @@ export default function App() {
             <Route path="/lists/:listId/contacts/:contactId/saved-chats" element={<SavedAIChats />} />
             <Route path="/lists/:listId/settings" element={<ListSettings />} />
             <Route path="/settings" element={<AccountSettings />} />
+          <Route path="/check-email" element={<CheckEmail />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

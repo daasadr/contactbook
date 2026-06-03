@@ -54,7 +54,8 @@ export default function Register() {
     try {
       const res = await authApi.register({ name: data.name, email: data.email, password: data.password })
       setAuth(res.data.user, res.data.accessToken)
-      navigate('/dashboard')
+      // Nový uživatel musí nejdřív ověřit email
+      navigate('/check-email')
     } catch (err: any) {
       setServerError(err.response?.data?.error ?? 'Registrace se nezdařila')
     }

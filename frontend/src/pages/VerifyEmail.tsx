@@ -2,17 +2,28 @@ import { useEffect, useState } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
 import { Loader2, CheckCircle, XCircle, Mail } from 'lucide-react'
 import { authApi } from '@/api/auth'
+import { useAuthStore } from '@/stores/auth'
 
 export default function VerifyEmail() {
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token')
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'notoken'>('loading')
   const [error, setError] = useState('')
+  const { user, setAuth, accessToken } = useAuthStore()
 
   useEffect(() => {
     if (!token) { setStatus('notoken'); return }
     authApi.verifyEmail(token)
-      .then(() => setStatus('success'))
+      .then(async () => {
+        // Aktualizuj user store — email je teď ověřen
+        if (user && accessToken) {
+          try {
+            const res = await authApi.refresh()
+            setAuth(res.data.user, res.data.accessToken)
+          } catch { /* ignore — user bude muset refreshnout */ }
+        }
+        setStatus('success')
+      })
       .catch(err => {
         setError(err.response?.data?.error ?? 'Ověření selhalo.')
         setStatus('error')
