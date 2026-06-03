@@ -31,6 +31,7 @@ const networkingTemplate: Template = {
     { name: 'goals_assumed', label: 'Jejich cíle (co si myslím)', field_type: 'textarea', placeholder: 'Moje odhad jejich skutečných cílů...', sort_order: 21, section: 'goals' },
     { name: 'interests', label: 'Zájmy a témata', field_type: 'textarea', placeholder: 'O čem rád/a mluví, co ho/ji zajímá...', sort_order: 30, section: 'personal' },
     { name: 'how_we_met', label: 'Jak jsme se poznali', field_type: 'text', sort_order: 31, section: 'personal' },
+    { name: 'bydliste', label: 'Bydliště / město', field_type: 'text', placeholder: 'Praha, Brno...', sort_order: 32, section: 'personal' },
     { name: 'notes', label: 'Poznámky', field_type: 'textarea', sort_order: 99, section: 'notes' },
   ],
 }
