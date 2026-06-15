@@ -7,7 +7,7 @@ import { config } from '../config'
 import { sendEmail, passwordResetEmailHtml, emailVerificationHtml } from '../lib/email'
 
 const EMAIL_VERIFICATION_HOURS = 24
-import { authenticate } from '../middleware/authenticate'
+import { authenticate, authenticateBase } from '../middleware/authenticate'
 
 const BCRYPT_ROUNDS = 12
 const ACCESS_TOKEN_TTL = '15m'
@@ -180,7 +180,7 @@ export async function authRoutes(app: FastifyInstance) {
 
     const tokenHash = hashToken(token)
     const [stored] = await sql`
-      SELECT rt.user_id, u.name, u.email, u.created_at
+      SELECT rt.user_id, u.name, u.email, u.email_verified, u.created_at
       FROM refresh_tokens rt
       JOIN users u ON u.id = rt.user_id
       WHERE rt.token_hash = ${tokenHash} AND rt.expires_at > NOW()
@@ -195,7 +195,13 @@ export async function authRoutes(app: FastifyInstance) {
 
     setRefreshCookie(reply, newRefreshToken)
     return reply.send({
-      user: { id: stored.user_id, name: stored.name, email: stored.email, created_at: stored.created_at },
+      user: {
+        id: stored.user_id,
+        name: stored.name,
+        email: stored.email,
+        email_verified: stored.email_verified,
+        created_at: stored.created_at,
+      },
       accessToken,
     })
   })
@@ -330,7 +336,7 @@ export async function authRoutes(app: FastifyInstance) {
   })
 
   // POST /auth/resend-verification — znovu pošli ověřovací email
-  app.post('/resend-verification', { preHandler: authenticate }, async (request, reply) => {
+  app.post('/resend-verification', { preHandler: authenticateBase }, async (request, reply) => {
     const [user] = await sql`
       SELECT id, name, email, email_verified FROM users WHERE id = ${request.userId}
     `

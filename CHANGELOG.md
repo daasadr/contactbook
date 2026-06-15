@@ -2,6 +2,32 @@
 
 ---
 
+## [2026-06-15] — Oprava email verifikace: banner + bezpečnost API
+
+### Co bylo uděláno
+- `backend/src/routes/auth.ts` — endpoint `/auth/refresh` nyní vrací `email_verified` (chybělo v SQL SELECT i v response objektu) → toto byl root cause trvalého banneru
+- `backend/src/middleware/authenticate.ts` — nová `authenticateBase` (jen JWT) a upravená `authenticate` (JWT + DB check `email_verified`) → neověření uživatelé dostanou 403 na všech chráněných endpointech
+- `backend/src/routes/auth.ts` — `/auth/resend-verification` přepnuto na `authenticateBase` (musí fungovat i pro neověřené uživatele)
+
+### Proč (způsob řešení)
+**Bug 1 (banner):** Endpoint `/auth/refresh` neobsahoval `email_verified` v SQL dotazu ani v odpovědi. Při každém načtení stránky app.tsx volá `authApi.refresh()` a nastaví user store — bez `email_verified` byla hodnota `undefined` (falsy), takže banner se zobrazoval pro všechny včetně ověřených uživatelů.
+
+**Bug 2 (bezpečnost):** Middleware `authenticate` kontroloval jen platnost JWT. Uživatel s falešným emailem mohl po registraci přímým API voláním přistupovat ke všem chráněným endpointům. Opraveno přidáním DB dotazu `SELECT email_verified FROM users WHERE id = ...` — existující uživatelé (migration 016 nastavila `DEFAULT TRUE`) nejsou ovlivněni.
+
+### Soubory změněny
+- `backend/src/middleware/authenticate.ts`
+- `backend/src/routes/auth.ts`
+
+### Nasazení na server
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
 ## [2026-06-01] — Velká session: Tasks, Signál, Vizitka, Sken, Platby, PWA, SEO a další
 
 ### Co bylo uděláno
