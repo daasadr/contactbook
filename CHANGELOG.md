@@ -2,6 +2,84 @@
 
 ---
 
+## [2026-07-20] — Bezpečnostní upgrade závislostí (revize Snyk PR)
+
+### Co bylo uděláno
+- `backend/package.json` — upgrade na Fastify 5 včetně **všech** pluginů:
+  - `fastify` 4.28.1 → ^5.0.0
+  - `@fastify/jwt` 8.0.1 → **^10.2.0** (Snyk navrhoval jen ^9.0.2 — viz níže)
+  - `@fastify/cookie` ^9.4.0 → ^11.0.2
+  - `@fastify/cors` ^9.0.1 → ^11.0.1
+  - `@fastify/helmet` ^11.1.1 → ^13.0.0
+  - `@fastify/multipart` ^8.3.0 → ^9.0.1
+  - `@fastify/rate-limit` ^9.1.0 → ^10.2.2
+  - `bcrypt` ^5.1.1 → ^6.0.0, `@types/bcrypt` ^5.0.2 → ^6.0.0
+  - `tsx` aktualizován (`npm audit fix`) kvůli esbuild dev-server CVE
+- Frontend: `npm audit fix` (jen lockfile) → `react-router-dom` 6.30.4, `form-data` 4.0.6
+- Výsledek: backend **0 zranitelností**, frontend z 5 na 2 (zbytek jen dev server, viz níže)
+
+### Proč (způsob řešení)
+Snyk vytvořil PR `snyk-fix-bb8b08d97035fecfe68edf48ad0a6597`, který měnil jen 3 balíčky
+(`fastify` → 5, `@fastify/jwt` → 9, `bcrypt` → 6). **Tento PR nebyl slučitelný tak, jak byl**,
+ze dvou důvodů:
+
+**1. Shodil by produkci při startu.** Snyk zvedl `fastify` na 5.x, ale nechal pět pluginů
+na majorech pro Fastify 4. Ověřeno lokálně — aplikace spadne hned při bootu:
+```
+FastifyError: fastify-plugin: @fastify/helmet - expected '4.x' fastify version, '5.10.0' is installed
+(FST_ERR_PLUGIN_VERSION_MISMATCH)
+```
+Řešení: dotažen upgrade všech `@fastify/*` pluginů na majory s peer dependency `fastify@^5.0.0`.
+
+**2. Neopravil by kritickou zranitelnost autentizace.** Snykem navržený `@fastify/jwt@^9.0.2`
+táhne `fast-jwt <=6.2.3`, který má 6 kritických CVE včetně **obejití JWT autentizace**
+(GHSA-gmvf-9v4p-v8jc — prázdný HMAC secret akceptovaný async key resolverem) a
+GHSA-rp9m-7r4c-75qg (cache confusion → vrácení claims z cizího tokenu = záměna identity).
+Řešení: `@fastify/jwt` rovnou na ^10.2.0, kde je `fast-jwt` opravený.
+
+**Ověření provedeno lokálně (ne odhad):**
+- `tsc` prochází bez chyb
+- boot test: všechny pluginy se zaregistrují, `app.ready()` projde, všechny routy existují
+- `app.jwt.sign()` / `verify()` funguje po upgradu na @fastify/jwt v10
+- **bcrypt 5 → 6 kompatibilita hesel**: hash vytvořený v5 ověřen v6 = `true`, špatné heslo = `false`,
+  a naopak. Existující hesla uživatelů v DB zůstávají funkční, žádný reset není potřeba.
+- bcrypt 6 obsahuje `prebuilds/linux-x64/bcrypt.musl.node`, takže se na `node:20-alpine`
+  postaví bez build nástrojů (v6 nahradil `@mapbox/node-pre-gyp` za `node-gyp-build` —
+  právě to je zdroj většiny opravených TAR CVE ze Snyk reportu)
+
+**Kód nebylo nutné měnit** — projekt nepoužívá nic z Fastify 4 API, co v 5 zmizelo
+(`request.routerPath`, `reply.getResponseTime()`), a multipart používá streamovací API
+(`request.file()` + `pipeline`), které je napříč v8→v9 stabilní.
+
+### Nedořešeno (vyžaduje rozhodnutí)
+- **Frontend `esbuild`/`vite`** (1 moderate + 1 high): oprava vyžaduje `vite` 5 → 8, což je
+  breaking change. Zranitelnost se týká **výhradně dev serveru** — produkce servíruje
+  statický build přes nginx a `vite` je devDependency, takže reálné produkční riziko je nulové.
+  Odloženo jako samostatný úkol.
+- **Chybějící `package-lock.json` v repu**: produkční závislosti nejsou reprodukovatelné
+  (Dockerfiles používají `npm install`). Doporučeno commitnout locky a přepnout na `npm ci`
+  — samostatné rozhodnutí, nedělal jsem unilaterálně.
+
+### Soubory změněny
+- `backend/package.json`
+- `CHANGELOG.md`
+
+### Nasazení na server
+Backend má nové závislosti → je nutný rebuild Docker image:
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+Po nasazení ověřit přihlášení (mění se JWT i bcrypt vrstva):
+```bash
+curl https://peopleworth.eu/api/health
+```
+Snyk PR na GitHubu zavřít bez sloučení — jeho změny jsou v této úpravě obsaženy a opraveny.
+
+---
+
 ## [2026-06-15] — Oprava email verifikace: banner + bezpečnost API
 
 ### Co bylo uděláno
