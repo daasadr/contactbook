@@ -210,7 +210,9 @@ RUN npm run build && cp -r src/db/migrations dist/db/migrations
 V JSX atributech (např. `className="..."`) nelze používat backslash-escaped uvozovky (`\"`). SVG data URLs patří do `style` propu jako JS objekt, nebo do CSS.
 
 ### package-lock.json
-Repozitář neobsahuje `package-lock.json`. Dockerfiles proto používají `npm install` místo `npm ci`.
+Repozitář **obsahuje** `package-lock.json` (backend i frontend) a produkční Dockerfiles používají `npm ci` — reprodukovatelné buildy, přesně zamčené verze včetně tranzitivních závislostí.
+
+**Důležité:** `npm ci` vyžaduje, aby `package.json` a `package-lock.json` byly v souladu. Po každé změně `package.json` (přidání/upgrade balíčku) je nutné lokálně spustit `npm install`, aby se lockfile zaktualizoval, a commitnout **oba** soubory. Jinak Docker build tvrdě selže (což je záměr — zachytí to nechtěný drift).
 
 ### Lokální vývoj
 Projekt je vyvíjen na Windows (`D:\Projekty\contactbook\`). Git občas hlásí CRLF varování — je to normální, neřeš to.

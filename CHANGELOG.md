@@ -2,6 +2,63 @@
 
 ---
 
+## [2026-07-30] — AI/SEO viditelnost + reprodukovatelné buildy (package-lock)
+
+### Co bylo uděláno
+
+**AI a SEO viditelnost (checklist „čitelnost pro AI vyhledávání"):**
+- `frontend/public/llms.txt` — **nový**. Popis projektu pro jazykové modely (co to je, pro koho, funkce, ceny, FAQ, kontakt) v propagačním, ale pravdivém tónu.
+- `frontend/index.html` — obohaceno o **statický** obsah, který je v HTML payloadu, takže ho vidí i AI/vyhledávací boti nespouštějící JavaScript:
+  - Kompletní meta tagy (canonical, Open Graph, Twitter Card) — dosud jen přes react-helmet za běhu
+  - JSON-LD `@graph`: `Organization` + `WebSite` + `SoftwareApplication` (s `Offer`) + **`FAQPage` se 6 dotazy**
+  - `<noscript>` blok se skutečným textem (kdo/co/pro koho, funkce, ceny, FAQ, kontakt) — pro boty bez JS
+- `frontend/public/robots.txt` — explicitně přivítáni AI boti (GPTBot, ClaudeBot, PerplexityBot, Google-Extended, CCBot…), přidán odkaz na llms.txt, doplněny disallow pro nové app routy
+- `frontend/public/sitemap.xml` — aktualizované `lastmod`, zvýšena priorita /help
+- `frontend/src/pages/NotFound.tsx` + `App.tsx` — **oprava 404**: neexistující URL dřív tiše přesměrovala na `/` (HTTP 200 → každá URL vypadala „platně"). Nyní se zobrazí skutečná 404 stránka s `noindex`.
+
+**Reprodukovatelné buildy (package-lock.json):**
+- `backend/package-lock.json` + `frontend/package-lock.json` — **nově commitnuty**. Přesně zamčené verze včetně tranzitivních závislostí.
+- `backend/Dockerfile`, `frontend/Dockerfile` — přepnuto z `npm install` na **`npm ci`** (deterministický build z lockfilu).
+- Při generování lockfilu zachycena a opravena nová tranzitivní zranitelnost `find-my-way` (GHSA-c96f-x56v-gq3h, DDoS přes HTTP/2) → bump na 9.7.0. **Backend: 0 zranitelností.**
+- `CLAUDE.md` — aktualizována poznámka o package-lock (nově se používá `npm ci`; po změně package.json je nutné spustit `npm install` a commitnout oba soubory).
+
+### Proč (způsob řešení)
+
+**Klíčový poznatek:** Peopleworth je klientsky renderované SPA (React + Vite). Bot, který si stáhne stránku, dostane prázdné `<div id="root">` — obsah i meta tagy z react-helmet se vytvoří až v prohlížeči. Řada AI botů JavaScript nespouští, takže dosavadní SEO (helmet) pro ně bylo neviditelné. Řešení bez přepisu na SSR: vložit skutečný obsah a strukturovaná data **staticky do index.html** + statické soubory (robots/sitemap/llms.txt), které fungují nezávisle na JS. Tím je pokryto maximum checklistu, které u SPA reálně jde.
+
+**404:** Původní `<Route path="*" element={<Navigate to="/" />}>` vracel 200 pro libovolnou URL, což mate crawlery (každá neexistující adresa se tváří jako platná stránka). Klientská 404 s `noindex` je u SPA pragmatické maximum (skutečný HTTP 404 by vyžadoval serverovou logiku, kterou SPA fallback `try_files … /index.html` znemožňuje).
+
+**npm ci:** Ověřeno lokálně, že `npm ci` z vygenerovaných lockfilů projde na obou balíčcích, backend build + boot test procházejí a frontend build produkuje dist se všemi SEO artefakty a platným JSON-LD.
+
+### Nedořešeno (vyžaduje rozhodnutí / samostatný úkol)
+- **Serverové (nemám SSH):** apex→www 308 redirect a kanonizace domény, skutečný HTTP 404 — patří do systémového nginx serveru. Snippety předány majitelce.
+- **Prerendering veřejných stránek** (Landing/help/privacy) do statického HTML by dal AI viditelnosti maximum (např. `vite-plugin-prerender`/`react-snap`). Je to build-pipeline změna s rizikem → samostatný úkol.
+- **Frontend breaking upgrady** (react-router 6→7 kvůli open-redirect advisory; vite 5→8 a sharp — obojí jen dev, ne v produkčním image). Neděláno naslepo na živé appce; react-router 7 doporučen jako samostatný testovaný úkol.
+
+### Soubory změněny
+- `frontend/index.html`, `frontend/public/{llms.txt,robots.txt,sitemap.xml}`
+- `frontend/src/App.tsx`, `frontend/src/pages/NotFound.tsx`
+- `frontend/Dockerfile`, `backend/Dockerfile`
+- `backend/package-lock.json`, `frontend/package-lock.json` (nové)
+- `CLAUDE.md`, `CHANGELOG.md`
+
+### Nasazení na server
+Frontend (SEO změny) i oba Dockerfiles se mění → nutný rebuild:
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+Po nasazení ověřit, že statické soubory jedou:
+```bash
+curl -s https://peopleworth.eu/llms.txt | head -3
+curl -s https://peopleworth.eu/robots.txt | head -3
+curl -s https://peopleworth.eu/ | grep -c "application/ld+json"   # očekává 1
+```
+
+---
+
 ## [2026-07-20] — Bezpečnostní upgrade závislostí (revize Snyk PR)
 
 ### Co bylo uděláno

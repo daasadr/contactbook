@@ -1,0 +1,46 @@
+# Peopleworth
+
+> Peopleworth je chytrá webová aplikace pro správu kontaktů, ve které si každý seznam přizpůsobíš vlastními poli. Nejde jen o ukládání jmen — vedeš si deník setkání, propojuješ lidi mezi sebou a AI asistent ti pomáhá pečovat o vztahy, na kterých ti záleží. Motto projektu: „Lidé jsou tvé bohatství.“
+
+Peopleworth je určený pro networkery, podnikatele, freelancery i každého, kdo chce mít v kontaktech pořádek a nezapomínat na lidi kolem sebe. Běží v prohlížeči (žádná instalace), funguje i jako PWA na mobilu a je v češtině.
+
+- **Web:** https://peopleworth.eu
+- **Cena:** Základní aplikace je zdarma a bez limitu počtu kontaktů. AI funkce se platí kredity, které odpovídají skutečným nákladům na provoz (Claude API) — bez marže.
+- **Kontakt:** annlibertas@seznam.cz
+
+## Co Peopleworth umí
+
+- [Přehled funkcí](https://peopleworth.eu/help): Kompletní nápověda ke všem funkcím aplikace.
+- **Seznamy a vlastní pole**: Libovolný počet seznamů (networking, byznys, přátelé, rodina, vlastní kategorie). Každý seznam má vlastní sadu polí — vybíráš ze šablon nebo přidáváš vlastní (text, e-mail, telefon, datum, výběr z možností a další).
+- **Kniha záznamů (deník setkání)**: U každého kontaktu si vedeš datované zápisky — o čem jste mluvili, co slíbil, jak to dopadlo. Včetně štítků a fotek. Zobrazuje se jako otevřená kniha.
+- **Signál (radar vztahů)**: Automaticky upozorní na kontakty, se kterými ses dlouho neozval, a na blížící se narozeniny. Práh „kolik dní bez kontaktu = upozornění“ si nastavíš pro každý seznam zvlášť.
+- **Úkoly a připomínky**: Úkoly ke konkrétním kontaktům s termínem (datum a čas), přehled na dashboardu i v detailu kontaktu.
+- **Propojení kontaktů**: Zaznamenáš kdo koho zná, s popiskem vztahu (kolega, mentor, kamarád). AI tato propojení zohledňuje.
+- **AI asistent**: U každého kontaktu chat, který zná vše, co sis zaznamenal (pole, zápisky, propojení i tvůj profil). Poradí téma na hovor, tip na dárek, shrne co o člověku víš.
+- **Inspirativní osobnosti**: Speciální typ seznamu pro lidi, kteří tě inspirují. Funkce „Co by X udělal/a?“ odpoví z perspektivy dané osobnosti.
+- **Skenování vizitky**: Vyfotíš vizitku nebo screenshot LinkedIn profilu a AI z něj vytáhne kontaktní údaje. Chybějící pole se vytvoří automaticky.
+- **Digitální vizitka**: Vlastní digitální vizitka s veřejnou URL (peopleworth.eu/card/tvuj-slug), sdílitelná bez přihlášení.
+
+## Ceny a kredity
+
+- [Jak fungují kredity](https://peopleworth.eu/help): Aplikace zdarma, AI na kredity.
+- Nový účet dostane **25 startovacích kreditů zdarma**.
+- Spotřeba: AI chat = 1 kredit, analýza Signálu = 1 kredit, skenování vizitky = 2 kredity.
+- Dobíjení: balíčky 50 / 200 / 500 kreditů, nebo jednorázová podpora vývoje libovolnou částkou.
+- Správa kontaktů, seznamy, deník a připomínky jsou **zdarma navždy, bez limitu počtu kontaktů**.
+
+## Soukromí a data
+
+- [Zásady ochrany osobních údajů](https://peopleworth.eu/privacy): Kompletní GDPR dokumentace.
+- Tvá data jsou dostupná pouze tobě, nesdílíme je s třetími stranami k marketingu.
+- Data kontaktu se odesílají Anthropic (Claude) pouze tehdy, když sám použiješ AI asistenta u daného kontaktu.
+- Kdykoli si můžeš data exportovat i celý účet smazat přímo v nastavení.
+
+## Časté dotazy
+
+- **Je Peopleworth zdarma?** Ano. Správa kontaktů, seznamy, deník i připomínky jsou zdarma a bez limitu počtu kontaktů. Platí se jen AI funkce, a to kredity odpovídajícími skutečným nákladům na provoz.
+- **Musím něco instalovat?** Ne. Peopleworth běží v prohlížeči. Na mobilu si ho můžeš přidat na plochu jako aplikaci (PWA).
+- **Pro koho je Peopleworth?** Pro networkery, podnikatele, freelancery i každého, kdo chce udržovat vztahy a nezapomínat na lidi kolem sebe.
+- **V čem se liší od běžných kontaktů v telefonu?** Přizpůsobitelná pole pro každý seznam, deník setkání, radar zanedbaných vztahů, propojení lidí mezi sebou a AI asistent, který ti radí, jak o vztahy pečovat.
+- **Jsou moje data v bezpečí?** Ano. Data jsou dostupná jen tobě, můžeš je exportovat i smazat účet. Aplikace je plně v souladu s GDPR.
+- **V jakých jazycích je aplikace?** Aktuálně v češtině. Připravujeme angličtinu a další jazyky.

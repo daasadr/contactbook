@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect } from 'react'
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useAuthStore } from '@/stores/auth'
 import { authApi } from '@/api/auth'
 import ProtectedRoute from '@/components/ProtectedRoute'
@@ -27,6 +27,7 @@ const VerifyEmail     = lazy(() => import('@/pages/VerifyEmail'))
 const CheckEmail      = lazy(() => import('@/pages/CheckEmail'))
 const ListSettings    = lazy(() => import('@/pages/ListSettings'))
 const AccountSettings = lazy(() => import('@/pages/AccountSettings'))
+const NotFound        = lazy(() => import('@/pages/NotFound'))
 
 function PageLoader() {
   return (
@@ -73,7 +74,7 @@ export default function App() {
             <Route path="/settings" element={<AccountSettings />} />
           <Route path="/check-email" element={<CheckEmail />} />
           </Route>
-          <Route path="*" element={<Navigate to="/" replace />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Suspense>
     </BrowserRouter>

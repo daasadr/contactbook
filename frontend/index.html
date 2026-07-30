@@ -4,8 +4,137 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Peopleworth — chytrá správa kontaktů přizpůsobená vašemu stylu. Lidé jsou tvé bohatství." />
-    <title>Peopleworth</title>
+
+    <!-- Základní SEO (staticky v payloadu — vidí i boti, kteří nespouští JS).
+         Pro jednotlivé podstránky je za běhu přepisuje react-helmet (SEOHead). -->
+    <title>Peopleworth — Lidé jsou tvé bohatství</title>
+    <meta name="description" content="Peopleworth je chytrá webová aplikace pro správu kontaktů s přizpůsobitelnými poli, deníkem setkání a AI asistentem. Buduj a pečuj o vztahy, na kterých ti záleží." />
+    <link rel="canonical" href="https://peopleworth.eu/" />
+    <meta name="robots" content="index, follow" />
+    <meta name="author" content="Peopleworth" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Peopleworth" />
+    <meta property="og:title" content="Peopleworth — Lidé jsou tvé bohatství" />
+    <meta property="og:description" content="Chytrá správa kontaktů s přizpůsobitelnými poli, deníkem setkání a AI asistentem. Aplikace zdarma, bez limitu počtu kontaktů." />
+    <meta property="og:image" content="https://peopleworth.eu/og-image.jpg" />
+    <meta property="og:url" content="https://peopleworth.eu/" />
+    <meta property="og:locale" content="cs_CZ" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Peopleworth — Lidé jsou tvé bohatství" />
+    <meta name="twitter:description" content="Chytrá správa kontaktů s přizpůsobitelnými poli, deníkem setkání a AI asistentem. Aplikace zdarma, bez limitu počtu kontaktů." />
+    <meta name="twitter:image" content="https://peopleworth.eu/og-image.jpg" />
+
+    <!-- Strukturovaná data (JSON-LD) — staticky v payloadu pro vyhledávače i AI -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://peopleworth.eu/#organization",
+          "name": "Peopleworth",
+          "url": "https://peopleworth.eu",
+          "logo": "https://peopleworth.eu/icons/icon-512.png",
+          "email": "annlibertas@seznam.cz",
+          "description": "Provozovatel webové aplikace Peopleworth pro chytrou správu kontaktů a péči o vztahy."
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://peopleworth.eu/#website",
+          "url": "https://peopleworth.eu",
+          "name": "Peopleworth",
+          "inLanguage": "cs",
+          "publisher": { "@id": "https://peopleworth.eu/#organization" }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://peopleworth.eu/#app",
+          "name": "Peopleworth",
+          "url": "https://peopleworth.eu",
+          "description": "Chytrá webová aplikace pro správu kontaktů s plně přizpůsobitelnými poli, deníkem setkání, radarem zanedbaných vztahů a AI asistentem.",
+          "applicationCategory": "BusinessApplication",
+          "operatingSystem": "Web",
+          "inLanguage": "cs",
+          "publisher": { "@id": "https://peopleworth.eu/#organization" },
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR",
+            "description": "Základní přístup zdarma bez limitu počtu kontaktů. AI funkce se platí kredity odpovídajícími nákladům na provoz."
+          },
+          "featureList": [
+            "Správa kontaktů s vlastními poli",
+            "Kniha záznamů — deník setkání",
+            "Signál — radar zanedbaných vztahů a narozenin",
+            "Úkoly a připomínky ke kontaktům",
+            "Propojení kontaktů mezi sebou",
+            "AI asistent pro každý kontakt",
+            "Skenování vizitky pomocí AI",
+            "Digitální vizitka s veřejnou URL",
+            "Export dat (GDPR)"
+          ]
+        },
+        {
+          "@type": "FAQPage",
+          "@id": "https://peopleworth.eu/#faq",
+          "mainEntity": [
+            {
+              "@type": "Question",
+              "name": "Je Peopleworth zdarma?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Ano. Správa kontaktů, seznamy, deník i připomínky jsou zdarma a bez limitu počtu kontaktů. Platí se pouze AI funkce, a to kredity, které odpovídají skutečným nákladům na provoz — bez marže."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Co je Peopleworth?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Peopleworth je chytrá webová aplikace pro správu kontaktů. Každý seznam si přizpůsobíš vlastními poli, vedeš si deník setkání, propojuješ lidi mezi sebou a AI asistent ti pomáhá pečovat o vztahy, na kterých ti záleží."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Musím něco instalovat?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Ne. Peopleworth běží v prohlížeči. Na mobilu si ho můžeš přidat na plochu jako aplikaci (PWA), ale žádná instalace není potřeba."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Jak fungují AI kredity?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Nový účet dostane 25 startovacích kreditů zdarma. AI chat stojí 1 kredit, analýza Signálu 1 kredit a skenování vizitky 2 kredity. Dobíjí se v balíčcích 50, 200 nebo 500 kreditů."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Jsou moje data v bezpečí?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Ano. Tvá data jsou dostupná pouze tobě a nesdílíme je s třetími stranami k marketingu. Data kontaktu se odesílají Anthropic (Claude) jen tehdy, když sám použiješ AI asistenta. Kdykoli si můžeš data exportovat i smazat účet. Aplikace je v souladu s GDPR."
+              }
+            },
+            {
+              "@type": "Question",
+              "name": "Pro koho je Peopleworth?",
+              "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Pro networkery, podnikatele, freelancery i každého, kdo chce udržovat vztahy a nezapomínat na lidi kolem sebe."
+              }
+            }
+          ]
+        }
+      ]
+    }
+    </script>
 
     <!-- PWA manifest -->
     <link rel="manifest" href="/manifest.json" />
@@ -21,6 +150,53 @@
   </head>
   <body>
     <div id="root"></div>
+
+    <!-- Textový obsah pro roboty a AI, kteří nespouštějí JavaScript.
+         Uživatelům s JS se místo toho vykreslí plná React aplikace do #root výše. -->
+    <noscript>
+      <main style="max-width:720px;margin:0 auto;padding:24px;font-family:sans-serif;line-height:1.6">
+        <h1>Peopleworth — Lidé jsou tvé bohatství</h1>
+        <p><strong>Peopleworth</strong> je chytrá webová aplikace pro správu kontaktů. Každý seznam si
+        přizpůsobíš vlastními poli, vedeš si deník setkání, propojuješ lidi mezi sebou a AI asistent ti
+        pomáhá pečovat o vztahy, na kterých ti záleží.</p>
+
+        <p><strong>Pro koho:</strong> networkeři, podnikatelé, freelanceři i každý, kdo chce mít v kontaktech
+        pořádek a nezapomínat na lidi kolem sebe.</p>
+
+        <h2>Co aplikace nabízí</h2>
+        <ul>
+          <li><strong>Seznamy s vlastními poli</strong> — libovolný počet seznamů (networking, byznys, přátelé, rodina) s poli na míru.</li>
+          <li><strong>Kniha záznamů</strong> — datovaný deník setkání u každého kontaktu, se štítky a fotkami.</li>
+          <li><strong>Signál</strong> — radar, který upozorní na dlouho nekontaktované lidi a blížící se narozeniny.</li>
+          <li><strong>Úkoly a připomínky</strong> — ke konkrétním kontaktům, s termínem.</li>
+          <li><strong>Propojení kontaktů</strong> — zaznamenáš kdo koho zná.</li>
+          <li><strong>AI asistent</strong> — zná vše, co sis o kontaktu zapsal, a poradí, jak o vztah pečovat.</li>
+          <li><strong>Skenování vizitky</strong> — AI vytáhne kontaktní údaje z fotky vizitky.</li>
+          <li><strong>Digitální vizitka</strong> — vlastní vizitka s veřejnou URL, sdílitelná bez přihlášení.</li>
+        </ul>
+
+        <h2>Cena</h2>
+        <p>Aplikace je <strong>zdarma a bez limitu počtu kontaktů</strong>. AI funkce se platí kredity
+        odpovídajícími skutečným nákladům na provoz. Nový účet dostane 25 kreditů zdarma.</p>
+
+        <h2>Časté dotazy</h2>
+        <h3>Je Peopleworth zdarma?</h3>
+        <p>Ano. Správa kontaktů, seznamy, deník i připomínky jsou zdarma a bez limitu počtu kontaktů.
+        Platí se jen AI funkce, a to kredity odpovídajícími nákladům na provoz.</p>
+        <h3>Musím něco instalovat?</h3>
+        <p>Ne. Peopleworth běží v prohlížeči. Na mobilu si ho můžeš přidat na plochu jako aplikaci (PWA).</p>
+        <h3>Jsou moje data v bezpečí?</h3>
+        <p>Ano. Data jsou dostupná jen tobě, můžeš je exportovat i smazat účet. Aplikace je v souladu s GDPR.</p>
+
+        <h2>Kontakt</h2>
+        <p>E-mail: <a href="mailto:annlibertas@seznam.cz">annlibertas@seznam.cz</a><br />
+        Web: <a href="https://peopleworth.eu">peopleworth.eu</a><br />
+        Nápověda a přehled funkcí: <a href="https://peopleworth.eu/help">peopleworth.eu/help</a></p>
+
+        <p><em>Pro plné využití aplikace prosím povolte JavaScript.</em></p>
+      </main>
+    </noscript>
+
     <script type="module" src="/src/main.tsx"></script>
     <script>
       if ('serviceWorker' in navigator) {

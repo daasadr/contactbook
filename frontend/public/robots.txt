@@ -1,5 +1,10 @@
+# Peopleworth — https://peopleworth.eu
+# AI a vyhledávací boti jsou vítáni. Veřejné stránky jsou volně procházitelné,
+# přihlášené/aplikační sekce jsou zakázané (stejně vyžadují autentizaci).
+
 User-agent: *
 Allow: /
+Allow: /help
 Allow: /privacy
 
 Disallow: /dashboard
@@ -9,5 +14,41 @@ Disallow: /login
 Disallow: /register
 Disallow: /forgot-password
 Disallow: /reset-password
+Disallow: /verify-email
+Disallow: /check-email
+
+# Explicitní přivítání AI botů (dědí pravidla z User-agent: * výše)
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Claude-Web
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+# Popis projektu pro jazykové modely:
+# https://peopleworth.eu/llms.txt
 
 Sitemap: https://peopleworth.eu/sitemap.xml
