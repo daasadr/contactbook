@@ -2,6 +2,32 @@
 
 ---
 
+## [2026-08-12] — Přejmenování seznamu v nastavení + tip o AI v nápovědě
+
+### Co bylo uděláno
+- `frontend/src/pages/ListSettings.tsx` — přidána karta **„Název seznamu"** nahoře v nastavení seznamu: input + tlačítko „Uložit název" (uloží i klávesou Enter). Dosud nešlo seznam přejmenovat, i když backend to už uměl.
+- `frontend/src/pages/HelpPage.tsx` — posílen závěrečný tip: AI funkce mají smysl jen když se deník vede **delší dobu a poctivě**; čím bohatší data, tím přesnější rady. Přidán realistický popis (zpočátku obecné, po týdnech psaní výrazně užitečnější).
+
+### Proč (způsob řešení)
+Přejmenování: `PATCH /lists/:id` už `name` podporoval (`listsApi.update`), takže šlo čistě o chybějící UI. Karta navazuje na stejný vzor jako pozadí/Signál (lokální stav inicializovaný z `listData`, mutace invaliduje `['list', listId]` i `['lists']`, aby se název hned promítl v hlavičce i na dashboardu). Uložení je zakázané, dokud se název nezmění nebo je prázdný.
+
+Nápověda: nápověda v aplikaci existuje (`/help`), jen tip o AI nezdůrazňoval časový aspekt — doplněno dle přání majitelky.
+
+### Soubory změněny
+- `frontend/src/pages/ListSettings.tsx`
+- `frontend/src/pages/HelpPage.tsx`
+
+### Nasazení na server
+Pouze frontend → nutný rebuild frontend kontejneru:
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
 ## [2026-08-11] — KRITICKÁ oprava: mizející data kontaktů (custom_data)
 
 ### Co bylo uděláno

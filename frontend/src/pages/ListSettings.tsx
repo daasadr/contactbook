@@ -134,6 +134,8 @@ export default function ListSettings() {
   const [bgSaved, setBgSaved] = useState(false)
   const [radarDays, setRadarDays] = useState<number | undefined>(undefined)
   const [radarSaved, setRadarSaved] = useState(false)
+  const [listName, setListName] = useState<string | undefined>(undefined)
+  const [nameSaved, setNameSaved] = useState(false)
 
   const { data: listData } = useQuery({
     queryKey: ['list', listId],
@@ -145,8 +147,19 @@ export default function ListSettings() {
     if (listData) {
       if (selectedBg === undefined) setSelectedBg(listData.background ?? null)
       if (radarDays === undefined) setRadarDays((listData as any).radar_days ?? 30)
+      if (listName === undefined) setListName(listData.name)
     }
-  }, [listData, selectedBg, radarDays])
+  }, [listData, selectedBg, radarDays, listName])
+
+  const updateNameMutation = useMutation({
+    mutationFn: (name: string) => listsApi.update(listId!, { name }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['list', listId] })
+      queryClient.invalidateQueries({ queryKey: ['lists'] })
+      setNameSaved(true)
+      setTimeout(() => setNameSaved(false), 2000)
+    },
+  })
 
   const updateBgMutation = useMutation({
     mutationFn: (bg: string | null) => listsApi.update(listId!, { background: bg }),
@@ -213,6 +226,42 @@ export default function ListSettings() {
         <div>
           <h1 className="text-xl font-bold text-zinc-900">Nastavení seznamu</h1>
           <p className="text-sm text-zinc-500">{listData?.name}</p>
+        </div>
+      </div>
+
+      {/* Název seznamu */}
+      <div className="card p-6 mb-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h2 className="font-semibold text-zinc-900">Název seznamu</h2>
+            <p className="text-sm text-zinc-500">Kdykoli přejmenuj tento seznam.</p>
+          </div>
+          {nameSaved && <span className="text-sm text-green-600 font-medium">✓ Uloženo</span>}
+        </div>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <input
+            value={listName ?? ''}
+            onChange={(e) => setListName(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                const n = (listName ?? '').trim()
+                if (n && n !== listData?.name) updateNameMutation.mutate(n)
+              }
+            }}
+            maxLength={255}
+            className="input flex-1"
+            placeholder="Název seznamu"
+          />
+          <button
+            onClick={() => {
+              const n = (listName ?? '').trim()
+              if (n && n !== listData?.name) updateNameMutation.mutate(n)
+            }}
+            disabled={updateNameMutation.isPending || !(listName ?? '').trim() || (listName ?? '').trim() === listData?.name}
+            className="btn-primary"
+          >
+            {updateNameMutation.isPending ? 'Ukládání…' : 'Uložit název'}
+          </button>
         </div>
       </div>
 

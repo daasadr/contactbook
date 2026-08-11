@@ -136,8 +136,18 @@ export default function HelpPage() {
             </Feature>
           </Section>
 
-          <div className="mt-8 p-4 bg-primary-50 rounded-xl text-sm text-primary-800">
-            <strong>Klíčový tip:</strong> Čím poctivěji vyplňuješ informace o kontaktech a píšeš zápisky ze setkání, tím relevantnější jsou AI doporučení. Garbage in, garbage out — ale s dobrými daty je Peopleworth skutečně výkonný nástroj.
+          <div className="mt-8 p-4 bg-primary-50 rounded-xl text-sm text-primary-800 space-y-2">
+            <p>
+              <strong>Klíčový tip — AI je jen tak dobrá, jak dobrá jsou tvá data:</strong> Aby ti AI funkce
+              opravdu pomohly, potřebují z čeho čerpat. To znamená vést deník setkání <strong>nějakou dobu
+              a poctivě</strong> — pár zápisků nestačí. Čím déle a pravidelněji si zaznamenáváš, o čem jste
+              mluvili, co kdo slíbil a jak to dopadlo, tím bohatší kontext AI má.
+            </p>
+            <p>
+              Čím bohatší informace ukládáš, tím přesnější a užitečnější jsou rady. Zpočátku budou obecné —
+              ale po několika týdnech poctivého psaní ti AI dokáže připomenout detaily, na které by sis sám/sama
+              nevzpomněl/a, a navrhnout témata i dárky přesně na míru. Vydrž a vyplať se ti to.
+            </p>
           </div>
         </div>
       </div>
