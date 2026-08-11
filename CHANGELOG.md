@@ -2,6 +2,41 @@
 
 ---
 
+## [2026-08-11] — KRITICKÁ oprava: mizející data kontaktů (custom_data)
+
+### Co bylo uděláno
+- `backend/src/routes/contacts.ts` — `PATCH /lists/:id/contacts/:id` nyní **slučuje** `custom_data` s existujícími daty místo přepsání celého objektu.
+- `frontend/src/pages/ContactDetail.tsx`:
+  - Formulář se hydratuje podle `contactData.id` (dřív jen jednorázový boolean `initialized`) → nedrží data cizího/nenačteného kontaktu.
+  - Tlačítko „Uložit změny" je **zakázané, dokud se aktuální kontakt nenačte** (`isHydrated`) → nelze odeslat prázdný `custom_data`.
+
+### Proč (způsob řešení)
+**Příznak:** Po přidání pole do seznamu (nebo uložení kontaktu při výpadku sítě) zmizely informace u uložených kontaktů, zůstala jen jména.
+
+**Kořen problému:** Endpoint `PATCH …/contacts/:id` měl PUT sémantiku — `custom_data` z požadavku přepisoval celý sloupec. Když frontend odeslal prázdný/částečný objekt (typicky když se kontakt kvůli offline stavu nenačetl a formulář měl prázdný `customData`), uložená data se přepsala pryč. Backend field-add ani list-update se kontaktů nedotýkají — wipe vždy pocházel z tohoto přepisujícího PATCHe.
+
+**Řešení (obrana do hloubky, dle požadavku „za všech okolností"):**
+1. **Backend = garant.** Slučování `{ ...existing, ...incoming }` znamená, že žádný prázdný ani částečný payload nemůže uložená data smazat. Konkrétní hodnotu uživatel smaže vědomě odesláním prázdného řetězce u daného klíče. Toto je zároveň správná PATCH sémantika.
+2. **Frontend = prevence.** Hydratace per kontakt + zákaz uložení před načtením zabrání odeslání prázdného stavu už u zdroje.
+
+**Ověřeno:** Izolovaný test slučovací logiky prošel pro všech 6 scénářů (prázdný `{}` z offline, neposláno, doplnění pole, změna hodnoty, vědomé smazání, `null`) — data se v žádném z nich neztratí. Backend `tsc` i frontend build procházejí.
+
+### Soubory změněny
+- `backend/src/routes/contacts.ts`
+- `frontend/src/pages/ContactDetail.tsx`
+
+### Nasazení na server
+Mění se backend i frontend → nutný rebuild:
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+Po nasazení otestovat: vytvořit kontakt s poli → přidat pole v nastavení seznamu → ověřit, že data zůstala; a offline test (vypnout síť, otevřít kontakt, zapnout síť, uložit) by už neměl nic smazat.
+
+---
+
 ## [2026-07-30] — AI/SEO viditelnost + reprodukovatelné buildy (package-lock)
 
 ### Co bylo uděláno

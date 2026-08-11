@@ -337,7 +337,7 @@ export default function ContactDetail() {
   const [customData, setCustomData] = useState<Record<string, unknown>>({})
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
-  const [initialized, setInitialized] = useState(false)
+  const [hydratedFor, setHydratedFor] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   const [nameDayResult, setNameDayResult] = useState<{ date: string; label: string } | null>(null)
   const [findingNameDay, setFindingNameDay] = useState(false)
@@ -355,16 +355,23 @@ export default function ContactDetail() {
     gcTime: 0,
   })
 
+  // Hydratace formuláře z načteného kontaktu. Klíčováno na contactData.id, takže
+  // se znovu naplní při přepnutí na jiný kontakt a formulář nikdy nedrží data
+  // cizího/nenačteného kontaktu (což by při uložení mohlo přepsat cizí záznam).
   useEffect(() => {
-    if (contactData && !initialized) {
+    if (contactData && hydratedFor !== contactData.id) {
       setFirstName(contactData.first_name)
       setLastName(contactData.last_name ?? '')
       const raw = contactData.custom_data
       setCustomData(raw !== null && typeof raw === 'object' && !Array.isArray(raw) ? raw as Record<string, unknown> : {})
       setContactBg(contactData.background ?? null)
-      setInitialized(true)
+      setHydratedFor(contactData.id)
     }
-  }, [contactData, initialized])
+  }, [contactData, hydratedFor])
+
+  // Uložení je povoleno až po hydrataci aktuálního kontaktu — bez načtených dat
+  // by se dal odeslat prázdný custom_data (typicky po výpadku sítě).
+  const isHydrated = hydratedFor === contactId
 
   const { data: listData } = useQuery({
     queryKey: ['list', listId],
@@ -748,7 +755,7 @@ export default function ContactDetail() {
         </div>
         <button
           onClick={() => saveMutation.mutate()}
-          disabled={saveMutation.isPending || !firstName.trim()}
+          disabled={saveMutation.isPending || !firstName.trim() || !isHydrated}
           className="btn-primary"
         >
           <Save className="w-4 h-4" />

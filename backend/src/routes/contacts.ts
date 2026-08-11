@@ -119,8 +119,19 @@ export async function contactsRoutes(app: FastifyInstance) {
     const newFirstName = first_name !== undefined ? first_name : existing.first_name
     const newLastName = last_name !== undefined ? (last_name || null) : existing.last_name
     const newIsStarred = is_starred !== undefined ? is_starred : existing.is_starred
-    const rawJson = custom_data !== undefined ? custom_data : existing.custom_data
-    const newCustomData = (rawJson !== null && typeof rawJson === 'object' && !Array.isArray(rawJson)) ? rawJson : {}
+
+    // custom_data se SLUČUJE, nikdy nepřepisuje celé. Uložené hodnoty se tak
+    // nemohou ztratit jen proto, že je klient v požadavku nepošle (např. když
+    // se kontakt kvůli výpadku sítě nenačetl a formulář odešle prázdný objekt).
+    // Konkrétní hodnotu uživatel smaže odesláním daného klíče s prázdnou hodnotou.
+    const existingData = (existing.custom_data !== null && typeof existing.custom_data === 'object' && !Array.isArray(existing.custom_data))
+      ? existing.custom_data as Record<string, unknown>
+      : {}
+    const incomingData = (custom_data !== null && typeof custom_data === 'object' && !Array.isArray(custom_data))
+      ? custom_data as Record<string, unknown>
+      : {}
+    const newCustomData = custom_data !== undefined ? { ...existingData, ...incomingData } : existingData
+
     const newBackground = background !== undefined ? (background ?? null) : existing.background
 
     const [updated] = await sql`
