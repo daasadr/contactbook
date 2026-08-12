@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Radio, Sparkles, Cake, Clock, Loader2, ChevronDown, ChevronUp, Pin } from 'lucide-react'
-import { signalApi, type NeglectedContact, type UpcomingBirthday } from '@/api/signal'
+import { Radio, Sparkles, Cake, Clock, Loader2, ChevronDown, ChevronUp, Pin, Check } from 'lucide-react'
+import { signalApi, type NeglectedContact, type UpcomingBirthday, type SignalData } from '@/api/signal'
 import { tasksApi } from '@/api/tasks'
 
 function fullName(c: { first_name: string; last_name?: string | null }) {
@@ -59,35 +59,114 @@ function SaveTaskInline({ contact, onSaved }: {
   )
 }
 
-function NeglectedRow({ c }: { c: NeglectedContact }) {
+const SWIPE_THRESHOLD = 90
+
+function NeglectedRow({ c, onDismiss }: { c: NeglectedContact; onDismiss: (id: string) => void }) {
   const [showTask, setShowTask] = useState(false)
+  const [dx, setDx] = useState(0)
+  const [dragging, setDragging] = useState(false)
+  const [dismissing, setDismissing] = useState(false)
+  const startX = useRef<number | null>(null)
+  const startY = useRef(0)
+  const didSwipe = useRef(false)  // brání navigaci na odkaz po tažení
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (showTask) return           // během editace úkolu nešvihat
+    startX.current = e.clientX
+    startY.current = e.clientY
+    didSwipe.current = false
+  }
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (startX.current === null) return
+    const ddx = e.clientX - startX.current
+    const ddy = e.clientY - startY.current
+    if (!dragging) {
+      // Aktivovat tažení až při jasně vodorovném pohybu (odliší od kliknutí a svislého scrollu)
+      if (Math.abs(ddx) > 8 && Math.abs(ddx) > Math.abs(ddy)) {
+        setDragging(true)
+        try { (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId) } catch { /* ignore */ }
+      } else {
+        return
+      }
+    }
+    setDx(ddx)
+  }
+
+  const onPointerUp = () => {
+    startX.current = null
+    if (!dragging) return
+    setDragging(false)
+    didSwipe.current = true
+    setTimeout(() => { didSwipe.current = false }, 60)
+    if (Math.abs(dx) >= SWIPE_THRESHOLD) {
+      setDismissing(true)
+      setDx(dx > 0 ? 500 : -500)            // odletí ze strany
+      setTimeout(() => onDismiss(c.id), 180)
+    } else {
+      setDx(0)                               // vrátit zpět
+    }
+  }
+
+  const progress = Math.min(Math.abs(dx) / SWIPE_THRESHOLD, 1)
+
   return (
-    <div className="py-2 border-b border-white/10 last:border-0">
-      <div className="flex items-center justify-between gap-2">
-        <Link
-          to={`/lists/${c.list_id}/contacts/${c.id}`}
-          className="font-medium text-sm text-white hover:text-primary-200 transition-colors truncate"
-        >
-          {fullName(c)}
-        </Link>
-        <div className="flex items-center gap-2 shrink-0">
-          <span className="text-xs text-white/50">{dayLabel(c.days_since)}</span>
-          <button
-            onClick={() => setShowTask(s => !s)}
-            title="Přidat úkol"
-            className="p-1 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors"
-          >
-            <Pin className="w-3.5 h-3.5" />
-          </button>
-        </div>
+    <div className="relative overflow-hidden rounded-lg">
+      {/* Pozadí odhalené při tažení — „vyřešeno“ */}
+      <div
+        className="absolute inset-0 flex items-center justify-between px-3 pointer-events-none"
+        style={{ background: 'rgba(16,185,129,0.20)', opacity: dismissing ? 1 : progress }}
+      >
+        <span className="text-xs text-emerald-200 font-medium flex items-center gap-1"><Check className="w-3.5 h-3.5" /> Vyřešeno</span>
+        <span className="text-xs text-emerald-200 font-medium flex items-center gap-1">Vyřešeno <Check className="w-3.5 h-3.5" /></span>
       </div>
-      <p className="text-[11px] text-white/40">{c.list_name}</p>
-      {showTask && (
-        <SaveTaskInline
-          contact={c}
-          onSaved={() => setShowTask(false)}
-        />
-      )}
+
+      <div
+        className="relative py-2 border-b border-white/10 last:border-0 select-none"
+        style={{
+          transform: `translateX(${dx}px)`,
+          transition: dragging ? 'none' : 'transform 0.18s ease-out',
+          touchAction: 'pan-y',
+        }}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        <div className="flex items-center justify-between gap-2">
+          <Link
+            to={`/lists/${c.list_id}/contacts/${c.id}`}
+            onClick={(e) => { if (didSwipe.current || dragging) e.preventDefault() }}
+            className="font-medium text-sm text-white hover:text-primary-200 transition-colors truncate"
+          >
+            {fullName(c)}
+          </Link>
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="text-xs text-white/50">{dayLabel(c.days_since)}</span>
+            <button
+              onClick={() => setShowTask(s => !s)}
+              title="Přidat úkol"
+              className="p-1 rounded text-white/40 hover:text-white hover:bg-white/10 transition-colors"
+            >
+              <Pin className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={() => { setDismissing(true); setDx(-500); setTimeout(() => onDismiss(c.id), 180) }}
+              title="Vyřešeno — skrýt a spustit nový odpočet"
+              className="p-1 rounded text-white/40 hover:text-emerald-300 hover:bg-white/10 transition-colors"
+            >
+              <Check className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+        <p className="text-[11px] text-white/40">{c.list_name}</p>
+        {showTask && (
+          <SaveTaskInline
+            contact={c}
+            onSaved={() => setShowTask(false)}
+          />
+        )}
+      </div>
     </div>
   )
 }
@@ -140,6 +219,13 @@ export default function SignalWidget() {
     queryFn: () => signalApi.get().then(r => r.data),
     staleTime: 5 * 60 * 1000,
   })
+
+  const dismissNeglected = (id: string) => {
+    // Optimisticky odeber z widgetu, pak potvrď na serveru (nastaví nový odpočet).
+    queryClient.setQueryData<SignalData>(['signal'], (old) =>
+      old ? { ...old, neglected: old.neglected.filter(c => c.id !== id) } : old)
+    signalApi.dismiss(id).catch(() => queryClient.invalidateQueries({ queryKey: ['signal'] }))
+  }
 
   const total = (data?.neglected.length ?? 0) + (data?.birthdays.length ?? 0)
   if (!isLoading && total === 0) return null
@@ -197,11 +283,12 @@ export default function SignalWidget() {
               {/* Zanedbané kontakty */}
               {data!.neglected.length > 0 && (
                 <div>
-                  <div className="flex items-center gap-1.5 mb-2">
+                  <div className="flex items-center gap-1.5 mb-1">
                     <Clock className="w-3.5 h-3.5 text-orange-400" />
                     <span className="text-xs font-medium text-white/60 uppercase tracking-wide">Dlouho bez kontaktu</span>
                   </div>
-                  {data!.neglected.map(c => <NeglectedRow key={c.id} c={c} />)}
+                  <p className="text-[11px] text-white/35 mb-2">Přejeď do boku (nebo ✓) = vyřešeno, spustí nový odpočet</p>
+                  {data!.neglected.map(c => <NeglectedRow key={c.id} c={c} onDismiss={dismissNeglected} />)}
                 </div>
               )}
 

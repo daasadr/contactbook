@@ -75,7 +75,7 @@ Webová aplikace pro správu kontaktů s plně customizovatelnou strukturou pol�
 5. **Electron desktop** — vzdálená budoucnost
 
 ### Migrace (1–15)
-001 initial schema · 002 month_day · 003 list_background · 004 contact_background · 005 password_reset · 006 contact_relationships · 007 saved_ai_chats · 008 event_attachments · 009 ai_credits · 010 vip_users · 011 starter_credits_25 · 012 radar_days · 013 user_profile · 014 business_card · 015 contact_photos
+001 initial schema · 002 month_day · 003 list_background · 004 contact_background · 005 password_reset · 006 contact_relationships · 007 saved_ai_chats · 008 event_attachments · 009 ai_credits · 010 vip_users · 011 starter_credits_25 · 012 radar_days · 013 user_profile · 014 business_card · 015 contact_photos · 016 email_verification · 017 signal_dismissed
 
 ---
 

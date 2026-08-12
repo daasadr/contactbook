@@ -38,12 +38,13 @@ export async function signalRoutes(app: FastifyInstance) {
       WHERE cl.user_id = ${request.userId}
       GROUP BY c.id, cl.id, cl.name, cl.color, cl.radar_days
       HAVING
-        -- Má záznamy, ale poslední byl před víc než radar_days
-        (MAX(ce.event_date) IS NOT NULL
-          AND (NOW()::date - MAX(ce.event_date))::int >= cl.radar_days)
+        -- Referenční datum = pozdější z (poslední zápisek, odložení ze Signálu).
+        -- GREATEST v Postgresu ignoruje NULL, takže stačí, když existuje aspoň jedno.
+        (GREATEST(MAX(ce.event_date), c.signal_dismissed_at::date) IS NOT NULL
+          AND (NOW()::date - GREATEST(MAX(ce.event_date), c.signal_dismissed_at::date))::int >= cl.radar_days)
         OR
-        -- Nemá žádný záznam, ale kontakt byl přidán před víc než radar_days (není nový)
-        (MAX(ce.event_date) IS NULL
+        -- Žádný zápisek ani odložení, ale kontakt byl přidán před víc než radar_days (není nový)
+        (GREATEST(MAX(ce.event_date), c.signal_dismissed_at::date) IS NULL
           AND (NOW()::date - c.created_at::date)::int >= cl.radar_days)
       ORDER BY days_since DESC NULLS FIRST
       LIMIT ${MAX_NEGLECTED}
@@ -71,6 +72,21 @@ export async function signalRoutes(app: FastifyInstance) {
       .slice(0, MAX_BIRTHDAYS)
 
     return reply.send({ neglected, birthdays })
+  })
+
+  // POST /signal/dismiss/:contactId — odložit kontakt ze Signálu ("přetáhnutím do boku").
+  // Odpočet začne znovu: kontakt se objeví až po uplynutí radar_days od teď.
+  app.post('/dismiss/:contactId', { preHandler: authenticate }, async (request, reply) => {
+    const { contactId } = request.params as { contactId: string }
+    const [contact] = await sql`
+      UPDATE contacts
+      SET signal_dismissed_at = NOW()
+      WHERE id = ${contactId}
+        AND list_id IN (SELECT id FROM contact_lists WHERE user_id = ${request.userId})
+      RETURNING id
+    `
+    if (!contact) return reply.status(404).send({ error: 'Kontakt nenalezen' })
+    return reply.send({ ok: true })
   })
 
   // POST /signal/ai — AI analýza (spotřebuje 1 kredit)

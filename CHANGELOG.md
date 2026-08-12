@@ -2,6 +2,39 @@
 
 ---
 
+## [2026-08-12] — Signál: odložení kontaktu „přetáhnutím do boku"
+
+### Co bylo uděláno
+- **Migrace 017** (`017_signal_dismissed.sql`) — nový sloupec `contacts.signal_dismissed_at TIMESTAMPTZ`.
+- `backend/src/routes/signal.ts`:
+  - Nový endpoint `POST /signal/dismiss/:contactId` — nastaví `signal_dismissed_at = NOW()` (s kontrolou vlastnictví seznamu).
+  - Dotaz na zanedbané kontakty nyní počítá odpočet od **pozdějšího** z: poslední zápisek / odložení (`GREATEST(MAX(event_date), signal_dismissed_at)`), takže odložený kontakt zmizí a vrátí se až po uplynutí `radar_days`.
+- `frontend/src/api/signal.ts` — přidáno `dismiss(contactId)`.
+- `frontend/src/components/SignalWidget.tsx` — řádky v „Dlouho bez kontaktu" jsou **swipovatelné** (pointer events, funguje na dotyku i myší): přejetí do boku přes práh 90 px kontakt odloží (odletí a optimisticky zmizí). Přidáno i tlačítko ✓ pro desktop/přístupnost a nápovědný řádek.
+
+### Proč (způsob řešení)
+Uživatelka chtěla intuitivně odbavovat kontakty ze Signálu jeden po druhém přetažením do boku, s tím, že se „nastaví nový odpočet".
+
+Zvolil jsem samostatný sloupec `signal_dismissed_at` místo vytváření prázdného zápisku v Knize záznamů — deník tak zůstane čistý (jen skutečná setkání) a „odložení" je čistá snooze sémantika. Odpočet Signálu se počítá od pozdějšího z posledního zápisku a odložení; `GREATEST` v Postgresu ignoruje NULL, takže logika bezešvě pokrývá i kontakty bez zápisků. Swipe je řešen bez knihovny (pointer events + práh, aby se odlišilo tažení od kliknutí a svislého scrollu); navigace na odkaz je po tažení potlačena.
+
+### Soubory změněny
+- `backend/src/db/migrations/017_signal_dismissed.sql` (nový)
+- `backend/src/routes/signal.ts`
+- `frontend/src/api/signal.ts`, `frontend/src/components/SignalWidget.tsx`
+- `CLAUDE.md`, `CHANGELOG.md`
+
+### Nasazení na server
+Mění se backend (vč. migrace, spustí se automaticky při startu) i frontend → rebuild:
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+Test: na dashboardu v Signálu přejeď kontakt do boku → zmizí; do `radar_days` dní se nevrátí.
+
+---
+
 ## [2026-08-12] — Přejmenování seznamu v nastavení + tip o AI v nápovědě
 
 ### Co bylo uděláno

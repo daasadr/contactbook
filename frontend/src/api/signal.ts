@@ -34,4 +34,7 @@ export const signalApi = {
 
   analyze: () =>
     apiClient.post<{ analysis: string; credits_remaining: number | null }>('/signal/ai', {}),
+
+  dismiss: (contactId: string) =>
+    apiClient.post<{ ok: true }>(`/signal/dismiss/${contactId}`, {}),
 }
