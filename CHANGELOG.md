@@ -2,6 +2,32 @@
 
 ---
 
+## [2026-10-03] — Nasazovací script `deploy.sh` + bezpečný úklid image
+
+### Co bylo uděláno
+- `deploy.sh` (nový, v kořenu, spustitelný) — jednopříkazové nasazení: `git pull --ff-only` → `down --remove-orphans` → `up -d --build` → **health check** na `localhost:8060/api/health` → **úklid starých image POUZE této aplikace**. Přepínače `--no-pull`, `--no-clean`, `--help`.
+- `.gitattributes` (nový) — `*.sh text eol=lf`, aby shell skripty měly na serveru vždy LF konce řádků (CRLF by rozbil shebang).
+
+### Proč (způsob řešení)
+Server hostuje víc projektů a sdílené veřejné image (nginx/redis/postgres), takže globální `docker system prune` nepřipadá v úvahu. Řešení: script si **před buildem zapamatuje ID stávajících image** `contactbook_backend`/`contactbook_frontend` a po úspěšném nasazení smaže přesně je (pokud se liší od nových a nejsou používané). Díky tomu se nikdy nesáhne na jiné projekty ani na sdílené image. Jako bonus `docker image prune` filtrovaný na `label=com.docker.compose.project=contactbook` (bezpečný no-op, pokud label není).
+
+Dodržen známý v1 recreate bug (vždy `down`, pak `up`); data se nikdy nemažou (`down` bez `-v`). Health check řeší, aby script selhal viditelně (s výpisem logu), když backend nenaběhne — ne aby „tiše" nechal rozbité nasazení.
+
+Ověřeno lokálně: `bash -n` (syntaxe), `--help`, LF konce řádků, spustitelný bit (100755).
+
+### Soubory změněny
+- `deploy.sh` (nový), `.gitattributes` (nový), `CHANGELOG.md`
+
+### Nasazení na server
+Po `git pull` je script rovnou spustitelný. Od příště stačí místo ručních příkazů:
+```bash
+cd /root/projects/contactbook
+git pull            # jednorázově, aby se stáhl deploy.sh
+./deploy.sh
+```
+
+---
+
 ## [2026-10-03] — Bezpečnostní údržba: nové zranitelnosti fastify stacku + revize Snyk PR
 
 ### Co bylo uděláno
