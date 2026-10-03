@@ -2,6 +2,33 @@
 
 ---
 
+## [2026-10-03] — Bezpečnostní údržba: nové zranitelnosti fastify stacku + revize Snyk PR
+
+### Co bylo uděláno
+- `backend/package-lock.json` — `npm audit fix` (nerozbíjející, jen patch bumpy v rámci v5): **fastify 5.12.5**, **fast-uri 3.1.8 / 4.2.1**, **@fastify/busboy 3.2.2**. Backend opět **0 zranitelností**.
+- Ověřeno: `package.json` beze změny (vše v rámci existujících rozsahů), `tsc` build i boot test procházejí.
+- **Revize starého Snyk PR** `snyk-fix-bb8b08d97035fecfe68edf48ad0a6597` („Fix for 16 vulnerabilities", merge risk HIGH): potvrzeno, že je **obsoletní** a **nesmí se sloučit** — jeho 16 zranitelností je už vyřešeno v `main` (commit 8708e3e, červenec). Doporučeno PR zavřít.
+
+### Proč (způsob řešení)
+V mezičase od červencové opravy se objevily nové advisory ve fastify stacku (mj. auth bypass ve fastify, SSRF/host confusion ve fast-uri, DoS v busboy). Všechny opravitelné bez breaking changes v rámci v5 linie, proto `npm audit fix` + ověření buildu a startu.
+
+Snyk PR: diff `main → PR` ukazuje, že sloučení by **regresovalo** — stáhlo by `@fastify/*` pluginy zpět na v4 majory (při fastify ^5 → crash na startu `FST_ERR_PLUGIN_VERSION_MISMATCH`) a `@fastify/jwt` zpět na ^9 (znovu kritická fast-jwt zranitelnost). Snyk tyto PR obvykle sám zavře po dalším scanu, jakmile zjistí, že jsou zranitelnosti v `main` vyřešené.
+
+### Soubory změněny
+- `backend/package-lock.json`
+- `CHANGELOG.md`
+
+### Nasazení na server
+Backend se mění (nové verze závislostí) → rebuild:
+```bash
+cd /root/projects/contactbook
+git pull
+docker-compose -f docker-compose.prod.yml down
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+---
+
 ## [2026-08-12] — Signál: odložení kontaktu „přetáhnutím do boku"
 
 ### Co bylo uděláno
